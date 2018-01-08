@@ -1,0 +1,83 @@
+{
+  "name": "electron-disk-analyzer",
+  "description": "Simple Disk Usage Analyzer based on Electron",
+  "version": "0.0.1",
+  "author": {
+    "name": "fiahfy",
+    "email": "d.fiahfy@gmail.com",
+    "url": "http://fiahfy.blogspot.com/"
+  },
+  "dependencies": {
+    "electron-devtools-installer": "^2.2.0",
+    "electron-window-state": "^4.1.1",
+    "is-electron-renderer": "^2.0.1",
+    "material-components-web": "^0.27.0",
+    "material-design-icons": "^3.0.1",
+    "vue": "^2.4.2",
+    "vue-long-press-directive": "^1.0.1",
+    "vue-moment": "^3.0.0",
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.0",
+    "vuex-persistedstate": "^2.0.0",
+    "vuex-router-sync": "^5.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-eslint": "^8.0.0",
+    "babel-loader": "^7.1.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.5.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "cross-env": "^5.0.5",
+    "css-loader": "^0.28.4",
+    "electron": "~1.7",
+    "electron-builder": "^19.22.1",
+    "eslint": "^4.4.1",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-html": "^4.0.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "file-loader": "^1.1.5",
+    "node-sass": "^4.5.3",
+    "npm-run-all": "^4.0.2",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "url-loader": "^0.6.2",
+    "vue-loader": "^13.0.5",
+    "vue-template-compiler": "^2.0.0",
+    "webpack": "^3.5.4",
+    "webpack-dev-server": "^2.7.1"
+  },
+  "keywords": [
+    "analyzer",
+    "electron",
+    "vue",
+    "webpack"
+  ],
+  "main": "main.js",
+  "private": true,
+  "productName": "electron-disk-analyzer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiahfy/electron-disk-analyzer"
+  },
+  "scripts": {
+    "build": "build -mw -p onTagOrDraft",
+    "dev": "cross-env HOT=1 run-p dev-server start:main",
+    "dev-server": "webpack-dev-server --config webpack/config.renderer.hot.babel.js",
+    "lint": "eslint src --ext .js,.vue",
+    "release": "cross-env NODE_ENV=production run-s webpack build",
+    "start": "run-s webpack:renderer start:main",
+    "start:main": "run-s webpack:main start:main:electron",
+    "start:main:electron": "electron main.js",
+    "test": "run-s lint",
+    "watch": "run-s webpack -- -w",
+    "watch:main": "run-s webpack:main -- -w",
+    "watch:renderer": "run-s webpack:renderer -- -w",
+    "webpack": "webpack --config webpack/config.babel.js",
+    "webpack:main": "webpack --config webpack/config.main.babel.js",
+    "webpack:renderer": "webpack --config webpack/config.renderer.babel.js"
+  }
+}
