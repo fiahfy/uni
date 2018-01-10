@@ -4,13 +4,13 @@ import App from './renderer/App'
 import router from './renderer/router'
 import store from './renderer/store'
 import './renderer/plugins'
-import { setup } from './renderer/ipc'
+import { setupIpcRenderer } from './renderer/ipc'
 
 Vue.config.devtools = process.env.NODE_ENV !== 'production'
 Vue.config.productionTip = false
 
 sync(store, router)
-setup(store)
+setupIpcRenderer(store)
 
 new Vue({ // eslint-disable-line no-new
   el: '#app',

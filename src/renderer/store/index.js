@@ -1,23 +1,24 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
+import { remote, ipcRenderer } from 'electron'
 import router from '../router'
 import { listFiles, getReadableSize } from '../utils/file'
 import explorer from './explorer'
 import settings from './settings'
 import path from 'path'
-import objectPath from 'object-path'
 
 Vue.use(Vuex)
 
-const Status = {
+export const Status = {
+  notYet: 'NOT_YET',
   progress: 'PROGRESS',
   done: 'DONE'
 }
 
 export default new Vuex.Store({
   state: {
-    status: Status.done,
+    status: Status.notYet,
     // directory: '',
     root: '',
     files: [],
@@ -52,8 +53,22 @@ export default new Vuex.Store({
         }
       })
     },
+    selectDirectory ({ dispatch }) {
+      remote.dialog.showOpenDialog(
+        { properties: ['openDirectory'] },
+        (filepathes) => {
+          if (!filepathes) {
+            return
+          }
+          const filepath = filepathes[0]
+          remote.ipcRenderer.send('scanDirectory', { filepath })
+          // dispatch('open', { filepath })
+        }
+      )
+    },
     async open ({ commit, dispatch }, { filepath }) {
       console.log(filepath)
+      commit('setStatus', { status: Status.progress })
 
       var t = (new Date()).getTime()
       // const c = countFiles(filepath, { recursive: true })
@@ -72,6 +87,7 @@ export default new Vuex.Store({
       // const obj = {}
       // objectPath.set(obj, dirs, files)
       console.log(files)
+      commit('setStatus', { status: Status.done })
       commit('setRoot', { root: filepath })
       commit('setFiles', { files })
       dispatch('explorer/changeDirectory', { dirpath: filepath })
@@ -81,6 +97,9 @@ export default new Vuex.Store({
     // setDirectory (state, { directory }) {
     //   state.directory = directory
     // },
+    setStatus (state, { status }) {
+      state.status = status
+    },
     setRoot (state, { root }) {
       state.root = root
     },
@@ -93,7 +112,7 @@ export default new Vuex.Store({
   },
   getters: {
     titleBar (state) {
-      return process.platform === 'darwin' && !state.fullScreen
+      return process.platform === 'darwin'
     }
   },
   modules: {

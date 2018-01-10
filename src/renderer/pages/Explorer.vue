@@ -1,27 +1,49 @@
 <template>
   <div class="explorer">
-    <menu-bar />
-    <div class="container">
-      <div class="error" v-if="error">
-        <span>{{ error.message }}</span>
+    <template v-if="done">
+      <menu-bar />
+      <div class="container">
+        <div class="error" v-if="error">
+          <span>{{ error.message }}</span>
+        </div>
+        <file-list />
       </div>
-      <file-list />
-    </div>
+    </template>
+    <template v-else>
+      <p>{{ status }}</p>
+      <div>
+        <mdc-button @click="selectDirectory">Open</mdc-button>
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import FileList from '../components/FileList'
+import MdcButton from '../components/MdcButton'
 import MenuBar from '../components/MenuBar'
+import { Status } from '../store'
 
 export default {
   components: {
     FileList,
+    MdcButton,
     MenuBar
   },
-  computed: mapState('explorer', [
-    'error'
+  computed: {
+    done () {
+      return this.status === Status.done
+    },
+    ...mapState([
+      'status'
+    ]),
+    ...mapState('explorer', [
+      'error'
+    ])
+  },
+  methods: mapActions([
+    'selectDirectory'
   ])
 }
 </script>
