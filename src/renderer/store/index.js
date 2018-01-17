@@ -1,34 +1,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
-import { remote, ipcRenderer } from 'electron'
+import { remote } from 'electron'
 import router from '../router'
-import { listFiles, getReadableSize, listFilesAsync } from '../utils/file'
 import explorer from './explorer'
 import settings from './settings'
-import path from 'path'
 import Worker from '../workers/scanner.worker.js'
 
 Vue.use(Vuex)
+
+let worker
 
 export const Status = {
   notYet: 'NOT_YET',
   progress: 'PROGRESS',
   done: 'DONE'
-}
-
-function wait () {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, 10000)
-  })
-}
-function list (filepath) {
-  return new Promise(resolve => {
-    const files = listFiles(filepath)
-    resolve(files)
-  })
 }
 
 export default new Vuex.Store({
@@ -74,20 +60,29 @@ export default new Vuex.Store({
         return
       }
       const filepath = filepathes[0]
-      dispatch('scan', { filepath })
+      dispatch('scan', { dirpath: filepath })
     },
-    async scan ({ commit, dispatch }, { filepath }) {
+    async scan ({ commit, dispatch }, { dirpath }) {
       commit('setStatus', { status: Status.progress })
 
-      const worker = new Worker()
-      worker.onmessage = ({ data }) => {
-        commit('setStatus', { status: Status.done })
-        commit('setRoot', { root: filepath })
-        commit('setFiles', { files: data })
-        dispatch('explorer/changeDirectory', { dirpath: filepath })
-        dispatch('showMessage', { message: 'Complete Directory Scan' })
+      if (worker) {
+        worker.terminate()
       }
-      worker.postMessage(filepath)
+      console.log(new Date())
+      worker = new Worker()
+      worker.onmessage = ({ data }) => {
+        console.log(new Date())
+        const files = data
+        commit('setStatus', { status: Status.done })
+        commit('setRoot', { root: dirpath })
+        commit('setFiles', { files })
+        console.log(new Date())
+        dispatch('explorer/changeDirectory', { dirpath })
+        console.log(new Date())
+        dispatch('showMessage', { message: 'Complete Directory Scan' })
+        console.log(new Date())
+      }
+      worker.postMessage(dirpath)
     }
   },
   mutations: {
