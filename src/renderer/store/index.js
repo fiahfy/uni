@@ -3,10 +3,11 @@ import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 import { remote, ipcRenderer } from 'electron'
 import router from '../router'
-import { listFiles, getReadableSize } from '../utils/file'
+import { listFiles, getReadableSize, listFilesAsync } from '../utils/file'
 import explorer from './explorer'
 import settings from './settings'
 import path from 'path'
+import Worker from '../workers/scanner.worker.js'
 
 Vue.use(Vuex)
 
@@ -14,6 +15,20 @@ export const Status = {
   notYet: 'NOT_YET',
   progress: 'PROGRESS',
   done: 'DONE'
+}
+
+function wait () {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, 10000)
+  })
+}
+function list (filepath) {
+  return new Promise(resolve => {
+    const files = listFiles(filepath)
+    resolve(files)
+  })
 }
 
 export default new Vuex.Store({
@@ -61,8 +76,8 @@ export default new Vuex.Store({
             return
           }
           const filepath = filepathes[0]
-          remote.ipcRenderer.send('scanDirectory', { filepath })
-          // dispatch('open', { filepath })
+          // ipcRenderer.send('scanDirectory', { filepath })
+          dispatch('open', { filepath })
         }
       )
     },
@@ -76,21 +91,27 @@ export default new Vuex.Store({
       // console.log(c)
 
       t = (new Date()).getTime()
-      const files = listFiles(filepath)
-      // console.log((new Date()).getTime() - t)
-      // const dirs = filepath.split(path.sep)
-      // console.log(dirs)
-      // // let dir = filepath
-      // // while (dir = path.dirname(dir)) {
-      // //   console.log(dir)
-      // // }
-      // const obj = {}
-      // objectPath.set(obj, dirs, files)
-      console.log(files)
-      commit('setStatus', { status: Status.done })
-      commit('setRoot', { root: filepath })
-      commit('setFiles', { files })
-      dispatch('explorer/changeDirectory', { dirpath: filepath })
+      console.log('OK')
+      const worker = new Worker()
+      worker.onmessage = (e) => {
+        // console.log((new Date()).getTime() - t)
+        // const dirs = filepath.split(path.sep)
+        // console.log(dirs)
+        // // let dir = filepath
+        // // while (dir = path.dirname(dir)) {
+        // //   console.log(dir)
+        // // }
+        // const obj = {}
+        // objectPath.set(obj, dirs, files)
+        // await wait()
+        const files = e.data
+        console.log(files)
+        commit('setStatus', { status: Status.done })
+        commit('setRoot', { root: filepath })
+        commit('setFiles', { files })
+        dispatch('explorer/changeDirectory', { dirpath: filepath })
+      }
+      worker.postMessage(filepath)
     }
   },
   mutations: {

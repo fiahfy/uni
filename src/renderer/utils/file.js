@@ -36,7 +36,7 @@ export function listFiles (dirpath) {
   }, [])
 }
 
-async function readdirAsync (direpath) {
+function readdirAsync (direpath) {
   return new Promise((resolve, reject) => {
     fs.readdir(direpath, (err, files) => {
       if (err) {
@@ -48,7 +48,7 @@ async function readdirAsync (direpath) {
   })
 }
 
-async function lstatAsync (filepath) {
+function lstatAsync (filepath) {
   return new Promise((resolve, reject) => {
     fs.lstat(filepath, (err, stats) => {
       if (err) {
@@ -81,22 +81,21 @@ async function getFileAsync (filepath) {
 }
 
 export async function listFilesAsync (dirpath) {
-  return new Promise(async resolve => {
-    console.log(dirpath)
-    const filepathes = await readdirAsync(dirpath)
-    const result = filepathes.reduce(async (carry, filename) => {
-      try {
-        if (filename.match(/^\./)) {
-          return carry
-        }
-        const file = await getFileAsync(path.join(dirpath, filename))
-        return [...carry, file]
-      } catch (e) {
+  const filepathes = await readdirAsync(dirpath)
+  const result = await filepathes.reduce(async (carry, filename) => {
+    try {
+      if (filename.match(/^\./)) {
         return carry
       }
-    }, [])
-    return resolve(result)
-  })
+      const file = await getFileAsync(path.join(dirpath, filename))
+      return [...carry, file]
+    } catch (e) {
+      return carry
+    }
+  }, [])
+  console.log(dirpath)
+  console.log(result)
+  return result
 }
 
 export function countFiles (dirpath, options = { recursive: false }) {

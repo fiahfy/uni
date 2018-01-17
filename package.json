@@ -48,7 +48,8 @@
     "vue-loader": "^13.0.5",
     "vue-template-compiler": "^2.0.0",
     "webpack": "^3.5.4",
-    "webpack-dev-server": "^2.7.1"
+    "webpack-dev-server": "^2.7.1",
+    "worker-loader": "^1.1.0"
   },
   "keywords": [
     "analyzer",

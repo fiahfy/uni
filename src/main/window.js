@@ -12,7 +12,13 @@ export default class Window {
       defaultHeight: 600
     })
 
-    const options = { ...windowState, titleBarStyle: 'hidden' }
+    const options = {
+      ...windowState,
+      titleBarStyle: 'hidden',
+      webPreferences: {
+        nodeIntegrationInWorker: true
+      }
+    }
 
     this.browserWindow = new BrowserWindow(options)
     this.browserWindow.loadURL(`file://${__dirname}/app/index.html`)
