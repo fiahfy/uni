@@ -44,7 +44,7 @@ export default new Vuex.Store({
       commit('setMessage', { message })
       // wait dom updated
       setTimeout(() => {
-        commit('setMessage', '')
+        commit('setMessage', { message: '' })
       })
     },
     changeRoute (_, payload) {
@@ -69,47 +69,23 @@ export default new Vuex.Store({
       })
     },
     selectDirectory ({ dispatch }) {
-      remote.dialog.showOpenDialog(
-        { properties: ['openDirectory'] },
-        (filepathes) => {
-          if (!filepathes) {
-            return
-          }
-          const filepath = filepathes[0]
-          // ipcRenderer.send('scanDirectory', { filepath })
-          dispatch('open', { filepath })
-        }
-      )
+      const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
+      if (!filepathes) {
+        return
+      }
+      const filepath = filepathes[0]
+      dispatch('scan', { filepath })
     },
-    async open ({ commit, dispatch }, { filepath }) {
-      console.log(filepath)
+    async scan ({ commit, dispatch }, { filepath }) {
       commit('setStatus', { status: Status.progress })
 
-      var t = (new Date()).getTime()
-      // const c = countFiles(filepath, { recursive: true })
-      // console.log((new Date()).getTime() - t)
-      // console.log(c)
-
-      t = (new Date()).getTime()
-      console.log('OK')
       const worker = new Worker()
-      worker.onmessage = (e) => {
-        // console.log((new Date()).getTime() - t)
-        // const dirs = filepath.split(path.sep)
-        // console.log(dirs)
-        // // let dir = filepath
-        // // while (dir = path.dirname(dir)) {
-        // //   console.log(dir)
-        // // }
-        // const obj = {}
-        // objectPath.set(obj, dirs, files)
-        // await wait()
-        const files = e.data
-        console.log(files)
+      worker.onmessage = ({ data }) => {
         commit('setStatus', { status: Status.done })
         commit('setRoot', { root: filepath })
-        commit('setFiles', { files })
+        commit('setFiles', { files: data })
         dispatch('explorer/changeDirectory', { dirpath: filepath })
+        dispatch('showMessage', { message: 'Complete Directory Scan' })
       }
       worker.postMessage(filepath)
     }
