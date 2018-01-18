@@ -70,19 +70,30 @@ export default new Vuex.Store({
       }
       console.log(new Date())
       worker = new Worker()
-      worker.onmessage = ({ data }) => {
-        console.log(new Date())
-        const files = data
-        commit('setStatus', { status: Status.done })
-        commit('setRoot', { root: dirpath })
-        commit('setFiles', { files })
-        console.log(new Date())
-        dispatch('explorer/changeDirectory', { dirpath })
-        console.log(new Date())
-        dispatch('showMessage', { message: 'Complete Directory Scan' })
-        console.log(new Date())
+      worker.onmessage = ({ data: { id, data } }) => {
+        switch (id) {
+          case 'sendCount':
+console.log(data)
+            break
+          case 'sendFiles':
+            console.log('recv')
+            console.log(data)
+            console.log(new Date())
+            // const files = JSON.parse(data)
+            const files = data
+            console.log(new Date())
+            commit('setStatus', { status: Status.done })
+            commit('setRoot', { root: dirpath })
+            commit('setFiles', { files })
+            console.log(new Date())
+            dispatch('explorer/changeDirectory', { dirpath })
+            console.log(new Date())
+            dispatch('showMessage', { message: 'Complete Directory Scan' })
+            console.log(new Date())
+            break
+        }
       }
-      worker.postMessage(dirpath)
+      worker.postMessage({ id: 'requestScan', data: dirpath })
     }
   },
   mutations: {
@@ -96,7 +107,8 @@ export default new Vuex.Store({
       state.root = root
     },
     setFiles (state, { files }) {
-      state.files = files
+
+      state.files = Object.freeze(files)
     },
     setMessage (state, { message }) {
       state.message = message

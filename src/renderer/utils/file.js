@@ -3,22 +3,12 @@ import path from 'path'
 
 export function getFile (filepath) {
   const stats = fs.lstatSync(filepath)
-  const file = {
+  return {
     name: path.basename(filepath),
     path: filepath,
     size: stats.size,
-    isDirectory: stats.isDirectory(),
-    files: []
+    isDirectory: stats.isDirectory()
   }
-  if (!file.isDirectory) {
-    return file
-  }
-  const files = listFiles(file.path)
-  file.size = files.reduce((carry, file) => {
-    return carry + file.size
-  }, 0)
-  file.files = files
-  return file
 }
 
 export function listFiles (dirpath) {
@@ -29,6 +19,14 @@ export function listFiles (dirpath) {
         return carry
       }
       const file = getFile(path.join(dirpath, filename))
+      if (!file.isDirectory) {
+        file.files = []
+      } else {
+        file.files = listFiles(file.path)
+        file.size = file.files.reduce((carry, file) => {
+          return carry + file.size
+        }, 0)
+      }
       return [...carry, file]
     } catch (e) {
       return carry
@@ -36,7 +34,7 @@ export function listFiles (dirpath) {
   }, [])
 }
 
-export function countFiles (dirpath, options = { recursive: false }) {
+export function countFiles (dirpath) {
   const filepathes = fs.readdirSync(dirpath)
   return filepathes.reduce((carry, filename) => {
     try {
@@ -44,11 +42,11 @@ export function countFiles (dirpath, options = { recursive: false }) {
         return carry
       }
       const file = getFile(path.join(dirpath, filename))
-      if (!options.recursive || !file.stats.isDirectory()) {
+      if (!file.isDirectory) {
         return carry + 1
+      } else {
+        return carry + countFiles(file.path)
       }
-      const count = countFiles(file.path, options)
-      return carry + 1 + count
     } catch (e) {
       return carry
     }
