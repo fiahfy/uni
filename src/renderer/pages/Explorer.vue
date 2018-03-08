@@ -14,6 +14,7 @@
       <div>
         <mdc-button @click="selectDirectory">Open</mdc-button>
       </div>
+      <p>{{ time }}</p>
     </template>
   </div>
 </template>
@@ -30,6 +31,16 @@ export default {
     FileList,
     MdcButton,
     MenuBar
+  },
+  data () {
+    return {
+      time: 0
+    }
+  },
+  mounted () {
+    window.setInterval(() => {
+      this.time = new Date()
+    }, 0)
   },
   computed: {
     done () {

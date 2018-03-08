@@ -73,23 +73,29 @@ export default new Vuex.Store({
       worker.onmessage = ({ data: { id, data } }) => {
         switch (id) {
           case 'sendCount':
-console.log(data)
+            console.log(data)
             break
           case 'sendFiles':
+            let i = 10
+            console.log(++i, new Date())
             console.log('recv')
-            console.log(data)
-            console.log(new Date())
-            // const files = JSON.parse(data)
-            const files = data
-            console.log(new Date())
-            commit('setStatus', { status: Status.done })
-            commit('setRoot', { root: dirpath })
-            commit('setFiles', { files })
-            console.log(new Date())
-            dispatch('explorer/changeDirectory', { dirpath })
-            console.log(new Date())
-            dispatch('showMessage', { message: 'Complete Directory Scan' })
-            console.log(new Date())
+            // console.log(data)
+            console.log(++i, new Date())
+            // setTimeout(() => {
+              // console.log(++i, new Date())
+              // const files = JSON.parse(data)
+              // console.log(files)
+              const files = data
+              console.log(++i, new Date())
+              commit('setStatus', { status: Status.done })
+              commit('setRoot', { root: dirpath })
+              commit('setFiles', { files })
+              console.log(++i, new Date())
+              dispatch('explorer/changeDirectory', { dirpath })
+              console.log(++i, new Date())
+              dispatch('showMessage', { message: 'Complete Directory Scan' })
+              console.log(++i, new Date())
+            // }, 100)
             break
         }
       }
@@ -108,7 +114,8 @@ console.log(data)
     },
     setFiles (state, { files }) {
 
-      state.files = Object.freeze(files)
+      // state.files = Object.freeze(files)
+      state.files = files
     },
     setMessage (state, { message }) {
       state.message = message
