@@ -89,6 +89,7 @@ export default new Vuex.Store({
               console.log(++i, new Date())
               commit('setStatus', { status: Status.done })
               commit('setRoot', { root: dirpath })
+              console.log(++i, new Date())
               commit('setFiles', { files })
               console.log(++i, new Date())
               dispatch('explorer/changeDirectory', { dirpath })
@@ -113,9 +114,10 @@ export default new Vuex.Store({
       state.root = root
     },
     setFiles (state, { files }) {
-
-      // state.files = Object.freeze(files)
-      state.files = files
+      console.log(new Date())
+      state.files = Object.freeze(files)
+      // state.files = files
+      console.log(new Date())
     },
     setMessage (state, { message }) {
       state.message = message

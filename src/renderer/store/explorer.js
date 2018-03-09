@@ -249,7 +249,12 @@ export default {
       }
     },
     files (state, getters, rootState) {
-      return rootState.files
+      return rootState.files.map((file) => {
+        return {
+          ...file,
+          files: []
+        }
+      })
     }
   }
 }
