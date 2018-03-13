@@ -10,11 +10,14 @@
       </div>
     </template>
     <template v-else>
-      <p>{{ status }}</p>
       <div>
-        <mdc-button @click="selectDirectory">Open</mdc-button>
+        <p>{{ status }}</p>
+        <div>
+          <mdc-button @click="selectDirectory">Open</mdc-button>
+        </div>
+        <p>{{ time }}</p>
       </div>
-      <p>{{ time }}</p>
+      <graph style="flex: 1;" />
     </template>
   </div>
 </template>
@@ -24,13 +27,15 @@ import { mapActions, mapState } from 'vuex'
 import FileList from '../components/FileList'
 import MdcButton from '../components/MdcButton'
 import MenuBar from '../components/MenuBar'
+import Graph from '../components/Graph'
 import { Status } from '../store'
 
 export default {
   components: {
     FileList,
     MdcButton,
-    MenuBar
+    MenuBar,
+    Graph
   },
   data () {
     return {
@@ -44,11 +49,11 @@ export default {
   },
   computed: {
     done () {
-      return this.status === Status.done
+      return false// this.status === Status.done
     },
-    ...mapState([
-      'status'
-    ]),
+    ...mapState({
+      status: state => state.status
+    }),
     ...mapState('explorer', [
       'error'
     ])

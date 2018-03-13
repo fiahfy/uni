@@ -20,10 +20,10 @@ export function listFiles (dirpath) {
       }
       const file = getFile(path.join(dirpath, filename))
       if (!file.isDirectory) {
-        file.files = []
+        file.children = []
       } else {
-        file.files = listFiles(file.path)
-        file.size = file.files.reduce((carry, file) => {
+        file.children = listFiles(file.path)
+        file.size = file.children.reduce((carry, file) => {
           return carry + file.size
         }, 0)
       }

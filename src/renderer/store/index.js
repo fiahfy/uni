@@ -6,6 +6,8 @@ import router from '../router'
 import explorer from './explorer'
 import settings from './settings'
 import Worker from '../workers/scanner.worker.js'
+import fs from 'fs'
+import path from 'path'
 
 Vue.use(Vuex)
 
@@ -90,7 +92,8 @@ export default new Vuex.Store({
               commit('setStatus', { status: Status.done })
               commit('setRoot', { root: dirpath })
               console.log(++i, new Date())
-              commit('setFiles', { files })
+              // commit('setFiles', { files })
+              fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(files))
               console.log(++i, new Date())
               dispatch('explorer/changeDirectory', { dirpath })
               console.log(++i, new Date())
@@ -126,6 +129,13 @@ export default new Vuex.Store({
   getters: {
     titleBar (state) {
       return process.platform === 'darwin'
+    },
+    files () {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data.json')))
+      } catch (e) {
+        return null
+      }
     }
   },
   modules: {
@@ -135,6 +145,7 @@ export default new Vuex.Store({
   plugins: [
     createPersistedState({
       paths: [
+        'files',
         'settings'
       ]
     })

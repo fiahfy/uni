@@ -8,6 +8,7 @@
     "url": "http://fiahfy.blogspot.com/"
   },
   "dependencies": {
+    "d3": "^4.13.0",
     "electron-devtools-installer": "^2.2.0",
     "electron-window-state": "^4.1.1",
     "is-electron-renderer": "^2.0.1",

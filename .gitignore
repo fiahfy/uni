@@ -39,3 +39,4 @@ node_modules
 /main.js*
 dist
 !.gitkeep
+data.json
