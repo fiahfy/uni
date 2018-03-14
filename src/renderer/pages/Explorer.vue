@@ -1,26 +1,14 @@
 <template>
   <div class="explorer">
-    <template v-if="done">
-      <div class="container">
-        <div
-          v-if="error"
-          class="error"
-        >
-          <span>{{ error.message }}</span>
-        </div>
-      </div>
-    </template>
-    <template v-else>
+    <div>
+      <p>{{ status }}</p>
       <div>
-        <p>{{ status }}</p>
-        <div>
-          <mdc-button @click="selectDirectory">Open</mdc-button>
-          <mdc-button @click="cancel">Cancel</mdc-button>
-        </div>
-        <p>{{ time }}</p>
+        <mdc-button @click="selectDirectory">Open</mdc-button>
+        <mdc-button @click="cancel">Cancel</mdc-button>
       </div>
-      <graph style="flex: 1;" />
-    </template>
+      <p>{{ time }}</p>
+    </div>
+    <graph />
   </div>
 </template>
 
@@ -69,22 +57,12 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  .container {
+  &>div {
+    text-align: center;
+  }
+  .graph {
     flex: 1;
-    overflow-y: auto;
-    position: relative;
-    .message {
-      align-items: center;
-      bottom: 0;
-      color: var(--mdc-theme-text-secondary-on-background);
-      display: flex;
-      justify-content: center;
-      left: 0;
-      pointer-events: none;
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
+    overflow: auto;
   }
 }
 </style>
