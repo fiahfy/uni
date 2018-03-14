@@ -25,7 +25,8 @@ export default new Vuex.Store({
     // directory: '',
     root: '',
     files: [],
-    message: ''
+    message: '',
+    scannedAt: new Date()
   },
   actions: {
     showMessage ({ commit }, { message }) {
@@ -86,24 +87,29 @@ export default new Vuex.Store({
             // setTimeout(() => {
               // console.log(++i, new Date())
               // const files = JSON.parse(data)
-              const files = data
-              console.log(files)
+              let files = data
+              // console.log(files)
               console.log(++i, new Date())
               commit('setStatus', { status: Status.done })
               commit('setRoot', { root: dirpath })
               console.log(++i, new Date())
               // commit('setFiles', { files })
               fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(files))
+              commit('updateScannedAt')
               console.log(++i, new Date())
               // dispatch('explorer/changeDirectory', { dirpath })
               console.log(++i, new Date())
-              dispatch('showMessage', { message: 'Complete Directory Scan' })
+              // dispatch('showMessage', { message: 'Complete Directory Scan' })
               console.log(++i, new Date())
             // }, 100)
             break
         }
       }
       worker.postMessage({ id: 'requestScan', data: dirpath })
+    },
+    cancel () {
+      console.log('call cancel')
+      worker.postMessage({ id: 'requestCancel' })
     }
   },
   mutations: {
@@ -124,13 +130,16 @@ export default new Vuex.Store({
     },
     setMessage (state, { message }) {
       state.message = message
+    },
+    updateScannedAt (state) {
+      state.scannedAt = new Date()
     }
   },
   getters: {
     titleBar (state) {
       return process.platform === 'darwin'
     },
-    files () {
+    getFiles: () => () => {
       try {
         return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data.json')))
       } catch (e) {

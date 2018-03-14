@@ -14,6 +14,7 @@
         <p>{{ status }}</p>
         <div>
           <mdc-button @click="selectDirectory">Open</mdc-button>
+          <mdc-button @click="cancel">Cancel</mdc-button>
         </div>
         <p>{{ time }}</p>
       </div>
@@ -59,7 +60,8 @@ export default {
     ])
   },
   methods: mapActions([
-    'selectDirectory'
+    'selectDirectory',
+    'cancel'
   ])
 }
 </script>

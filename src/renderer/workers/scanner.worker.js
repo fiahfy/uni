@@ -1,17 +1,23 @@
-import { fetch } from '../utils/file'
+import * as scanner from '../utils/scanner'
 
 self.addEventListener('message', ({ data: { id, data } }) => {
+  console.log({ id, data })
+  if (id === 'requestCancel') {
+    console.log('cancel')
+    scanner.cancel()
+    return
+  }
   console.log('Begin scan directory: %s', data)
   console.time('fetch')
-  const node = {}
-  fetch(data, node, () => {
-    self.postMessage({ id: 'sendFiles', data: node })
-    console.log('Worker sent data')
-  }, 5000)
+  scanner.on('progress', () => {
+    console.log('progress')
+    self.postMessage({ id: 'sendFiles', data: scanner.node })
+  })
+  scanner.scan(data)
   console.timeEnd('fetch')
-  self.postMessage({ id: 'sendFiles', data: node })
+  console.log('complete')
+  self.postMessage({ id: 'sendFiles', data: scanner.node })
   console.log('Worker sent data')
-
   // console.log(new Date())
   // const j = Uint8Array.from([files])
   // console.log(j)

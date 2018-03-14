@@ -5,53 +5,59 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import * as d3 from 'd3'
 
 export default {
   computed: {
     ...mapGetters({
-      files: 'files'
+      getFiles: 'getFiles'
+    }),
+    ...mapState({
+      scannedAt: state => state.scannedAt
     })
   },
   mounted () {
+    const width = 960
+    const height = 700
+    const radius = Math.min(width, height) / 2
+    this.color = d3.scaleOrdinal(d3.schemeCategory20)
+
+    this.svg = d3.select(this.$el.querySelector('svg'))
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${width / 2},${height / 2})`)
+
+    this.partition = d3.partition()
+
+    this.x = d3.scaleLinear()
+      .range([0, 2 * Math.PI])
+
+    this.y = d3.scaleSqrt()
+      .range([0, radius])
+    this.arc = d3.arc()
+      .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
+      .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
+      .innerRadius((d) => Math.max(0, this.y(d.y0)))
+      .outerRadius((d) => Math.max(0, this.y(d.y1)))
+
     this.update()
   },
   watch: {
-    files () {
-      this.update()
+    scannedAt () {
+      this.update(true)
     }
   },
   methods: {
-    update () {
-      if (!this.files) {
+    update (redraw = false) {
+      const files = this.getFiles()
+      console.log(files)
+
+      if (!files) {
         return
       }
-      const data = this.files
-
-      const width = 960
-      const height = 700
-      const radius = Math.min(width, height) / 2
-      const color = d3.scaleOrdinal(d3.schemeCategory20)
-
-      const svg = d3.select(this.$el.querySelector('svg'))
-        .attr('width', width)
-        .attr('height', height)
-        .append('g')
-        .attr('transform', `translate(${width / 2},${height / 2})`)
-
-      const partition = d3.partition()
-
-      const x = d3.scaleLinear()
-        .range([0, 2 * Math.PI])
-
-      const y = d3.scaleSqrt()
-        .range([0, radius])
-      const arc = d3.arc()
-        .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
-        .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
-        .innerRadius((d) => Math.max(0, y(d.y0)))
-        .outerRadius((d) => Math.max(0, y(d.y1)))
+      const data = files
 
       const root = d3.hierarchy(data)
         .sum((d) => d.size)
@@ -72,7 +78,7 @@ export default {
         .sum((d) => d.size)
 
       let depth = 0
-      const fill = (d) => { return d.depth > depth ? color((d.children ? d : d.parent).data.name) : '#fcc' }
+      const fill = (d) => { return d.depth > depth ? this.color((d.children ? d : d.parent).data.name) : '#fcc' }
       const click = (d) => {
         if (!d.children) {
           return
@@ -82,32 +88,41 @@ export default {
         }
         depth = d.depth
 
-        svg.transition()
+        this.svg.transition()
           .duration(750)
           .tween('scale', () => {
-            let xd = d3.interpolate(x.domain(), [d.x0, d.x1])
-            let yd = d3.interpolate(y.domain(), [d.y0, 1])
-            let yr = d3.interpolate(y.range(), [0, radius])
+            let xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+            let yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+            let yr = d3.interpolate(this.y.range(), [0, this.radius])
             return (t) => {
-              x.domain(xd(t))
-              y.domain(yd(t)).range(yr(t))
+              this.x.domain(xd(t))
+              this.y.domain(yd(t)).range(yr(t))
             }
           })
           .selectAll('path')
-          .attrTween('d', (d) => () => arc(d))
+          .attrTween('d', (d) => () => this.arc(d))
           .style('fill', fill)
       }
 
+      if (redraw) {
+        console.log('redraw')
+        console.log(root)
+        this.svg.selectAll('path')
+          .data(this.partition(root).descendants())
+        click(root)
+        return
+      }
+
       console.log('Begin rendering ' + ('00' + (new Date()).getMinutes()).slice(-2) + ':' + ('00' + (new Date()).getSeconds()).slice(-2))
-      svg.selectAll('path')
-        .data(partition(root).descendants())
+      this.svg.selectAll('path')
+        .data(this.partition(root).descendants())
         .enter().append('path')
         // .attr('display', (d) => {
         //   // console.log((d.value / size))
         //   // return 'none'
         //   return d.value / size < 0.01 ? 'none' : null
         // })
-        .attr('d', arc)
+        .attr('d', this.arc)
         .style('stroke', 'white')
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
