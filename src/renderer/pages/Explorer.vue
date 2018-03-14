@@ -3,8 +3,9 @@
     <template v-if="done">
       <div class="container">
         <div
+          v-if="error"
           class="error"
-          v-if="error">
+        >
           <span>{{ error.message }}</span>
         </div>
       </div>
@@ -40,11 +41,6 @@ export default {
       time: 0
     }
   },
-  mounted () {
-    window.setInterval(() => {
-      this.time = new Date()
-    }, 0)
-  },
   computed: {
     done () {
       return false// this.status === Status.done
@@ -55,6 +51,11 @@ export default {
     ...mapState('explorer', [
       'error'
     ])
+  },
+  mounted () {
+    window.setInterval(() => {
+      this.time = new Date()
+    }, 0)
   },
   methods: mapActions([
     'selectDirectory',
