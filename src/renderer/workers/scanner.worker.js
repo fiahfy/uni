@@ -1,15 +1,17 @@
-import { listFiles, countFiles } from '../utils/file'
+import { fetch } from '../utils/file'
 
 self.addEventListener('message', ({ data: { id, data } }) => {
   console.log('Begin scan directory: %s', data)
-  let i = 0
-  console.log(++i, new Date())
-  // const count = countFiles(data)
-  // console.log(++i, new Date())
-  // self.postMessage({ id: 'sendCount', data: count })
-  // console.log(++i, new Date())
-  const files = listFiles(data)
-  console.log(++i, new Date())
+  console.time('fetch')
+  const node = {}
+  fetch(data, node, () => {
+    self.postMessage({ id: 'sendFiles', data: node })
+    console.log('Worker sent data')
+  }, 5000)
+  console.timeEnd('fetch')
+  self.postMessage({ id: 'sendFiles', data: node })
+  console.log('Worker sent data')
+
   // console.log(new Date())
   // const j = Uint8Array.from([files])
   // console.log(j)
@@ -27,7 +29,4 @@ self.addEventListener('message', ({ data: { id, data } }) => {
   // console.log(d)
   // const json = JSON.stringify(d)
   // console.log(++i, new Date())
-
-  self.postMessage({ id: 'sendFiles', data: files })
-  console.log(++i, new Date())
 })

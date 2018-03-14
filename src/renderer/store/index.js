@@ -86,8 +86,8 @@ export default new Vuex.Store({
             // setTimeout(() => {
               // console.log(++i, new Date())
               // const files = JSON.parse(data)
-              // console.log(files)
               const files = data
+              console.log(files)
               console.log(++i, new Date())
               commit('setStatus', { status: Status.done })
               commit('setRoot', { root: dirpath })
@@ -95,7 +95,7 @@ export default new Vuex.Store({
               // commit('setFiles', { files })
               fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(files))
               console.log(++i, new Date())
-              dispatch('explorer/changeDirectory', { dirpath })
+              // dispatch('explorer/changeDirectory', { dirpath })
               console.log(++i, new Date())
               dispatch('showMessage', { message: 'Complete Directory Scan' })
               console.log(++i, new Date())
@@ -145,7 +145,6 @@ export default new Vuex.Store({
   plugins: [
     createPersistedState({
       paths: [
-        'files',
         'settings'
       ]
     })

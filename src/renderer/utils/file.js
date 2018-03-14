@@ -1,6 +1,31 @@
 import fs from 'fs'
 import path from 'path'
 
+let time = 0
+
+export function fetch (filepath, node, progress, interval) {
+  const now = (new Date()).getTime()
+  if (now - time > interval) {
+    progress()
+    time = now
+  }
+  const stats = fs.lstatSync(filepath)
+  if (stats.isFile()) {
+    node.name = path.basename(filepath)
+    node.size = stats.size
+    return
+  }
+  if (stats.isDirectory()) {
+    node.name = path.basename(filepath)
+    node.children = []
+    fs.readdirSync(filepath).forEach((filename) => {
+      const childNode = {}
+      node.children.push(childNode)
+      fetch(path.join(filepath, filename), childNode, progress, interval)
+    })
+  }
+}
+
 export function getFile (filepath) {
   const stats = fs.lstatSync(filepath)
   return {
@@ -18,14 +43,17 @@ export function listFiles (dirpath) {
       if (filename.match(/^\./)) {
         return carry
       }
-      const file = getFile(path.join(dirpath, filename))
-      if (!file.isDirectory) {
-        file.children = []
+      const stats = fs.lstatSync(path.join(dirpath, filename))
+      const file = {
+        name: filename
+      }
+      if (!stats.isDirectory()) {
+        file.size = stats.size
       } else {
-        file.children = listFiles(file.path)
-        file.size = file.children.reduce((carry, file) => {
-          return carry + file.size
-        }, 0)
+        file.children = listFiles(path.join(dirpath, filename))
+        // file.size = file.children.reduce((carry, file) => {
+        //   return carry + file.size
+        // }, 0)
       }
       return [...carry, file]
     } catch (e) {
