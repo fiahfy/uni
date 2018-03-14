@@ -1,12 +1,12 @@
 <template>
   <div class="explorer">
     <template v-if="done">
-      <menu-bar />
       <div class="container">
-        <div class="error" v-if="error">
+        <div
+          class="error"
+          v-if="error">
           <span>{{ error.message }}</span>
         </div>
-        <file-list />
       </div>
     </template>
     <template v-else>
@@ -25,17 +25,14 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import FileList from '../components/FileList'
 import MdcButton from '../components/MdcButton'
-import MenuBar from '../components/MenuBar'
 import Graph from '../components/Graph'
-import { Status } from '../store'
+// import { Status } from '../store'
 
 export default {
   components: {
     FileList,
     MdcButton,
-    MenuBar,
     Graph
   },
   data () {
@@ -71,27 +68,22 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-.container {
-  flex: 1;
-  height: 100%;
-  overflow-y: auto;
-  position: relative;
-}
-.error {
-  bottom: 0;
-  display: table;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  vertical-align: middle;
-  width: 100%;
-  span {
-    display: table-cell;
-    text-align: center;
-    vertical-align: middle;
+  .container {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    .message {
+      align-items: center;
+      bottom: 0;
+      color: var(--mdc-theme-text-secondary-on-background);
+      display: flex;
+      justify-content: center;
+      left: 0;
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
   }
 }
 </style>

@@ -17,10 +17,15 @@ export default {
       scannedAt: state => state.scannedAt
     })
   },
+  watch: {
+    scannedAt () {
+      this.update(true)
+    }
+  },
   mounted () {
     const width = 960
     const height = 700
-    const radius = Math.min(width, height) / 2
+    this.radius = Math.min(width, height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
 
     this.svg = d3.select(this.$el.querySelector('svg'))
@@ -35,7 +40,7 @@ export default {
       .range([0, 2 * Math.PI])
 
     this.y = d3.scaleSqrt()
-      .range([0, radius])
+      .range([0, this.radius])
     this.arc = d3.arc()
       .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
       .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
@@ -44,15 +49,15 @@ export default {
 
     this.update()
   },
-  watch: {
-    scannedAt () {
-      this.update(true)
-    }
-  },
   methods: {
     update (redraw = false) {
       const files = this.getFiles()
       console.log(files)
+
+      if (redraw) {
+        console.log(this.$el.querySelectorAll('path'))
+        Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
+      }
 
       if (!files) {
         return
@@ -91,9 +96,9 @@ export default {
         this.svg.transition()
           .duration(750)
           .tween('scale', () => {
-            let xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-            let yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-            let yr = d3.interpolate(this.y.range(), [0, this.radius])
+            const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+            const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+            const yr = d3.interpolate(this.y.range(), [0, this.radius])
             return (t) => {
               this.x.domain(xd(t))
               this.y.domain(yd(t)).range(yr(t))
@@ -102,15 +107,6 @@ export default {
           .selectAll('path')
           .attrTween('d', (d) => () => this.arc(d))
           .style('fill', fill)
-      }
-
-      if (redraw) {
-        console.log('redraw')
-        console.log(root)
-        this.svg.selectAll('path')
-          .data(this.partition(root).descendants())
-        click(root)
-        return
       }
 
       console.log('Begin rendering ' + ('00' + (new Date()).getMinutes()).slice(-2) + ':' + ('00' + (new Date()).getSeconds()).slice(-2))

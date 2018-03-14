@@ -3,7 +3,9 @@
     <h4>General</h4>
     <div>
       <mdc-form-field>
-        <mdc-checkbox id="dark-theme" v-model="darkTheme" />
+        <mdc-checkbox
+          id="dark-theme"
+          v-model="darkTheme" />
         <label for="dark-theme">Use dark theme</label>
       </mdc-form-field>
     </div>
@@ -11,7 +13,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import MdcCheckbox from '../components/MdcCheckbox'
 import MdcFormField from '../components/MdcFormField'
 
@@ -36,10 +37,16 @@ export default {
 <style scoped lang="scss">
 .settings {
   margin: 15px;
-  text-align: left;
-  user-select: none;
-}
-.settings>div {
-  margin-top: 16px;
+  h4 {
+    color: var(--mdc-theme-text-secondary-on-background);
+  }
+  label {
+    cursor: pointer;
+  }
+  .mdc-checkbox {
+    & /deep/ .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate) ~ .mdc-checkbox__background {
+      border-color: var(--mdc-theme-text-secondary-on-background);
+    }
+  }
 }
 </style>

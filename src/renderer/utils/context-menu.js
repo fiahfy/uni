@@ -1,65 +1,53 @@
-import { clipboard, remote } from 'electron'
+import { remote } from 'electron'
 
 const { Menu } = remote
 
-function inspectElementTemplate (e) {
+const appendInspectElementMenu = (e, template) => {
   const { clientX: x, clientY: y } = e
 
-  return [
-    { type: 'separator' },
-    {
-      label: 'Inspect Element',
-      click: () => {
-        remote.getCurrentWindow().inspectElement(x, y)
-      }
+  if (template.length) {
+    template = template.concat([{ type: 'separator' }])
+  }
+  return template.concat([{
+    label: 'Inspect Element',
+    click: () => {
+      remote.getCurrentWindow().inspectElement(x, y)
     }
-  ]
+  }])
 }
 
-export const LABEL_CUT = 'Cut'
-export const LABEL_COPY = 'Copy'
-export const LABEL_PASTE = 'Paste'
+export const Role = {
+  cut: 'Cut',
+  copy: 'Copy',
+  paste: 'Paste'
+}
 
-export function show (e, template = []) {
+export const show = (e, template = []) => {
   e.preventDefault()
   e.stopPropagation()
 
   if (process.env.NODE_ENV !== 'production') {
-    template = template.concat(inspectElementTemplate(e))
+    template = appendInspectElementMenu(e, template)
   }
 
   template = template.map((item) => {
-    switch (item.label) {
-      case LABEL_CUT:
+    switch (item.role) {
+      case Role.cut:
         return {
-          label: item.label,
-          click: () => {
-            const text = e.target.value.slice(e.target.selectionStart, e.target.selectionEnd)
-            clipboard.writeText(text)
-            const position = e.target.selectionStart
-            e.target.value = e.target.value.slice(0, e.target.selectionStart) + e.target.value.slice(e.target.selectionEnd)
-            e.target.setSelectionRange(position, position)
-          },
+          label: item.role,
+          click: () => document.execCommand('cut'),
           accelerator: 'CmdOrCtrl+X'
         }
-      case LABEL_COPY:
+      case Role.copy:
         return {
-          label: item.label,
-          click: () => {
-            const text = e.target.value.slice(e.target.selectionStart, e.target.selectionEnd)
-            clipboard.writeText(text)
-          },
+          label: item.role,
+          click: () => document.execCommand('copy'),
           accelerator: 'CmdOrCtrl+C'
         }
-      case LABEL_PASTE:
+      case Role.paste:
         return {
-          label: item.label,
-          click: () => {
-            const text = clipboard.readText()
-            const position = e.target.selectionStart + text.length
-            e.target.value = e.target.value.slice(0, e.target.selectionStart) + text + e.target.value.slice(e.target.selectionEnd)
-            e.target.setSelectionRange(position, position)
-          },
+          label: item.role,
+          click: () => document.execCommand('paste'),
           accelerator: 'CmdOrCtrl+V'
         }
       default:

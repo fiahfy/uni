@@ -1,10 +1,11 @@
 import { BrowserWindow } from 'electron'
 import windowStateKeeper from 'electron-window-state'
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import MenuBuilder from './menu-builder'
 
 export default class Window {
-  constructor (application) {
-    this.application = application
+  constructor (app) {
+    this.app = app
   }
   open () {
     const windowState = windowStateKeeper({
@@ -20,26 +21,33 @@ export default class Window {
       }
     }
 
-    this.browserWindow = new BrowserWindow(options)
-    this.browserWindow.loadURL(`file://${__dirname}/app/index.html`)
+    this.win = new BrowserWindow(options)
+    this.win.loadURL(`file://${__dirname}/app/index.html`)
 
-    windowState.manage(this.browserWindow)
+    windowState.manage(this.win)
 
-    const builder = new MenuBuilder(this.browserWindow)
+    const builder = new MenuBuilder(this)
     builder.build()
 
-    this.handleEvents()
+    if (process.env.NODE_ENV !== 'production') {
+      this.setupDevTools()
+    }
+    this.addEventListeners()
   }
-  handleEvents () {
-    this.browserWindow.on('closed', () => {
-      this.browserWindow = null
-      this.application.removeWindow()
+  addEventListeners () {
+    this.win.on('closed', () => {
+      this.win = null
+      this.app.removeWindow()
     })
-    this.browserWindow.on('enter-full-screen', () => {
-      this.browserWindow.webContents.send('enterFullScreen')
-    })
-    this.browserWindow.on('leave-full-screen', () => {
-      this.browserWindow.webContents.send('leaveFullScreen')
-    })
+  }
+  setupDevTools () {
+    installExtension(VUEJS_DEVTOOLS)
+      .catch((err) => {
+        console.log('Unable to install `vue-devtools`: \n', err) // eslint-disable-line no-console
+      })
+    this.win.openDevTools()
+  }
+  sendMessage (channel) {
+    this.win.webContents.send(channel)
   }
 }

@@ -1,7 +1,7 @@
 # electron-disk-analyzer
 [![Build Status](https://travis-ci.org/fiahfy/electron-disk-analyzer.svg?branch=master)](https://travis-ci.org/fiahfy/electron-disk-analyzer)
 
-Simple Image Viewer based on Electron.
+> Simple Image Viewer based on Electron.
 
 
 ## Features
@@ -25,9 +25,10 @@ https://github.com/fiahfy/electron-disk-analyzer/releases
 
 
 ## Development
-```
-$ git clone https://github.com/fiahfy/electron-disk-analyzer.git
-$ cd electron-disk-analyzer
-$ yarn
-$ yarn dev
+``` bash
+# install dependencies
+yarn
+
+# serve with hot reload
+yarn dev
 ```

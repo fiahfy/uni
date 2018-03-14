@@ -1,7 +1,12 @@
-import { ipcRenderer } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 
 export function addRendererListeners (store) {
-  ipcRenderer.on('open', (event, { filepath }) => {
+  ipcRenderer.on('open', () => {
+    const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
+    if (!filepathes) {
+      return
+    }
+    const filepath = filepathes[0]
     store.dispatch('scan', { dirpath: filepath })
   })
   ipcRenderer.on('showExplorer', () => {
