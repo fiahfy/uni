@@ -74,7 +74,7 @@ export default {
       const files = this.getFiles()
 
       if (redraw) {
-        Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
+        // Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
       }
 
       if (!files) {
@@ -130,16 +130,27 @@ export default {
           .style('fill', fill)
       }
 
+      if (redraw) {
+        // this.svg.selectAll('path')
+        // .data(this.partition(root).descendants(),)
+        // return
+      }
+
       console.time('rendering')
-      this.svg.selectAll('path')
-        .data(this.partition(root).descendants())
+      const path = this.svg.selectAll('path')
+        .data(this.partition(root).descendants(), (d) => d.depth + d.name)
+
+      path
         .enter().append('path')
+        .merge(path)
         .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
         .attr('d', this.arc)
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
         .on('mouseover', this.mouseover)
         .on('click', click)
+
+      path.exit().remove()
       console.timeEnd('rendering')
     },
     mouseover (d) {
