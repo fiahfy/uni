@@ -2,7 +2,10 @@
   <div class="graph">
     <div>
       <ul>
-        <li v-for="name of names" :key="name">{{ name }}</li>
+        <li
+          v-for="name of names"
+          :key="name"
+        >{{ name }}</li>
       </ul>
       <div class="info">
         {{ size }} ({{ (rate * 100).toFixed(2) }} %)
@@ -176,4 +179,3 @@ svg path {
   }
 }
 </style>
-
