@@ -1,6 +1,11 @@
 <template>
   <div class="graph">
-    <svg />
+    <ul>
+      <li v-for="name of names" :key="name">{{ name }}</li>
+    </ul>
+    <div class="sunburst">
+      <svg />
+    </div>
   </div>
 </template>
 
@@ -9,6 +14,11 @@ import { mapState, mapGetters } from 'vuex'
 import * as d3 from 'd3'
 
 export default {
+  data () {
+    return {
+      names: []
+    }
+  },
   computed: {
     ...mapGetters({
       getFiles: 'getFiles'
@@ -23,7 +33,7 @@ export default {
     }
   },
   mounted () {
-    const width = 960
+    const width = 700
     const height = 700
     this.radius = Math.min(width, height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
@@ -52,10 +62,8 @@ export default {
   methods: {
     update (redraw = false) {
       const files = this.getFiles()
-      console.log(files)
 
       if (redraw) {
-        console.log(this.$el.querySelectorAll('path'))
         Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
       }
 
@@ -83,7 +91,7 @@ export default {
         .sum((d) => d.size)
 
       let depth = 0
-      const fill = (d) => { return d.depth > depth ? this.color((d.children ? d : d.parent).data.name) : '#fcc' }
+      const fill = (d) => this.color((d.children ? d : d.parent).data.name)
       const click = (d) => {
         if (!d.children) {
           return
@@ -109,31 +117,38 @@ export default {
           .style('fill', fill)
       }
 
-      console.log('Begin rendering ' + ('00' + (new Date()).getMinutes()).slice(-2) + ':' + ('00' + (new Date()).getSeconds()).slice(-2))
+      console.time('rendering')
       this.svg.selectAll('path')
         .data(this.partition(root).descendants())
         .enter().append('path')
-        // .attr('display', (d) => {
-        //   // console.log((d.value / size))
-        //   // return 'none'
-        //   return d.value / size < 0.01 ? 'none' : null
-        // })
+        .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
         .attr('d', this.arc)
-        .style('stroke', 'white')
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
         .on('mouseover', function (d) {
           // console.log(d.data.name, d)
         })
         .on('click', click)
-      console.log('End rendering ' + ('00' + (new Date()).getMinutes()).slice(-2) + ':' + ('00' + (new Date()).getSeconds()).slice(-2))
+      console.timeEnd('rendering')
     }
   }
 }
 </script>
 
-<style scoped>
-svg {
-
+<style lang="scss">
+svg path {
+  stroke: var(--mdc-theme-background);
 }
 </style>
+
+<style scoped lang="scss">
+.graph {
+  display: flex;
+  flex-direction: column;
+  .sunburst {
+    flex: 1;
+    overflow: scroll;
+  }
+}
+</style>
+

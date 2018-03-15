@@ -16,8 +16,11 @@ export function scan (filepath) {
   canceled = false
   time = (new Date()).getTime()
   node = current = {}
-  scanFile(filepath)
-  scanning = false
+  setTimeout(() => {
+    scanFile(filepath)
+    scanning = false
+    send('complete')
+  })
 }
 
 export function cancel () {

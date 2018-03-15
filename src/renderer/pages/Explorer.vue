@@ -62,7 +62,6 @@ export default {
   }
   .graph {
     flex: 1;
-    overflow: auto;
   }
 }
 </style>

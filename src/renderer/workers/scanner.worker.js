@@ -11,13 +11,17 @@ self.addEventListener('message', ({ data: { id, data } }) => {
   console.time('fetch')
   scanner.on('progress', () => {
     console.log('progress')
-    self.postMessage({ id: 'sendFiles', data: scanner.node })
+    self.postMessage({ id: 'prepare' })
+    self.postMessage({ id: 'progress', data: scanner.node })
+  })
+  scanner.on('complete', () => {
+    console.timeEnd('fetch')
+    console.log('complete')
+    self.postMessage({ id: 'prepare' })
+    self.postMessage({ id: 'complete', data: scanner.node })
   })
   scanner.scan(data)
-  console.timeEnd('fetch')
-  console.log('complete')
-  self.postMessage({ id: 'sendFiles', data: scanner.node })
-  console.log('Worker sent data')
+
   // console.log(new Date())
   // const j = Uint8Array.from([files])
   // console.log(j)

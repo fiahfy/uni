@@ -64,7 +64,6 @@ export default {
 
 <style scoped lang="scss">
 .activity-bar {
-  overflow: hidden;
   width: 48px;
   ul {
     list-style: none;
@@ -80,9 +79,6 @@ export default {
         padding: 12px;
         &:not(.selected) {
           color: var(--mdc-theme-text-icon-on-background);
-          &:hover {
-            color: inherit;
-          }
         }
       }
     }

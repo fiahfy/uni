@@ -21,11 +21,9 @@ export const Status = {
 
 export default new Vuex.Store({
   state: {
-    status: Status.notYet,
-    // directory: '',
-    root: '',
-    files: [],
     message: '',
+    status: Status.notYet,
+    root: '',
     scannedAt: new Date()
   },
   actions: {
@@ -67,69 +65,44 @@ export default new Vuex.Store({
     },
     async scan ({ commit, dispatch }, { dirpath }) {
       commit('setStatus', { status: Status.progress })
+      commit('setRoot', { root: dirpath })
 
       if (worker) {
         worker.terminate()
       }
-      console.log(new Date())
       worker = new Worker()
       worker.onmessage = ({ data: { id, data } }) => {
-        switch (id) {
-          case 'sendCount':
-            console.log(data)
-            break
-          case 'sendFiles':
-            let i = 10
-            console.log(++i, new Date())
-            console.log('recv')
-            // console.log(data)
-            console.log(++i, new Date())
-            // setTimeout(() => {
-            // console.log(++i, new Date())
-            // const files = JSON.parse(data)
-            let files = data
-            // console.log(files)
-            console.log(++i, new Date())
-            commit('setStatus', { status: Status.done })
-            commit('setRoot', { root: dirpath })
-            console.log(++i, new Date())
-            // commit('setFiles', { files })
-            fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(files))
-            commit('updateScannedAt')
-            console.log(++i, new Date())
-            // dispatch('explorer/changeDirectory', { dirpath })
-            console.log(++i, new Date())
-            // dispatch('showMessage', { message: 'Complete Directory Scan' })
-            console.log(++i, new Date())
-            // }, 100)
-            break
+        if (id === 'prepare') {
+          console.time('worker sent data')
+          return
         }
+        console.timeEnd('worker sent data')
+        if (id === 'complete') {
+          commit('setStatus', { status: Status.done })
+        }
+        console.time('write to file')
+        fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(data))
+        console.timeEnd('write to file')
+        commit('updateScannedAt')
       }
       worker.postMessage({ id: 'requestScan', data: dirpath })
     },
-    cancel () {
-      console.log('call cancel')
-      worker.postMessage({ id: 'requestCancel' })
+    cancel ({ commit }) {
+      commit('setStatus', { status: Status.done })
+      if (worker) {
+        worker.terminate()
+      }
     }
   },
   mutations: {
-    // setDirectory (state, { directory }) {
-    //   state.directory = directory
-    // },
+    setMessage (state, { message }) {
+      state.message = message
+    },
     setStatus (state, { status }) {
       state.status = status
     },
     setRoot (state, { root }) {
       state.root = root
-    },
-    setFiles (state, { files }) {
-      console.log(new Date())
-      state.files = Object.freeze(files)
-      // state.files = files
-      console.log(new Date())
-    },
-    setMessage (state, { message }) {
-      state.message = message
     },
     updateScannedAt (state) {
       state.scannedAt = new Date()
