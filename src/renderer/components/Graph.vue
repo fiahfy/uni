@@ -1,8 +1,13 @@
 <template>
   <div class="graph">
-    <ul>
-      <li v-for="name of names" :key="name">{{ name }}</li>
-    </ul>
+    <div>
+      <ul>
+        <li v-for="name of names" :key="name">{{ name }}</li>
+      </ul>
+      <div class="info">
+        {{ size }} ({{ (rate * 100).toFixed(2) }} %)
+      </div>
+    </div>
     <div class="sunburst">
       <svg />
     </div>
@@ -16,7 +21,9 @@ import * as d3 from 'd3'
 export default {
   data () {
     return {
-      names: []
+      names: [],
+      size: 0,
+      rate: 0
     }
   },
   computed: {
@@ -74,6 +81,9 @@ export default {
 
       const root = d3.hierarchy(data)
         .sum((d) => d.size)
+        .each((d) => {
+          d.data.sum = d.value
+        })
       root
         .each((d) => {
           if (d.depth === 0) {
@@ -125,11 +135,15 @@ export default {
         .attr('d', this.arc)
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
-        .on('mouseover', function (d) {
-          // console.log(d.data.name, d)
-        })
+        .on('mouseover', this.mouseover)
         .on('click', click)
       console.timeEnd('rendering')
+    },
+    mouseover (d) {
+      this.names = d.ancestors().reverse().map((d) => d.data.name)
+      const ancestor = d.ancestors().reverse()[0]
+      this.size = d.data.sum
+      this.rate = d.data.sum / ancestor.data.sum
     }
   }
 }
@@ -145,6 +159,17 @@ svg path {
 .graph {
   display: flex;
   flex-direction: column;
+  ul {
+    padding: 0;
+    li {
+      display: inline-block;
+      list-style: none;
+      margin: 8px;
+    }
+  }
+  .info {
+    margin: 8px;
+  }
   .sunburst {
     flex: 1;
     overflow: scroll;

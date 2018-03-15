@@ -1,6 +1,6 @@
 <template>
   <div class="explorer">
-    <div>
+    <div class="menu">
       <p>{{ status }}</p>
       <div>
         <mdc-button @click="selectDirectory">Open</mdc-button>
@@ -57,7 +57,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  &>div {
+  .menu {
     text-align: center;
   }
   .graph {
