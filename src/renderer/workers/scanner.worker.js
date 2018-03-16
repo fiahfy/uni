@@ -1,4 +1,8 @@
 import * as scanner from '../utils/scanner'
+import fs from 'fs'
+import path from 'path'
+
+const dataPath = path.join(process.cwd(), 'data.json')
 
 self.addEventListener('message', ({ data: { id, data } }) => {
   console.log({ id, data })
@@ -10,15 +14,15 @@ self.addEventListener('message', ({ data: { id, data } }) => {
   console.log('Begin scan directory: %s', data)
   console.time('fetch')
   scanner.on('progress', () => {
-    console.log('progress')
-    self.postMessage({ id: 'prepare' })
-    self.postMessage({ id: 'progress', data: scanner.node })
+    console.log('progress', scanner.current)
+    fs.writeFileSync(dataPath, JSON.stringify(scanner.node))
+    self.postMessage({ id: 'progress' })
   })
   scanner.on('complete', () => {
     console.timeEnd('fetch')
     console.log('complete')
-    self.postMessage({ id: 'prepare' })
-    self.postMessage({ id: 'complete', data: scanner.node })
+    fs.writeFileSync(dataPath, JSON.stringify(scanner.node))
+    self.postMessage({ id: 'complete' })
   })
   scanner.scan(data)
 

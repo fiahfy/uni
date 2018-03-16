@@ -72,17 +72,9 @@ export default new Vuex.Store({
       }
       worker = new Worker()
       worker.onmessage = ({ data: { id, data } }) => {
-        if (id === 'prepare') {
-          console.time('worker sent data')
-          return
-        }
-        console.timeEnd('worker sent data')
         if (id === 'complete') {
           commit('setStatus', { status: Status.done })
         }
-        console.time('write to file')
-        fs.writeFileSync(path.join(process.cwd(), 'data.json'), JSON.stringify(data))
-        console.timeEnd('write to file')
         commit('updateScannedAt')
       }
       worker.postMessage({ id: 'requestScan', data: dirpath })
