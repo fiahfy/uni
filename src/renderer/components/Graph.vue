@@ -80,7 +80,6 @@ export default {
   },
   methods: {
     update (redraw = false) {
-      return
       const files = this.getFiles()
 
       if (redraw) {
