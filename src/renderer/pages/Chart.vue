@@ -34,7 +34,7 @@ export default {
       return false// this.status === Status.done
     },
     ...mapState({
-      status: state => state.status
+      status: state => state.chart.status
     }),
     ...mapState('explorer', [
       'error'
@@ -45,10 +45,10 @@ export default {
       this.time = new Date()
     }, 0)
   },
-  methods: mapActions([
-    'selectDirectory',
-    'cancel'
-  ])
+  methods: mapActions({
+    selectDirectory: 'selectDirectory',
+    cancel: 'cancel'
+  })
 }
 </script>
 

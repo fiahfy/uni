@@ -3,31 +3,14 @@ import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 import { remote } from 'electron'
 import router from '../router'
-import explorer from './explorer'
+import chart from './chart'
 import settings from './settings'
-import Worker from '../workers/scanner.worker.js'
-import fs from 'fs'
-import path from 'path'
 
 Vue.use(Vuex)
 
-let worker
-
-export const Status = {
-  notYet: 'NOT_YET',
-  progress: 'PROGRESS',
-  done: 'DONE'
-}
-
 export default new Vuex.Store({
   state: {
-    message: '',
-    status: Status.notYet,
-    root: '',
-    scannedAt: new Date(),
-    currentFilepath: '',
-    start: null,
-    end: null
+    message: ''
   },
   actions: {
     showMessage ({ commit }, { message }) {
@@ -64,95 +47,30 @@ export default new Vuex.Store({
         return
       }
       const filepath = filepathes[0]
-      dispatch('scan', { dirpath: filepath })
+      dispatch('chart/scan', { dirpath: filepath })
     },
-    async scan ({ commit, dispatch }, { dirpath }) {
-      commit('setStatus', { status: Status.progress })
-      commit('setRoot', { root: dirpath })
-      commit('start')
-
-      if (worker) {
-        worker.terminate()
-      }
-      worker = new Worker()
-      worker.onmessage = ({ data: { id, data } }) => {
-        switch (id) {
-          case 'progress':
-            commit('setCurrentFilepath', { currentFilepath: data })
-            break
-          case 'refresh':
-            commit('updateScannedAt')
-            break
-          case 'complete':
-            commit('end')
-            commit('setStatus', { status: Status.done })
-            commit('updateScannedAt')
-            break
-        }
-      }
-      worker.postMessage({ id: 'requestScan', data: dirpath })
-    },
-    cancel ({ commit }) {
-      commit('setStatus', { status: Status.done })
-      if (worker) {
-        worker.terminate()
-      }
+    cancel ({ dispatch }) {
+      dispatch('chart/cancel')
     }
   },
   mutations: {
     setMessage (state, { message }) {
       state.message = message
-    },
-    setStatus (state, { status }) {
-      state.status = status
-    },
-    setRoot (state, { root }) {
-      state.root = root
-    },
-    updateScannedAt (state) {
-      state.scannedAt = new Date()
-    },
-    setCurrentFilepath (state, { currentFilepath }) {
-      state.currentFilepath = currentFilepath
-    },
-    start (state) {
-      state.start = new Date()
-    },
-    end (state) {
-      state.end = new Date()
     }
   },
   getters: {
     titleBar (state) {
       return process.platform === 'darwin'
-    },
-    getNode: () => () => {
-      try {
-        console.time('read file')
-        const json = fs.readFileSync(path.join(process.cwd(), 'data.json'))
-        console.timeEnd('read file')
-        console.time('parse')
-        const data = JSON.parse(json)
-        console.timeEnd('parse')
-        return data
-      } catch (e) {
-        return null
-      }
-    },
-    getElapsedTime: (state) => () => {
-      if (!state.start) {
-        return null
-      }
-      return (new Date()).getTime() - state.start.getTime()
     }
   },
   modules: {
-    explorer,
+    chart,
     settings
   },
   plugins: [
     createPersistedState({
       paths: [
+        'chart',
         'settings'
       ]
     })

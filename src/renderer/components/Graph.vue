@@ -5,9 +5,9 @@
       <div>{{ time }} sec</div>
       <ul>
         <li
-          v-for="name of names"
-          :key="name"
-        >{{ name }}</li>
+          v-for="(p, index) of pathes"
+          :key="index"
+        >{{ p }}</li>
       </ul>
       <div class="info">
         {{ size }} ({{ (rate * 100).toFixed(2) }} %)
@@ -33,13 +33,18 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      getNode: 'getNode',
-      getElapsedTime: 'getElapsedTime'
-    }),
+    pathes () {
+      console.log(this.rootPathes)
+      return [...this.rootPathes, ...this.names.slice(1)]
+    },
     ...mapState({
-      scannedAt: state => state.scannedAt,
-      currentFilepath: state => state.currentFilepath
+      scannedAt: state => state.chart.scannedAt,
+      currentFilepath: state => state.chart.currentFilepath
+    }),
+    ...mapGetters({
+      rootPathes: 'chart/rootPathes',
+      getNode: 'chart/getNode',
+      getElapsedTime: 'chart/getElapsedTime'
     })
   },
   watch: {
@@ -48,8 +53,8 @@ export default {
     }
   },
   mounted () {
-    this.width = 700
-    this.height = 700
+    this.width = 1024
+    this.height = 1024
     this.radius = Math.min(this.width, this.height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
 
@@ -162,6 +167,13 @@ export default {
         .style('opacity', 1)
     },
     mouseleave (d) {
+      const ancestors = d.ancestors().reverse()
+      const ancestor = ancestors[0]
+
+      this.names = []
+      this.size = ancestor.data.sum
+      this.rate = ancestor.data.sum / ancestor.data.sum
+
       this.svg.selectAll('path')
         .style('opacity', 1);
     }
@@ -184,7 +196,10 @@ svg path {
     li {
       display: inline-block;
       list-style: none;
-      margin: 8px;
+      &:after {
+        content: '/';
+        margin: 8px;
+      }
     }
   }
   .info {
