@@ -1,19 +1,22 @@
 import fs from 'fs'
 import path from 'path'
 
+const interval = 100
+
 export let node = {}
-export let current = null
+
 let scanning = false
-let time = 0
-let interval = 3000
+let lastProgressTime = 0
 let callbacks = {}
 
 export function scan (filepath) {
   if (scanning) {
     return
   }
-  time = (new Date()).getTime()
+  scanning = true
+
   node = {}
+  lastProgressTime = 0
   setTimeout(() => {
     scanFile(filepath, node)
     send('complete')
@@ -34,18 +37,12 @@ function send (event, args) {
 
 function scanFile (filepath, node) {
   const now = (new Date()).getTime()
-  if (now - time > interval) {
-    current = filepath
-    send('progress')
-    time = now
+  if (now - lastProgressTime > interval) {
+    lastProgressTime = now
+    send('progress', filepath)
   }
 
   const stats = fs.lstatSync(filepath)
-  if (stats.isFile()) {
-    node.name = path.basename(filepath)
-    node.size = stats.size
-    return
-  }
   if (stats.isDirectory()) {
     node.name = path.basename(filepath)
     node.children = []
@@ -54,5 +51,8 @@ function scanFile (filepath, node) {
       node.children.push(childNode)
       scanFile(path.join(filepath, filename), childNode)
     })
+  } else {
+    node.name = path.basename(filepath)
+    node.size = stats.size
   }
 }

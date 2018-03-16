@@ -24,7 +24,10 @@ export default new Vuex.Store({
     message: '',
     status: Status.notYet,
     root: '',
-    scannedAt: new Date()
+    scannedAt: new Date(),
+    currentFilepath: '',
+    start: null,
+    end: null
   },
   actions: {
     showMessage ({ commit }, { message }) {
@@ -66,16 +69,26 @@ export default new Vuex.Store({
     async scan ({ commit, dispatch }, { dirpath }) {
       commit('setStatus', { status: Status.progress })
       commit('setRoot', { root: dirpath })
+      commit('start')
 
       if (worker) {
         worker.terminate()
       }
       worker = new Worker()
       worker.onmessage = ({ data: { id, data } }) => {
-        if (id === 'complete') {
-          commit('setStatus', { status: Status.done })
+        switch (id) {
+          case 'progress':
+            commit('setCurrentFilepath', { currentFilepath: data })
+            break
+          case 'refresh':
+            commit('updateScannedAt')
+            break
+          case 'complete':
+            commit('end')
+            commit('setStatus', { status: Status.done })
+            commit('updateScannedAt')
+            break
         }
-        commit('updateScannedAt')
       }
       worker.postMessage({ id: 'requestScan', data: dirpath })
     },
@@ -98,6 +111,15 @@ export default new Vuex.Store({
     },
     updateScannedAt (state) {
       state.scannedAt = new Date()
+    },
+    setCurrentFilepath (state, { currentFilepath }) {
+      state.currentFilepath = currentFilepath
+    },
+    start (state) {
+      state.start = new Date()
+    },
+    end (state) {
+      state.end = new Date()
     }
   },
   getters: {
@@ -110,6 +132,12 @@ export default new Vuex.Store({
       } catch (e) {
         return null
       }
+    },
+    getElapsedTime: (state) => () => {
+      if (!state.start) {
+        return null
+      }
+      return (new Date()).getTime() - state.start.getTime()
     }
   },
   modules: {

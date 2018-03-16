@@ -1,6 +1,8 @@
 <template>
   <div class="graph">
     <div>
+      <div>{{ currentFilepath }}</div>
+      <div>{{ time }} sec</div>
       <ul>
         <li
           v-for="name of names"
@@ -25,16 +27,19 @@ export default {
   data () {
     return {
       names: [],
+      time: 0,
       size: 0,
       rate: 0
     }
   },
   computed: {
     ...mapGetters({
-      getFiles: 'getFiles'
+      getFiles: 'getFiles',
+      getElapsedTime: 'getElapsedTime'
     }),
     ...mapState({
-      scannedAt: state => state.scannedAt
+      scannedAt: state => state.scannedAt,
+      currentFilepath: state => state.currentFilepath
     })
   },
   watch: {
@@ -68,6 +73,10 @@ export default {
       .outerRadius((d) => Math.max(0, this.y(d.y1)))
 
     this.update()
+
+    window.setInterval(() => {
+      this.time = (this.getElapsedTime() / 1000).toFixed(2)
+    }, 0)
   },
   methods: {
     update (redraw = false) {
