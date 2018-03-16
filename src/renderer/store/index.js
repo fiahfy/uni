@@ -126,9 +126,15 @@ export default new Vuex.Store({
     titleBar (state) {
       return process.platform === 'darwin'
     },
-    getFiles: () => () => {
+    getNode: () => () => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data.json')))
+        console.time('read file')
+        const json = fs.readFileSync(path.join(process.cwd(), 'data.json'))
+        console.timeEnd('read file')
+        console.time('parse')
+        const data = JSON.parse(json)
+        console.timeEnd('parse')
+        return data
       } catch (e) {
         return null
       }

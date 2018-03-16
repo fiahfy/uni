@@ -34,7 +34,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getFiles: 'getFiles',
+      getNode: 'getNode',
       getElapsedTime: 'getElapsedTime'
     }),
     ...mapState({
@@ -44,26 +44,25 @@ export default {
   },
   watch: {
     scannedAt () {
-      this.update(true)
+      this.update()
     }
   },
   mounted () {
-    const width = 700
-    const height = 700
-    this.radius = Math.min(width, height) / 2
+    this.width = 700
+    this.height = 700
+    this.radius = Math.min(this.width, this.height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
 
     this.svg = d3.select(this.$el.querySelector('svg'))
-      .attr('width', width)
-      .attr('height', height)
+      .attr('width', this.width)
+      .attr('height', this.height)
       .append('g')
-      .attr('transform', `translate(${width / 2},${height / 2})`)
+      .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
 
     this.partition = d3.partition()
 
     this.x = d3.scaleLinear()
       .range([0, 2 * Math.PI])
-
     this.y = d3.scaleSqrt()
       .range([0, this.radius])
     this.arc = d3.arc()
@@ -79,19 +78,13 @@ export default {
     }, 0)
   },
   methods: {
-    update (redraw = false) {
-      const files = this.getFiles()
-
-      if (redraw) {
-        // Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
-      }
-
-      if (!files) {
+    update () {
+      const node = this.getNode()
+      if (!node) {
         return
       }
-      const data = files
 
-      const root = d3.hierarchy(data)
+      const root = d3.hierarchy(node)
         .sum((d) => d.size)
         .each((d) => {
           d.data.sum = d.value
@@ -139,16 +132,9 @@ export default {
           .style('fill', fill)
       }
 
-      if (redraw) {
-        // this.svg.selectAll('path')
-        // .data(this.partition(root).descendants(),)
-        // return
-      }
-
       console.time('rendering')
       const path = this.svg.selectAll('path')
-        .data(this.partition(root).descendants(), (d) => d.depth + d.name)
-
+        .data(this.partition(root).descendants())
       path
         .enter().append('path')
         .merge(path)
@@ -157,16 +143,27 @@ export default {
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
         .on('mouseover', this.mouseover)
+        .on('mouseleave', this.mouseleave)
         .on('click', click)
-
       path.exit().remove()
       console.timeEnd('rendering')
     },
     mouseover (d) {
-      this.names = d.ancestors().reverse().map((d) => d.data.name)
-      const ancestor = d.ancestors().reverse()[0]
+      const ancestors = d.ancestors().reverse()
+      const ancestor = ancestors[0]
+
+      this.names = ancestors.map((d) => d.data.name)
       this.size = d.data.sum
       this.rate = d.data.sum / ancestor.data.sum
+
+      this.svg.selectAll('path')
+        .style('opacity', 0.3)
+        .filter((d) => ancestors.indexOf(d) >= 0)
+        .style('opacity', 1)
+    },
+    mouseleave (d) {
+      this.svg.selectAll('path')
+        .style('opacity', 1);
     }
   }
 }
@@ -196,6 +193,7 @@ svg path {
   .sunburst {
     flex: 1;
     overflow: scroll;
+    text-align: center;
   }
 }
 </style>

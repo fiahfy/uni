@@ -33,7 +33,7 @@ export default {
   data () {
     return {
       items: [
-        { name: 'explorer', icon: 'view_list', title: `explorer (${buildText('CmdOrCtrl+Shift+E')})` },
+        { name: 'chart', icon: 'pie_chart', title: `chart (${buildText('CmdOrCtrl+Shift+C')})` },
         { name: 'settings', icon: 'settings', title: `settings (${buildText('CmdOrCtrl+,')})` }
       ]
     }
