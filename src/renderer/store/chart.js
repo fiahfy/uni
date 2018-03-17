@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import zlib from 'zlib'
 import Worker from '../workers/scanner.worker.js'
 
 export const Status = {
@@ -79,14 +80,20 @@ export default {
       if (!state.root) {
         return []
       }
+      if (state.root === '/') {
+        return ['']
+      }
       console.log(path.sep)
       return state.root.split(path.sep)
     },
     getNode: () => () => {
       try {
         console.time('read file')
-        const json = fs.readFileSync(path.join(process.cwd(), 'data.json'))
+        const buffer = fs.readFileSync(path.join(process.cwd(), 'data.json.gz'))
         console.timeEnd('read file')
+        console.time('decompress')
+        const json = zlib.gunzipSync(buffer)
+        console.timeEnd('decompress')
         console.time('parse')
         const data = JSON.parse(json)
         console.timeEnd('parse')

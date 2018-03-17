@@ -1,15 +1,19 @@
 import fs from 'fs'
 import path from 'path'
+import zlib from 'zlib'
 import * as scanner from '../utils/scanner'
 
-const dataPath = path.join(process.cwd(), 'data.json')
+const dataPath = path.join(process.cwd(), 'data.json.gz')
 
 const output = (data) => {
   console.time('stringify')
   const json = JSON.stringify(data)
   console.timeEnd('stringify')
+  console.time('compress')
+  const buffer = zlib.gzipSync(json)
+  console.timeEnd('compress')
   console.time('write')
-  fs.writeFileSync(dataPath, json)
+  fs.writeFileSync(dataPath, buffer)
   console.timeEnd('write')
 }
 

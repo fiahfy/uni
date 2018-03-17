@@ -42,17 +42,19 @@ function scanFile (filepath, node) {
     send('progress', filepath)
   }
 
-  const stats = fs.lstatSync(filepath)
-  if (stats.isDirectory()) {
-    node.name = path.basename(filepath)
-    node.children = []
-    fs.readdirSync(filepath).forEach((filename) => {
-      const childNode = {}
-      node.children.push(childNode)
-      scanFile(path.join(filepath, filename), childNode)
-    })
-  } else {
-    node.name = path.basename(filepath)
-    node.size = stats.size
-  }
+  try {
+    const stats = fs.lstatSync(filepath)
+    if (stats.isDirectory()) {
+      node.name = path.basename(filepath)
+      node.children = []
+      fs.readdirSync(filepath).forEach((filename) => {
+        const childNode = {}
+        node.children.push(childNode)
+        scanFile(path.join(filepath, filename), childNode)
+      })
+    } else {
+      node.name = path.basename(filepath)
+      node.size = stats.size
+    }
+  } catch (e) {}
 }
