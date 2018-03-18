@@ -4,6 +4,7 @@ import zlib from 'zlib'
 import * as scanner from '../utils/scanner'
 
 const dataPath = path.join(process.cwd(), 'data.json.gz')
+const refreshInterval = 3000
 
 const output = (data) => {
   console.time('stringify')
@@ -24,7 +25,7 @@ onmessage = ({ data: { id, data } }) => {
   scanner.on('progress', (filepath) => {
     postMessage({ id: 'progress', data: filepath })
     const now = (new Date()).getTime()
-    if (now - time > 3000) {
+    if (now - time > refreshInterval) {
       console.log('refresh')
       output(scanner.node)
       postMessage({ id: 'refresh' })

@@ -3,7 +3,7 @@
     <div class="menu">
       <p>{{ status }}</p>
       <div>
-        <mdc-button @click="selectDirectory">Open</mdc-button>
+        <mdc-button @click="selectDirectory">Scan</mdc-button>
         <mdc-button @click="cancel">Cancel</mdc-button>
       </div>
       <p>{{ time }}</p>

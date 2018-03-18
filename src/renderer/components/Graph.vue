@@ -10,7 +10,7 @@
         >{{ p }}</li>
       </ul>
       <div class="info">
-        {{ size }} ({{ (rate * 100).toFixed(2) }} %)
+        {{ size|readableSize }} ({{ (rate * 100).toFixed(2) }} %)
       </div>
     </div>
     <div class="sunburst">
@@ -34,7 +34,6 @@ export default {
   },
   computed: {
     pathes () {
-      console.log(this.rootPathes)
       return [...this.rootPathes, ...this.names.slice(1)]
     },
     ...mapState({
