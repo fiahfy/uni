@@ -141,8 +141,8 @@ export default {
         //   .style('fill', fill)
       }
 
-      const t = d3.transition()
-        .duration(750)
+      // const t = d3.transition()
+      //   .duration(750)
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
@@ -189,7 +189,7 @@ export default {
       this.rate = ancestor.data.sum / ancestor.data.sum
 
       this.svg.selectAll('path')
-        .style('opacity', 1);
+        .style('opacity', 1)
     },
     click (e, index) {
       if (index < this.rootPathes.length - 1) {
