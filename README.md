@@ -1,18 +1,17 @@
 # Uni
 [![Build Status](https://travis-ci.org/fiahfy/uni.svg?branch=master)](https://travis-ci.org/fiahfy/uni)
 
-> Simple Image Viewer based on Electron.
+> Simple Disk Usage Analyzer based on Electron.  
+> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar)
 
 
 ## Features
-* View images easily
-* Viewer has paging controller
+* Pie chart graph view
 * Change theme color (Light/Dark)
 
 
 ## Screenshots
-![screenshot](./build/screenshot1.png?raw=true)
-![screenshot](./build/screenshot2.png?raw=true)
+![screenshot](./build/screenshot.png?raw=true)
 
 
 ## Installation

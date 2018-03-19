@@ -50,8 +50,8 @@ export default {
     }
   },
   mounted () {
-    this.width = 1024
-    this.height = 1024
+    this.width = 512
+    this.height = 512
     this.radius = Math.min(this.width, this.height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
 
