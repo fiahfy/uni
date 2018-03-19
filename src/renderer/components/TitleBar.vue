@@ -1,5 +1,5 @@
 <template>
-  <div class="title-bar">electron-disk-analyzer</div>
+  <div class="title-bar">Uni</div>
 </template>
 
 <style scoped lang="scss">

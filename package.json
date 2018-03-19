@@ -1,5 +1,5 @@
 {
-  "name": "electron-disk-analyzer",
+  "name": "uni",
   "description": "Simple Disk Usage Analyzer based on Electron",
   "version": "0.0.1",
   "author": {
@@ -59,10 +59,10 @@
   ],
   "main": "main.js",
   "private": true,
-  "productName": "electron-disk-analyzer",
+  "productName": "Uni",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fiahfy/electron-disk-analyzer"
+    "url": "https://github.com/fiahfy/uni"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s webpack",
