@@ -50,6 +50,7 @@ export default {
       worker.postMessage({ id: 'requestScan', data: dirpath })
     },
     cancel ({ commit }) {
+      commit('end')
       commit('setStatus', { status: Status.canceled })
       if (worker) {
         worker.terminate()
@@ -81,11 +82,11 @@ export default {
       if (!state.root) {
         return []
       }
-      if (state.root === '/') {
-        return ['']
+      const pathes = state.root === '/' ? [''] : state.root.split(path.sep)
+      if (pathes.length && pathes[0] === '') {
+        pathes[0] = 'root'
       }
-      console.log(path.sep)
-      return state.root.split(path.sep)
+      return pathes
     },
     getNode: () => () => {
       try {
@@ -103,11 +104,23 @@ export default {
         return null
       }
     },
+    getScanTime: (state, getters) => () => {
+      if (state.status === Status.progress) {
+        return getters.getElapsedTime()
+      }
+      return getters.totalTime
+    },
     getElapsedTime: (state) => () => {
       if (!state.start) {
         return null
       }
       return (new Date()).getTime() - state.start
+    },
+    totalTime (state) {
+      if (!state.start || !state.end) {
+        return null
+      }
+      return state.end - state.start
     }
   }
 }

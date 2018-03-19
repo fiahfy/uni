@@ -1,12 +1,11 @@
 <template>
   <div class="graph">
     <div>
-      <div>{{ currentFilepath }}</div>
-      <div>{{ time }} sec</div>
       <ul>
         <li
           v-for="(p, index) of pathes"
           :key="index"
+          @click="(e) => click(e, index)"
         >{{ p }}</li>
       </ul>
       <div class="info">
@@ -27,28 +26,27 @@ export default {
   data () {
     return {
       names: [],
-      time: 0,
+      childNames: [],
       size: 0,
       rate: 0
     }
   },
   computed: {
     pathes () {
-      return [...this.rootPathes, ...this.names.slice(1)]
+      return [...this.rootPathes, ...this.names, ...this.childNames.slice(1)]
     },
     ...mapState({
-      scannedAt: state => state.chart.scannedAt,
-      currentFilepath: state => state.chart.currentFilepath
+      scannedAt: state => state.chart.scannedAt
     }),
     ...mapGetters({
       rootPathes: 'chart/rootPathes',
-      getNode: 'chart/getNode',
-      getElapsedTime: 'chart/getElapsedTime'
+      getNode: 'chart/getNode'
     })
   },
   watch: {
     scannedAt () {
-      this.update()
+      this.node = this.getNode()
+      this.update(this.node)
     }
   },
   mounted () {
@@ -75,19 +73,17 @@ export default {
       .innerRadius((d) => Math.max(0, this.y(d.y0)))
       .outerRadius((d) => Math.max(0, this.y(d.y1)))
 
-    this.update()
-
-    window.setInterval(() => {
-      this.time = (this.getElapsedTime() / 1000).toFixed(2)
-    }, 0)
+    this.node = this.getNode()
+    this.update(this.node)
   },
   methods: {
-    update () {
-      const node = this.getNode()
+    update (node) {
+      // console.log(node)
       if (!node) {
         return
       }
 
+      console.time('rendering')
       const root = d3.hierarchy(node)
         .sum((d) => d.size)
         .each((d) => {
@@ -112,33 +108,52 @@ export default {
       let depth = 0
       const fill = (d) => this.color((d.children ? d : d.parent).data.name)
       const click = (d) => {
-        if (!d.children) {
-          return
-        }
-        if (depth === d.depth && d.parent) {
-          d = d.parent
-        }
-        depth = d.depth
+        const ancestors = d.ancestors().reverse()
+        this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
+        const node = this.names.reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.name === name)
+        }, this.node)
+        this.update(node)
+        // if (!d.children) {
+        //   return
+        // }
+        // if (depth === d.depth && d.parent) {
+        //   d = d.parent
+        // }
+        // depth = d.depth
 
-        this.svg.transition()
-          .duration(750)
-          .tween('scale', () => {
-            const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-            const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-            const yr = d3.interpolate(this.y.range(), [0, this.radius])
-            return (t) => {
-              this.x.domain(xd(t))
-              this.y.domain(yd(t)).range(yr(t))
-            }
-          })
-          .selectAll('path')
-          .attrTween('d', (d) => () => this.arc(d))
-          .style('fill', fill)
+        // this.svg.transition()
+        //   .duration(750)
+        //   .tween('scale', () => {
+        //     const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+        //     const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+        //     const yr = d3.interpolate(this.y.range(), [0, this.radius])
+        //     return (t) => {
+        //       this.x.domain(xd(t))
+        //       this.y.domain(yd(t)).range(yr(t))
+        //     }
+        //   })
+        //   .selectAll('path')
+        //   .attrTween('d', (d) => () => this.arc(d))
+        //   .style('fill', fill)
       }
 
-      console.time('rendering')
+      const t = d3.transition()
+        .duration(750)
+
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
+
+      path.exit()
+        .remove()
+
+      // path
+      //   .transition(t)
+      //   .attrTween('d', (d) => () => this.arc(d))
+
       path
         .enter().append('path')
         .merge(path)
@@ -149,14 +164,14 @@ export default {
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('click', click)
-      path.exit().remove()
+
       console.timeEnd('rendering')
     },
     mouseover (d) {
       const ancestors = d.ancestors().reverse()
       const ancestor = ancestors[0]
 
-      this.names = ancestors.map((d) => d.data.name)
+      this.childNames = ancestors.map((d) => d.data.name)
       this.size = d.data.sum
       this.rate = d.data.sum / ancestor.data.sum
 
@@ -169,12 +184,25 @@ export default {
       const ancestors = d.ancestors().reverse()
       const ancestor = ancestors[0]
 
-      this.names = []
+      this.childNames = []
       this.size = ancestor.data.sum
       this.rate = ancestor.data.sum / ancestor.data.sum
 
       this.svg.selectAll('path')
         .style('opacity', 1);
+    },
+    click (e, index) {
+      if (index < this.rootPathes.length - 1) {
+        index = this.rootPathes.length - 1
+      }
+      this.names = this.pathes.slice(this.rootPathes.length, index + 1)
+      const node = this.names.reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.name === name)
+      }, this.node)
+      this.update(node)
     }
   }
 }
@@ -182,6 +210,7 @@ export default {
 
 <style lang="scss">
 svg path {
+  cursor: pointer;
   stroke: var(--mdc-theme-background);
 }
 </style>
@@ -191,11 +220,15 @@ svg path {
   display: flex;
   flex-direction: column;
   ul {
-    padding: 0;
+    margin: 0;
+    padding: 8px;
     li {
+      color: var(--mdc-theme-primary);
+      cursor: pointer;
       display: inline-block;
       list-style: none;
       &:after {
+        color: var(--mdc-theme-text-primary-on-background);
         content: '/';
         margin: 8px;
       }
