@@ -3,8 +3,8 @@
     <div class="menu">
       <p>{{ status }}</p>
       <div>
-        <mdc-button @click="selectDirectory">Scan</mdc-button>
-        <mdc-button @click="cancel">Cancel</mdc-button>
+        <mdc-button @click="selectDirectory" v-if="!progress">Scan</mdc-button>
+        <mdc-button @click="cancel" v-else>Cancel</mdc-button>
       </div>
       <p>{{ time }}</p>
     </div>
@@ -16,7 +16,7 @@
 import { mapActions, mapState } from 'vuex'
 import MdcButton from '../components/MdcButton'
 import Graph from '../components/Graph'
-// import { Status } from '../store'
+import { Status } from '../store/chart'
 
 export default {
   components: {
@@ -30,15 +30,12 @@ export default {
     }
   },
   computed: {
-    done () {
-      return false// this.status === Status.done
+    progress () {
+      return this.status === Status.progress
     },
     ...mapState({
       status: state => state.chart.status
-    }),
-    ...mapState('explorer', [
-      'error'
-    ])
+    })
   },
   mounted () {
     window.setInterval(() => {

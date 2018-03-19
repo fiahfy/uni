@@ -6,7 +6,8 @@ import Worker from '../workers/scanner.worker.js'
 export const Status = {
   notYet: 'NOT_YET',
   progress: 'PROGRESS',
-  done: 'DONE'
+  done: 'DONE',
+  canceled: 'CANCELED'
 }
 
 let worker
@@ -49,7 +50,7 @@ export default {
       worker.postMessage({ id: 'requestScan', data: dirpath })
     },
     cancel ({ commit }) {
-      commit('setStatus', { status: Status.done })
+      commit('setStatus', { status: Status.canceled })
       if (worker) {
         worker.terminate()
       }

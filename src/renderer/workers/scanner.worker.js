@@ -4,7 +4,7 @@ import zlib from 'zlib'
 import * as scanner from '../utils/scanner'
 
 const dataPath = path.join(process.cwd(), 'data.json.gz')
-const refreshInterval = 3000
+const refreshInterval = 5000
 
 const output = (data) => {
   console.time('stringify')
@@ -18,7 +18,24 @@ const output = (data) => {
   console.timeEnd('write')
 }
 
+const clear = () => {
+  try {
+    fs.accessSync(dataPath)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return
+    }
+    throw e
+  }
+  console.time('unlink')
+  fs.unlinkSync(dataPath)
+  console.timeEnd('unlink')
+}
+
 onmessage = ({ data: { id, data } }) => {
+  clear()
+  postMessage({ id: 'refresh' })
+
   console.log('Begin scan directory: %s', data)
   console.time('scan')
   let time = (new Date()).getTime()
