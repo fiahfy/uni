@@ -1,7 +1,8 @@
 <template>
-  <i class="mdc-icon material-icons">
-    {{ icon }}
-  </i>
+  <i
+    :data-content="icon"
+    class="mdc-icon material-icons"
+  />
 </template>
 
 <script>
@@ -16,8 +17,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.mdc-icon {
-  padding: 4px;
-  user-select: none;
+.mdc-icon::before {
+  content: attr(data-content);
 }
 </style>

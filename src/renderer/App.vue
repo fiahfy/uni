@@ -1,13 +1,17 @@
 <template>
   <div
     id="app"
-    :class="classes"
+    :style="styles"
+    class="mdc-theme--background"
+    @contextmenu="contextmenu"
     @dragover.prevent
     @drop.prevent="drop"
   >
     <title-bar v-if="titleBar" />
+    <divider />
     <div class="container">
       <activity-bar />
+      <divider orientation="vertical" />
       <div class="content">
         <router-view />
       </div>
@@ -19,24 +23,22 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex'
 import ActivityBar from './components/ActivityBar'
+import Divider from './components/Divider'
 import MdcSnackbar from './components/MdcSnackbar'
 import TitleBar from './components/TitleBar'
+import Theme from './theme'
+import * as ContextMenu from './utils/context-menu'
 
 export default {
   components: {
     ActivityBar,
+    Divider,
     MdcSnackbar,
     TitleBar
   },
-  async asyncData ({ store }) {
-    await store.dispatch('explorer/initDirectory')
-  },
   computed: {
-    classes () {
-      return {
-        'mdc-theme--background': true,
-        'mdc-theme--dark': this.darkTheme
-      }
+    styles () {
+      return this.darkTheme ? Theme.dark : Theme.light
     },
     ...mapState([
       'message'
@@ -49,6 +51,9 @@ export default {
     ])
   },
   methods: {
+    contextmenu (e) {
+      ContextMenu.show(e)
+    },
     drop (e) {
       const files = Array.from(e.dataTransfer.files)
       if (!files.length) {
@@ -64,6 +69,11 @@ export default {
 }
 </script>
 
+<style lang="scss">
+@import '~material-design-icons/iconfont/material-icons.css';
+@import '~material-components-web/material-components-web.scss';
+</style>
+
 <style scoped lang="scss">
 #app {
   display: flex;
@@ -71,61 +81,16 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   font-size: small;
   height: 100%;
-  text-align: center;
-}
-.container {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-.content {
-  flex: 1;
-}
-.viewer {
-  flex: 1;
-}
-</style>
-
-<style lang="scss">
-$mdc-theme-primary: #ff4081;
-
-@import '~material-components-web/material-components-web';
-@import '~material-design-icons/iconfont/material-icons.css';
-@import "~@material/theme/_color-palette.scss";
-
-::-webkit-scrollbar {
-  -webkit-appearance: none;
-  border-left-color: $material-color-grey-300;
-  border-left-style: solid;
-  border-left-width: 1px;
-  width: 14px;
-}
-::-webkit-scrollbar-thumb {
-  background-color: $material-color-grey-300;
-  &:hover {
-    background-color: $material-color-grey-400;
-  }
-  &:active {
-    background-color: $material-color-grey-500;
-  }
-}
-
-.mdc-theme--dark {
-  color: white;
-  &.mdc-theme--background, .mdc-theme--background {
-    background-color: #303030;
-  }
-  ::-webkit-scrollbar {
-    border-left-color: $material-color-grey-600;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: $material-color-grey-600;
-    &:hover {
-      background-color: $material-color-grey-500;
-    }
-    &:active {
-      background-color: $material-color-grey-400;
+  user-select: none;
+  .container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    .content {
+      flex: 1;
+      min-width: 256px;
+      overflow: hidden;
     }
   }
 }

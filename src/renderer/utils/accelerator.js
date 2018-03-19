@@ -1,11 +1,12 @@
 const orders = [
   'Shift',
+  'CommandOrControl',
   'CmdOrCtrl'
 ]
 
-const win = process.platform !== 'darwin'
+const darwin = process.platform === 'darwin'
 
-function sortKey (a, b) {
+const sortKey = (a, b) => {
   a = orders.indexOf(a)
   b = orders.indexOf(b)
   a = a === -1 ? Infinity : a
@@ -19,24 +20,30 @@ function sortKey (a, b) {
   }
 }
 
-export function title (text, accelerator = '') {
+export const buildText = (accelerator) => {
   const keys = accelerator.split('+')
-  if (!keys.length) {
-    return text
-  }
-  const seperator = win ? '+' : ''
-  const suffix = keys.sort(sortKey).map(key => {
+  const seperator = darwin ? '' : '+'
+  return keys.sort(sortKey).map(key => {
     switch (key) {
-      case 'Shift': return win ? key : '⇧'
-      case 'CmdOrCtrl': return win ? 'Ctrl' : '⌘'
-      case 'Up': return win ? key : '↑'
-      case 'Down': return win ? key : '↓'
-      case 'Left': return win ? key : '←'
-      case 'Right': return win ? key : '→'
-      case 'Enter': return win ? key : '↩'
+      case 'CommandOrControl':
+      case 'CmdOrCtrl':
+        return darwin ? '⌘' : 'Ctrl'
+      case 'Shift': return darwin ? '⇧' : key
+      case 'Plus': return '+'
+      case 'Backspace': return darwin ? '⌫' : key
+      case 'Delete': return darwin ? '⌦' : key
+      case 'Return':
+      case 'Enter':
+        return darwin ? '↩' : key
+      case 'Up': return darwin ? '↑' : key
+      case 'Down': return darwin ? '↓' : key
+      case 'Left': return darwin ? '←' : key
+      case 'Right': return darwin ? '→' : key
+      case 'Escape':
+      case 'Esc':
+        return darwin ? '⎋' : key
       default:
         return key
     }
   }).join(seperator)
-  return `${text} (${suffix})`
 }

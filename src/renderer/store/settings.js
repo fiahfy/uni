@@ -1,19 +1,11 @@
 export default {
   namespaced: true,
   state: {
-    darkTheme: false,
-    imageStretched: false,
-    fullScreen: false
+    darkTheme: false
   },
   mutations: {
     setDarkTheme (state, { darkTheme }) {
       state.darkTheme = darkTheme
-    },
-    setImageStretched (state, { imageStretched }) {
-      state.imageStretched = imageStretched
-    },
-    setFullScreen (state, { fullScreen }) {
-      state.fullScreen = fullScreen
     }
   }
 }

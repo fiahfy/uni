@@ -1,33 +1,33 @@
-# electron-disk-analyzer
-[![Build Status](https://travis-ci.org/fiahfy/electron-disk-analyzer.svg?branch=master)](https://travis-ci.org/fiahfy/electron-disk-analyzer)
+# Uni
+[![Build Status](https://travis-ci.org/fiahfy/uni.svg?branch=master)](https://travis-ci.org/fiahfy/uni)
 
-Simple Image Viewer based on Electron.
+> Simple Disk Usage Analyzer based on Electron.  
+> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar)
 
 
 ## Features
-* View images easily
-* Viewer has paging controller
+* Pie chart graph view
 * Change theme color (Light/Dark)
 
 
 ## Screenshots
-![screenshot](./build/screenshot1.png?raw=true)
-![screenshot](./build/screenshot2.png?raw=true)
+![screenshot](./build/screenshot.png?raw=true)
 
 
 ## Installation
-1. Download the file for your platform from [releases page](https://github.com/fiahfy/electron-disk-analyzer/releases).
+1. Download the file for your platform from [releases page](https://github.com/fiahfy/uni/releases).
 2. Open `.dmg` for OS X, Run `.exe` for Windows.
 
 
 ## Download
-https://github.com/fiahfy/electron-disk-analyzer/releases
+https://github.com/fiahfy/uni/releases
 
 
 ## Development
-```
-$ git clone https://github.com/fiahfy/electron-disk-analyzer.git
-$ cd electron-disk-analyzer
-$ yarn
-$ yarn dev
+``` bash
+# install dependencies
+yarn
+
+# serve with hot reload
+yarn dev
 ```

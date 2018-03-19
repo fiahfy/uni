@@ -7,11 +7,22 @@ export default {
   output: {
     path: `${__dirname}/../app/assets/`,
     publicPath: './assets/',
-    filename: 'js/renderer.js'
+    filename: 'js/renderer.js',
+    globalObject: 'this'
   },
   module: {
     rules: [
       ...config.module.rules,
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          loaders: {
+            scss: 'vue-style-loader!css-loader!sass-loader?' +
+              `{ "includePaths": ["${__dirname}/../node_modules"] }`
+          }
+        }
+      },
       {
         test: /\.(jpg|gif|png|svg)$/,
         loader: 'url-loader',
@@ -27,7 +38,17 @@ export default {
           limit: '10000',
           name: 'font/[name].[ext]'
         }
+      },
+      {
+        test: /\.worker\.js$/,
+        loader: 'worker-loader'
       }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.json', '.vue'],
+    alias: {
+      vue$: 'vue/dist/vue.esm.js'
+    }
   }
 }

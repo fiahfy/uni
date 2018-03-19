@@ -1,10 +1,7 @@
 import Vue from 'vue'
 import vueMoment from 'vue-moment'
-import vueLongPress from 'vue-long-press-directive'
 
 Vue.use(vueMoment)
-
-Vue.use(vueLongPress, { duration: 300 })
 
 Vue.mixin({
   beforeMount () {
