@@ -103,7 +103,7 @@ export default {
           }
           d.children = d.children.filter((c) => c.value / root.value > 0.001)
         })
-        .sum((d) => d.size)
+        // .sum((d) => d.size)
 
       let depth = 0
       const fill = (d) => this.color((d.children ? d : d.parent).data.name)

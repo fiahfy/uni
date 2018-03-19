@@ -7,8 +7,10 @@
     @dragover.prevent
     @drop.prevent="drop"
   >
-    <title-bar v-if="titleBar" />
-    <divider />
+    <template v-if="titleBar">
+      <title-bar />
+      <divider />
+    </template>
     <div class="container">
       <activity-bar />
       <divider orientation="vertical" />
@@ -40,15 +42,13 @@ export default {
     styles () {
       return this.darkTheme ? Theme.dark : Theme.light
     },
-    ...mapState([
-      'message'
-    ]),
-    ...mapState('settings', [
-      'darkTheme'
-    ]),
-    ...mapGetters([
-      'titleBar'
-    ])
+    ...mapState({
+      message: state => state.message,
+      darkTheme: state => state.settings.darkTheme
+    }),
+    ...mapGetters({
+      titleBar: 'titleBar'
+    })
   },
   methods: {
     contextmenu (e) {

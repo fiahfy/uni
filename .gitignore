@@ -21,4 +21,4 @@ selenium-debug.log
 /app/assets/*/*
 /main.js*
 !.gitkeep
-data.json
+*.json.gz
