@@ -83,8 +83,11 @@ export default {
         return []
       }
       const pathes = state.root === '/' ? [''] : state.root.split(path.sep)
+      if (pathes.length && pathes[pathes.length - 1] === '') {
+        pathes.pop()
+      }
       if (pathes.length && pathes[0] === '') {
-        pathes[0] = 'root'
+        pathes[0] = '$root'
       }
       return pathes
     },

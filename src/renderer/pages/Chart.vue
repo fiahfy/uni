@@ -11,6 +11,7 @@
       >Cancel</mdc-button>
       <span>Status: {{ status }}</span>
       <span>Time: {{ time }} sec</span>
+      <span>Target: {{ root }}</span>
     </div>
     <div
       v-if="progress"
@@ -45,6 +46,7 @@ export default {
     },
     ...mapState({
       status: state => state.chart.status,
+      root: state => state.chart.root,
       currentFilepath: state => state.chart.currentFilepath
     }),
     ...mapGetters({
