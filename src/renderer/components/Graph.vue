@@ -1,7 +1,7 @@
 <template>
   <div class="graph">
     <div>
-      <ul>
+      <ul ref="pathes">
         <li
           v-for="(p, index) of pathes"
           :key="index"
@@ -9,7 +9,7 @@
         >{{ p }}</li>
       </ul>
       <div class="info">
-        {{ size|readableSize }} ({{ (rate * 100).toFixed(2) }} %)
+        Size: {{ size|readableSize }} ({{ (rate * 100).toFixed(2) }} %)
       </div>
     </div>
     <div class="sunburst">
@@ -103,13 +103,17 @@ export default {
           }
           d.children = d.children.filter((c) => c.value / root.value > 0.001)
         })
-        .sum((d) => d.size)
+        // .sum((d) => d.size)
 
-      let depth = 0
-      const fill = (d) => this.color((d.children ? d : d.parent).data.name)
+      this.depth = 0
+      const fill = (d) => d.depth > this.depth ? this.color((d.children ? d : d.parent).data.name) : 'transparent'
       const click = (d) => {
-        const ancestors = d.ancestors().reverse()
-        this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
+        if (d.depth === this.depth) {
+          this.names = this.names.slice(0, this.names.length - 1)
+        } else {
+          const ancestors = d.ancestors().reverse()
+          this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
+        }
         const node = this.names.reduce((carry, name) => {
           if (!carry) {
             return carry
@@ -141,8 +145,8 @@ export default {
         //   .style('fill', fill)
       }
 
-      const t = d3.transition()
-        .duration(750)
+      // const t = d3.transition()
+      //   .duration(750)
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
@@ -157,7 +161,7 @@ export default {
       path
         .enter().append('path')
         .merge(path)
-        .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
+        // .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
         .attr('d', this.arc)
         .style('fill', fill)
         .style('fill-rule', 'evenodd')
@@ -168,6 +172,9 @@ export default {
       console.timeEnd('rendering')
     },
     mouseover (d) {
+      if (d.depth === this.depth) {
+        return
+      }
       const ancestors = d.ancestors().reverse()
       const ancestor = ancestors[0]
 
@@ -189,7 +196,7 @@ export default {
       this.rate = ancestor.data.sum / ancestor.data.sum
 
       this.svg.selectAll('path')
-        .style('opacity', 1);
+        .style('opacity', 1)
     },
     click (e, index) {
       if (index < this.rootPathes.length - 1) {
@@ -221,7 +228,9 @@ svg path {
   flex-direction: column;
   ul {
     margin: 0;
+    overflow: auto;
     padding: 8px;
+    white-space: nowrap;
     li {
       color: var(--mdc-theme-primary);
       cursor: pointer;
@@ -239,7 +248,7 @@ svg path {
   }
   .sunburst {
     flex: 1;
-    overflow: scroll;
+    overflow: auto;
     text-align: center;
   }
 }

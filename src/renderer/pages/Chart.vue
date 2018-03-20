@@ -1,12 +1,22 @@
 <template>
   <div class="explorer">
     <div class="menu">
-      <mdc-button @click="selectDirectory" v-if="!progress">Scan</mdc-button>
-      <mdc-button @click="cancel" v-else>Cancel</mdc-button>
+      <mdc-button
+        v-if="!progress"
+        @click="selectDirectory"
+      >Scan</mdc-button>
+      <mdc-button
+        v-else
+        @click="cancel"
+      >Cancel</mdc-button>
       <span>Status: {{ status }}</span>
       <span>Time: {{ time }} sec</span>
+      <span>Target: {{ root }}</span>
     </div>
-    <div class="scanning" v-if="progress">
+    <div
+      v-if="progress"
+      class="scanning"
+    >
       {{ currentFilepath }}
     </div>
     <graph />
@@ -36,6 +46,7 @@ export default {
     },
     ...mapState({
       status: state => state.chart.status,
+      root: state => state.chart.root,
       currentFilepath: state => state.chart.currentFilepath
     }),
     ...mapGetters({
