@@ -16,17 +16,17 @@ export default {
   namespaced: true,
   state: {
     status: Status.notYet,
-    root: null,
-    scannedAt: new Date(),
-    currentFilepath: '',
-    start: null,
-    end: null
+    scanedFilepath: null,
+    progressFilepath: null,
+    begunAt: null,
+    endedAt: null,
+    updatedAt: null
   },
   actions: {
     scan ({ commit, dispatch }, { dirpath }) {
       commit('setStatus', { status: Status.progress })
-      commit('setRoot', { root: dirpath })
-      commit('start')
+      commit('setScanedFilepath', { scanedFilepath: dirpath })
+      commit('begin')
 
       if (worker) {
         worker.terminate()
@@ -35,15 +35,15 @@ export default {
       worker.onmessage = ({ data: { id, data } }) => {
         switch (id) {
           case 'progress':
-            commit('setCurrentFilepath', { currentFilepath: data })
+            commit('setProgressFilepath', { progressFilepath: data })
             break
           case 'refresh':
-            commit('updateScannedAt')
+            commit('update')
             break
           case 'complete':
+            commit('update')
             commit('end')
             commit('setStatus', { status: Status.done })
-            commit('updateScannedAt')
             break
         }
       }
@@ -61,33 +61,30 @@ export default {
     setStatus (state, { status }) {
       state.status = status
     },
-    setRoot (state, { root }) {
-      state.root = root
+    setScanedFilepath (state, { scanedFilepath }) {
+      state.scanedFilepath = scanedFilepath
     },
-    updateScannedAt (state) {
-      state.scannedAt = new Date()
+    setProgressFilepath (state, { progressFilepath }) {
+      state.progressFilepath = progressFilepath
     },
-    setCurrentFilepath (state, { currentFilepath }) {
-      state.currentFilepath = currentFilepath
-    },
-    start (state) {
-      state.start = (new Date()).getTime()
+    begin (state) {
+      state.begunAt = (new Date()).getTime()
     },
     end (state) {
-      state.end = (new Date()).getTime()
+      state.endedAt = (new Date()).getTime()
+    },
+    update (state) {
+      state.updatedAt = (new Date()).getTime()
     }
   },
   getters: {
-    rootPathes (state) {
-      if (!state.root) {
+    scanedPathes (state) {
+      if (!state.scanedFilepath) {
         return []
       }
-      const pathes = state.root === '/' ? [''] : state.root.split(path.sep)
+      const pathes = state.scanedFilepath.split(path.sep)
       if (pathes.length && pathes[pathes.length - 1] === '') {
         pathes.pop()
-      }
-      if (pathes.length && pathes[0] === '') {
-        pathes[0] = '$root'
       }
       return pathes
     },
@@ -114,16 +111,16 @@ export default {
       return getters.totalTime
     },
     getElapsedTime: (state) => () => {
-      if (!state.start) {
+      if (!state.begunAt) {
         return null
       }
-      return (new Date()).getTime() - state.start
+      return (new Date()).getTime() - state.begunAt
     },
     totalTime (state) {
-      if (!state.start || !state.end) {
+      if (!state.begunAt || !state.endedAt) {
         return null
       }
-      return state.end - state.start
+      return state.endedAt - state.begunAt
     }
   }
 }

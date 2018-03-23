@@ -9,7 +9,7 @@
         >{{ p }}</li>
       </ul>
       <div class="info">
-        Size: {{ size|readableSize }} ({{ (rate * 100).toFixed(2) }} %)
+        Size: {{ size|readableSize }} ({{ (size / totalSize * 100).toFixed(2) }} %)
       </div>
     </div>
     <div class="sunburst">
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
 
 export default {
@@ -28,23 +28,23 @@ export default {
       names: [],
       childNames: [],
       size: 0,
-      rate: 0
+      totalSize: 0
     }
   },
   computed: {
     pathes () {
-      return [...this.rootPathes, ...this.names, ...this.childNames.slice(1)]
+      return [...this.scanedPathes, ...this.names, ...this.childNames.slice(1)]
     },
     ...mapState({
-      scannedAt: state => state.chart.scannedAt
+      updatedAt: state => state.chart.updatedAt
     }),
     ...mapGetters({
-      rootPathes: 'chart/rootPathes',
+      scanedPathes: 'chart/scanedPathes',
       getNode: 'chart/getNode'
     })
   },
   watch: {
-    scannedAt () {
+    updatedAt () {
       this.node = this.getNode()
       this.update(this.node)
     }
@@ -80,6 +80,7 @@ export default {
     update (node) {
       // console.log(node)
       if (!node) {
+        Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
         return
       }
 
@@ -105,10 +106,9 @@ export default {
         })
         // .sum((d) => d.size)
 
-      this.depth = 0
-      const fill = (d) => d.depth > this.depth ? this.color((d.children ? d : d.parent).data.name) : 'transparent'
+      const fill = (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name)
       const click = (d) => {
-        if (d.depth === this.depth) {
+        if (d.depth === 0) {
           this.names = this.names.slice(0, this.names.length - 1)
         } else {
           const ancestors = d.ancestors().reverse()
@@ -172,7 +172,7 @@ export default {
       console.timeEnd('rendering')
     },
     mouseover (d) {
-      if (d.depth === this.depth) {
+      if (d.depth === 0) {
         return
       }
       const ancestors = d.ancestors().reverse()
@@ -180,7 +180,7 @@ export default {
 
       this.childNames = ancestors.map((d) => d.data.name)
       this.size = d.data.sum
-      this.rate = d.data.sum / ancestor.data.sum
+      this.totalSize = ancestor.data.sum
 
       this.svg.selectAll('path')
         .style('opacity', 0.3)
@@ -193,16 +193,16 @@ export default {
 
       this.childNames = []
       this.size = ancestor.data.sum
-      this.rate = ancestor.data.sum / ancestor.data.sum
+      this.totalSize = ancestor.data.sum
 
       this.svg.selectAll('path')
         .style('opacity', 1)
     },
     click (e, index) {
-      if (index < this.rootPathes.length - 1) {
-        index = this.rootPathes.length - 1
+      if (index < this.scanedPathes.length - 1) {
+        index = this.scanedPathes.length - 1
       }
-      this.names = this.pathes.slice(this.rootPathes.length, index + 1)
+      this.names = this.pathes.slice(this.scanedPathes.length, index + 1)
       const node = this.names.reduce((carry, name) => {
         if (!carry) {
           return carry
@@ -237,9 +237,8 @@ svg path {
       display: inline-block;
       list-style: none;
       &:after {
-        color: var(--mdc-theme-text-primary-on-background);
         content: '/';
-        margin: 8px;
+        margin-right: 8px;
       }
     }
   }
