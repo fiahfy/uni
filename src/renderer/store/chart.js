@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
-import { shell } from 'electron'
+import { remote, shell } from 'electron'
 import Worker from '../workers/scanner.worker.js'
 
 export const Status = {
@@ -10,6 +10,10 @@ export const Status = {
   done: 'DONE',
   canceled: 'CANCELED'
 }
+
+const dataFilename = 'data.json.gz'
+const dataFilepath = path.join(remote.app.getPath('userData'), dataFilename)
+console.log('data filepath: %s', dataFilepath)
 
 let worker
 
@@ -48,7 +52,8 @@ export default {
             break
         }
       }
-      worker.postMessage({ id: 'requestScan', data: dirpath })
+      worker.postMessage({ id: 'defineValues', data: { dataFilepath } })
+      worker.postMessage({ id: 'scanDirectory', data: dirpath })
     },
     cancel ({ commit }) {
       commit('end')
@@ -95,7 +100,7 @@ export default {
     getNode: () => () => {
       try {
         console.time('read file')
-        const buffer = fs.readFileSync(path.join(process.cwd(), 'data.json.gz'))
+        const buffer = fs.readFileSync(dataFilepath)
         console.timeEnd('read file')
         console.time('decompress')
         const json = zlib.gunzipSync(buffer)
