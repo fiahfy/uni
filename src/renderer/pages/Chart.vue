@@ -11,13 +11,13 @@
       >Cancel</mdc-button>
       <span>Status: {{ status }}</span>
       <span>Time: {{ time }} sec</span>
-      <span>Target: {{ root }}</span>
+      <span>Target: {{ scanedFilepath }}</span>
     </div>
     <div
       v-if="progress"
       class="scanning"
     >
-      {{ currentFilepath }}
+      {{ progressFilepath }}
     </div>
     <graph />
   </div>
@@ -46,8 +46,8 @@ export default {
     },
     ...mapState({
       status: state => state.chart.status,
-      root: state => state.chart.root,
-      currentFilepath: state => state.chart.currentFilepath
+      scanedFilepath: state => state.chart.scanedFilepath,
+      progressFilepath: state => state.chart.progressFilepath
     }),
     ...mapGetters({
       getScanTime: 'chart/getScanTime'
