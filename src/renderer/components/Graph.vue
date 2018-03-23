@@ -48,7 +48,7 @@ export default {
         return 'Scan folder'
       } else if (this.status === Status.progress && !this.available) {
         return 'Scanning...'
-      } else if (!this.node) {
+      } else if (!this.available) {
         return 'No data'
       }
       return ''
