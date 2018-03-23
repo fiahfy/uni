@@ -1,5 +1,11 @@
 <template>
   <div class="graph">
+    <div
+      v-if="message"
+      class="message"
+    >
+      {{ message }}
+    </div>
     <div class="sunburst">
       <svg />
     </div>
@@ -22,6 +28,7 @@
 import path from 'path'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
+import { Status } from '../store/chart'
 import * as ContextMenu from '../utils/context-menu'
 
 export default {
@@ -31,14 +38,26 @@ export default {
       names: [],
       childNames: [],
       size: 0,
-      totalSize: 0
+      totalSize: 0,
+      available: false
     }
   },
   computed: {
+    message () {
+      if (this.status === Status.notYet) {
+        return 'Scan folder'
+      } else if (this.status === Status.progress && !this.available) {
+        return 'Scanning...'
+      } else if (!this.node) {
+        return 'No data'
+      }
+      return ''
+    },
     pathes () {
       return [...this.scanedPathes, ...this.names, ...this.childNames.slice(1)]
     },
     ...mapState({
+      status: state => state.chart.status,
       updatedAt: state => state.chart.updatedAt
     }),
     ...mapGetters({
@@ -83,16 +102,16 @@ export default {
     update (node) {
       // console.log(node)
       if (!node) {
+        this.available = false
         Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
         return
       }
+      this.available = true
 
       console.time('rendering')
+
       const root = d3.hierarchy(node)
         .sum((d) => d.size)
-        .each((d) => {
-          d.data.sum = d.value
-        })
       root
         .each((d) => {
           if (d.depth === 0) {
@@ -107,12 +126,11 @@ export default {
           }
           d.children = d.children.filter((c) => c.value / root.value > 0.001)
         })
-        // .sum((d) => d.size)
+
+      this.size = this.totalSize = root.value
 
       // const t = d3.transition()
       //   .duration(750)
-
-      this.size = this.totalSize = root.data.sum
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
@@ -132,6 +150,7 @@ export default {
         .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
         .style('fill-rule', 'evenodd')
         .style('opacity', 1)
+        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('contextmenu', this.contextmenu)
@@ -144,11 +163,9 @@ export default {
         return
       }
       const ancestors = d.ancestors().reverse()
-      const ancestor = ancestors[0]
 
       this.childNames = ancestors.map((d) => d.data.name)
-      this.size = d.data.sum
-      this.totalSize = ancestor.data.sum
+      this.size = d.value
 
       this.svg.selectAll('path')
         .style('opacity', 0.3)
@@ -156,12 +173,8 @@ export default {
         .style('opacity', 1)
     },
     mouseleave (d) {
-      const ancestors = d.ancestors().reverse()
-      const ancestor = ancestors[0]
-
       this.childNames = []
-      this.size = ancestor.data.sum
-      this.totalSize = ancestor.data.sum
+      this.size = this.totalSize
 
       this.svg.selectAll('path')
         .style('opacity', 1)
@@ -239,7 +252,6 @@ export default {
 
 <style lang="scss">
 svg path {
-  cursor: pointer;
   stroke: var(--mdc-theme-background);
 }
 </style>
@@ -274,6 +286,20 @@ svg path {
     display: flex;
     flex: 1;
     justify-content: center;
+  }
+  .message {
+    align-items: center;
+    background-color: var(--mdc-theme-background);
+    bottom: 0;
+    color: var(--mdc-theme-text-secondary-on-background);
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
   }
 }
 </style>
