@@ -53,6 +53,7 @@
   },
   "keywords": [
     "analyzer",
+    "disk",
     "electron",
     "vue",
     "webpack"
