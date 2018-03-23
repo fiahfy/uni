@@ -1,19 +1,19 @@
 <template>
   <div class="graph">
-    <div>
+    <div class="sunburst">
+      <svg />
+    </div>
+    <div class="info">
+      <div>
+        Size: {{ size|readableSize }} ({{ (size / totalSize * 100).toFixed(2) }} %)
+      </div>
       <ul ref="pathes">
         <li
           v-for="(p, index) of pathes"
           :key="index"
-          @pathClick="(e) => pathClick(e, index)"
+          @click="(e) => pathClick(e, index)"
         >{{ p }}{{ sep }}</li>
       </ul>
-      <div class="info">
-        Size: {{ size|readableSize }} ({{ (size / totalSize * 100).toFixed(2) }} %)
-      </div>
-    </div>
-    <div class="sunburst">
-      <svg />
     </div>
   </div>
 </template>
@@ -112,6 +112,8 @@ export default {
       // const t = d3.transition()
       //   .duration(750)
 
+      this.size = this.totalSize = root.data.sum
+
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
 
@@ -129,6 +131,7 @@ export default {
         .attr('d', this.arc)
         .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
         .style('fill-rule', 'evenodd')
+        .style('opacity', 1)
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('contextmenu', this.contextmenu)
@@ -177,10 +180,13 @@ export default {
     click (d) {
       if (d.depth === 0) {
         this.names = this.names.slice(0, this.names.length - 1)
+      } else if (!d.children) {
+        return
       } else {
         const ancestors = d.ancestors().reverse()
         this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
       }
+      this.childNames = []
       const node = this.names.reduce((carry, name) => {
         if (!carry) {
           return carry
@@ -242,26 +248,32 @@ svg path {
 .graph {
   display: flex;
   flex-direction: column;
-  ul {
-    margin: 0;
-    overflow: auto;
-    padding: 8px;
-    white-space: nowrap;
-    li {
-      color: var(--mdc-theme-primary);
-      cursor: pointer;
-      display: inline-block;
-      list-style: none;
-      margin-right: 8px;
+  padding-bottom: 84px;
+  position: relative;
+  .info {
+    bottom: 0;
+    margin: 8px;
+    position: fixed;
+    &>div {
+      margin: 8px;
+    }
+    ul {
+      margin: 0;
+      padding: 8px;
+      li {
+        color: var(--mdc-theme-primary);
+        cursor: pointer;
+        display: inline-block;
+        list-style: none;
+        margin-right: 8px;
+      }
     }
   }
-  .info {
-    margin: 8px;
-  }
   .sunburst {
+    align-items: center;
+    display: flex;
     flex: 1;
-    overflow: auto;
-    text-align: center;
+    justify-content: center;
   }
 }
 </style>

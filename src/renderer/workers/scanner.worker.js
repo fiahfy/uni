@@ -4,7 +4,7 @@ import * as scanner from '../utils/scanner'
 
 const refreshInterval = 5000
 
-const output = (data) => {
+const write = (data) => {
   console.time('stringify')
   const json = JSON.stringify(data)
   console.timeEnd('stringify')
@@ -16,7 +16,7 @@ const output = (data) => {
   console.timeEnd('write')
 }
 
-const clear = () => {
+const unlink = () => {
   try {
     fs.accessSync(values.dataFilepath)
   } catch (e) {
@@ -38,7 +38,7 @@ onmessage = ({ data: { id, data } }) => {
       values = data
       break
     case 'scanDirectory':
-      clear()
+      unlink()
       postMessage({ id: 'refresh' })
 
       console.log('Begin scan directory: %s', data)
@@ -49,14 +49,14 @@ onmessage = ({ data: { id, data } }) => {
         const now = (new Date()).getTime()
         if (now - time > refreshInterval) {
           console.log('refresh')
-          output(scanner.node)
+          write(scanner.node)
           postMessage({ id: 'refresh' })
           time = (new Date()).getTime()
         }
       })
       scanner.on('complete', () => {
         console.log('complete')
-        output(scanner.node)
+        write(scanner.node)
         postMessage({ id: 'complete' })
         console.timeEnd('scan')
       })
