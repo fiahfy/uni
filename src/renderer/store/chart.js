@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
+import { shell } from 'electron'
 import Worker from '../workers/scanner.worker.js'
 
 export const Status = {
@@ -55,6 +56,9 @@ export default {
       if (worker) {
         worker.terminate()
       }
+    },
+    open (_, { filepath }) {
+      shell.openItem(filepath)
     }
   },
   mutations: {

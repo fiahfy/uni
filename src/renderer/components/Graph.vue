@@ -5,8 +5,8 @@
         <li
           v-for="(p, index) of pathes"
           :key="index"
-          @click="(e) => click(e, index)"
-        >{{ p }}</li>
+          @pathClick="(e) => pathClick(e, index)"
+        >{{ p }}{{ sep }}</li>
       </ul>
       <div class="info">
         Size: {{ size|readableSize }} ({{ (size / totalSize * 100).toFixed(2) }} %)
@@ -19,12 +19,15 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import path from 'path'
+import { mapActions, mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
+import * as ContextMenu from '../utils/context-menu'
 
 export default {
   data () {
     return {
+      sep: path.sep,
       names: [],
       childNames: [],
       size: 0,
@@ -106,45 +109,6 @@ export default {
         })
         // .sum((d) => d.size)
 
-      const fill = (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name)
-      const click = (d) => {
-        if (d.depth === 0) {
-          this.names = this.names.slice(0, this.names.length - 1)
-        } else {
-          const ancestors = d.ancestors().reverse()
-          this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
-        }
-        const node = this.names.reduce((carry, name) => {
-          if (!carry) {
-            return carry
-          }
-          return carry.children.find((c) => c.name === name)
-        }, this.node)
-        this.update(node)
-        // if (!d.children) {
-        //   return
-        // }
-        // if (depth === d.depth && d.parent) {
-        //   d = d.parent
-        // }
-        // depth = d.depth
-
-        // this.svg.transition()
-        //   .duration(750)
-        //   .tween('scale', () => {
-        //     const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-        //     const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-        //     const yr = d3.interpolate(this.y.range(), [0, this.radius])
-        //     return (t) => {
-        //       this.x.domain(xd(t))
-        //       this.y.domain(yd(t)).range(yr(t))
-        //     }
-        //   })
-        //   .selectAll('path')
-        //   .attrTween('d', (d) => () => this.arc(d))
-        //   .style('fill', fill)
-      }
-
       // const t = d3.transition()
       //   .duration(750)
 
@@ -163,11 +127,12 @@ export default {
         .merge(path)
         // .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
         .attr('d', this.arc)
-        .style('fill', fill)
+        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
         .style('fill-rule', 'evenodd')
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
-        .on('click', click)
+        .on('contextmenu', this.contextmenu)
+        .on('click', this.click)
 
       console.timeEnd('rendering')
     },
@@ -198,7 +163,55 @@ export default {
       this.svg.selectAll('path')
         .style('opacity', 1)
     },
-    click (e, index) {
+    contextmenu (d) {
+      if (d.depth === 0) {
+        return
+      }
+      const ancestors = d.ancestors().reverse()
+      const filepath = [...this.scanedPathes, ...this.names, ...ancestors.map((d) => d.data.name).slice(1)].join(path.sep)
+
+      ContextMenu.show(d3.event, [
+        { label: 'Open', click: () => { this.open({ filepath }) } }
+      ])
+    },
+    click (d) {
+      if (d.depth === 0) {
+        this.names = this.names.slice(0, this.names.length - 1)
+      } else {
+        const ancestors = d.ancestors().reverse()
+        this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
+      }
+      const node = this.names.reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.name === name)
+      }, this.node)
+      this.update(node)
+      // if (!d.children) {
+      //   return
+      // }
+      // if (depth === d.depth && d.parent) {
+      //   d = d.parent
+      // }
+      // depth = d.depth
+
+      // this.svg.transition()
+      //   .duration(750)
+      //   .tween('scale', () => {
+      //     const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+      //     const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+      //     const yr = d3.interpolate(this.y.range(), [0, this.radius])
+      //     return (t) => {
+      //       this.x.domain(xd(t))
+      //       this.y.domain(yd(t)).range(yr(t))
+      //     }
+      //   })
+      //   .selectAll('path')
+      //   .attrTween('d', (d) => () => this.arc(d))
+      //   .style('fill', fill)
+    },
+    pathClick (e, index) {
       if (index < this.scanedPathes.length - 1) {
         index = this.scanedPathes.length - 1
       }
@@ -210,7 +223,10 @@ export default {
         return carry.children.find((c) => c.name === name)
       }, this.node)
       this.update(node)
-    }
+    },
+    ...mapActions({
+      open: 'chart/open'
+    })
   }
 }
 </script>
@@ -236,10 +252,7 @@ svg path {
       cursor: pointer;
       display: inline-block;
       list-style: none;
-      &:after {
-        content: '/';
-        margin-right: 8px;
-      }
+      margin-right: 8px;
     }
   }
   .info {
