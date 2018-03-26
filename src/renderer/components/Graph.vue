@@ -129,32 +129,48 @@ export default {
 
       this.size = this.totalSize = root.value
 
-      // const t = d3.transition()
-      //   .duration(750)
+      const t = d3.transition()
+        .duration(750)
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants())
 
       path.exit()
+        .style('opacity', 1)
+        .transition(t)
+        .style('opacity', 0)
         .remove()
 
-      // path
-      //   .transition(t)
-      //   .attrTween('d', (d) => () => this.arc(d))
 
       path
         .enter().append('path')
-        .merge(path)
+        // .merge(path)
         // .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
-        .attr('d', this.arc)
-        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
-        .style('fill-rule', 'evenodd')
-        .style('opacity', 1)
-        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('contextmenu', this.contextmenu)
         .on('click', this.click)
+        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
+        .style('fill-rule', 'evenodd')
+        .style('opacity', 0)
+        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
+        .transition(t)
+        .style('opacity', 1)
+        .attr('d', this.arc)
+
+      path
+        .transition(t)
+        .tween('scale', () => {
+          const d = root
+          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+          const yr = d3.interpolate(this.y.range(), [0, this.radius])
+          return (t) => {
+            this.x.domain(xd(t))
+            this.y.domain(yd(t)).range(yr(t))
+          }
+        })
+        .attrTween('d', (d) => () => this.arc(d))
 
       console.timeEnd('rendering')
     },
