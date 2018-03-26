@@ -114,6 +114,7 @@ export default {
         .sum((d) => d.size)
       root
         .each((d) => {
+          d.data.sum = d.value
           if (d.depth === 0) {
             return
           }
@@ -126,21 +127,23 @@ export default {
           }
           d.children = d.children.filter((c) => c.value / root.value > 0.001)
         })
+        // .sum((d) => d.sum)
 
       this.root = root
-      this.size = this.totalSize = root.value
+      this.size = this.totalSize = root.data.sum
       this.depth = 0
-      // const t = d3.transition()
-      //   .duration(750)
+
+      const t = d3.transition()
+        .duration(750)
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants(), (d) => d)
 
-      // path.exit()
-      //   .style('opacity', 1)
-      //   .transition(t)
-      //   // .style('opacity', 0)
-      //   .remove()
+      path.exit()
+        .style('opacity', 1)
+        .transition(t)
+        .style('opacity', 0)
+        .remove()
 
       path
         .enter().append('path')
@@ -149,12 +152,14 @@ export default {
         .attr('d', this.arc)
         .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
         .style('fill-rule', 'evenodd')
-        .style('opacity', 1)
+        .style('opacity', 0)
         .style('cursor', (d) => d.children ? 'pointer' : 'auto')
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('contextmenu', this.contextmenu)
         .on('click', this.click)
+        .transition(t)
+        .style('opacity', 1)
 
       console.timeEnd('rendering')
     },
@@ -164,8 +169,8 @@ export default {
       }
       const ancestors = d.ancestors().reverse()
 
-      this.childNames = ancestors.slice(this.names.length, ancestors.length - 1).map((d) => d.data.name)
-      this.size = d.value
+      this.childNames = ancestors.slice(this.names.length, ancestors.length).map((d) => d.data.name)
+      this.size = d.data.sum
 
       this.svg.selectAll('path')
         .style('opacity', 0.3)
@@ -215,7 +220,7 @@ export default {
       //   this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
       // }
       const ancestors = d.ancestors().reverse()
-      this.names = ancestors.map((d) => d.data.name).slice(1, ancestors.length - 1)
+      this.names = ancestors.map((d) => d.data.name).slice(1, ancestors.length)
       this.childNames = []
 
       this.depth = d.depth
