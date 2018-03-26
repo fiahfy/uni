@@ -127,50 +127,34 @@ export default {
           d.children = d.children.filter((c) => c.value / root.value > 0.001)
         })
 
+      this.root = root
       this.size = this.totalSize = root.value
-
-      const t = d3.transition()
-        .duration(750)
+      this.depth = 0
+      // const t = d3.transition()
+      //   .duration(750)
 
       const path = this.svg.selectAll('path')
-        .data(this.partition(root).descendants())
+        .data(this.partition(root).descendants(), (d) => d)
 
-      path.exit()
-        .style('opacity', 1)
-        .transition(t)
-        .style('opacity', 0)
-        .remove()
-
+      // path.exit()
+      //   .style('opacity', 1)
+      //   .transition(t)
+      //   // .style('opacity', 0)
+      //   .remove()
 
       path
         .enter().append('path')
         // .merge(path)
         // .attr('visibility', (d) => d.depth > depth ? 'visible' : 'hidden')
+        .attr('d', this.arc)
+        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
+        .style('fill-rule', 'evenodd')
+        .style('opacity', 1)
+        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
         .on('mouseover', this.mouseover)
         .on('mouseleave', this.mouseleave)
         .on('contextmenu', this.contextmenu)
         .on('click', this.click)
-        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
-        .style('fill-rule', 'evenodd')
-        .style('opacity', 0)
-        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
-        .transition(t)
-        .style('opacity', 1)
-        .attr('d', this.arc)
-
-      path
-        .transition(t)
-        .tween('scale', () => {
-          const d = root
-          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-          const yr = d3.interpolate(this.y.range(), [0, this.radius])
-          return (t) => {
-            this.x.domain(xd(t))
-            this.y.domain(yd(t)).range(yr(t))
-          }
-        })
-        .attrTween('d', (d) => () => this.arc(d))
 
       console.timeEnd('rendering')
     },
@@ -180,7 +164,7 @@ export default {
       }
       const ancestors = d.ancestors().reverse()
 
-      this.childNames = ancestors.map((d) => d.data.name)
+      this.childNames = ancestors.slice(this.names.length, ancestors.length - 1).map((d) => d.data.name)
       this.size = d.value
 
       this.svg.selectAll('path')
@@ -207,44 +191,49 @@ export default {
       ])
     },
     click (d) {
-      if (d.depth === 0) {
-        this.names = this.names.slice(0, this.names.length - 1)
-      } else if (!d.children) {
+      // const node = this.names.reduce((carry, name) => {
+      //   if (!carry) {
+      //     return carry
+      //   }
+      //   return carry.children.find((c) => c.name === name)
+      // }, this.node)
+      // this.update(node)
+      console.log(d)
+      if (!d.children) {
         return
-      } else {
-        const ancestors = d.ancestors().reverse()
-        this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
       }
-      this.childNames = []
-      const node = this.names.reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.name === name)
-      }, this.node)
-      this.update(node)
-      // if (!d.children) {
-      //   return
-      // }
-      // if (depth === d.depth && d.parent) {
-      //   d = d.parent
-      // }
-      // depth = d.depth
+      if (this.depth === d.depth && d.parent) {
+        d = d.parent
+      }
 
-      // this.svg.transition()
-      //   .duration(750)
-      //   .tween('scale', () => {
-      //     const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-      //     const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-      //     const yr = d3.interpolate(this.y.range(), [0, this.radius])
-      //     return (t) => {
-      //       this.x.domain(xd(t))
-      //       this.y.domain(yd(t)).range(yr(t))
-      //     }
-      //   })
-      //   .selectAll('path')
-      //   .attrTween('d', (d) => () => this.arc(d))
-      //   .style('fill', fill)
+      // if (d.depth === this.depth) {
+      //   this.names = this.names.slice(0, this.names.length - 1)
+      // } else if (!d.children) {
+      //   return
+      // } else {
+      //   const ancestors = d.ancestors().reverse()
+      //   this.names = [...this.names, ...ancestors.map((d) => d.data.name).slice(1)]
+      // }
+      const ancestors = d.ancestors().reverse()
+      this.names = ancestors.map((d) => d.data.name).slice(1, ancestors.length - 1)
+      this.childNames = []
+
+      this.depth = d.depth
+
+      this.svg.transition()
+        .duration(750)
+        .tween('scale', () => {
+          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+          const yr = d3.interpolate(this.y.range(), [0, this.radius])
+          return (t) => {
+            this.x.domain(xd(t))
+            this.y.domain(yd(t)).range(yr(t))
+          }
+        })
+        .selectAll('path')
+        .attrTween('d', (d) => () => this.arc(d))
+        // .style('fill', fill)
     },
     pathClick (e, index) {
       if (index < this.scanedPathes.length - 1) {
@@ -255,9 +244,10 @@ export default {
         if (!carry) {
           return carry
         }
-        return carry.children.find((c) => c.name === name)
-      }, this.node)
-      this.update(node)
+        return carry.children.find((c) => c.data.name === name)
+      }, this.root)
+      console.log(node)
+      this.click(node)
     },
     ...mapActions({
       open: 'chart/open'
