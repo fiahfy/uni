@@ -17,7 +17,7 @@
       v-if="progress"
       class="scanning"
     >
-      {{ progressFilepath }}
+      Scanning ... {{ progressFilepath }}
     </div>
     <graph />
   </div>
