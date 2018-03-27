@@ -6,8 +6,19 @@
     >
       {{ message }}
     </div>
-    <div class="sunburst">
+    <div
+      ref="sunburst"
+      class="sunburst"
+    >
       <svg />
+      <div
+        v-if="needRefresh"
+        class="overlay"
+      >
+        <div>
+          <mdc-button @click="setup">Refresh</mdc-button>
+        </div>
+      </div>
     </div>
     <div class="info">
       <div>
@@ -28,10 +39,14 @@
 import path from 'path'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
+import MdcButton from '../components/MdcButton'
 import { Status } from '../store/chart'
 import * as ContextMenu from '../utils/context-menu'
 
 export default {
+  components: {
+    MdcButton
+  },
   data () {
     return {
       sep: path.sep,
@@ -39,7 +54,8 @@ export default {
       childNames: [],
       size: 0,
       totalSize: 0,
-      available: false
+      available: false,
+      needRefresh: false
     }
   },
   computed: {
@@ -71,35 +87,48 @@ export default {
     }
   },
   mounted () {
-    this.width = 512
-    this.height = 512
-    this.radius = Math.min(this.width, this.height) / 2
-    this.color = d3.scaleOrdinal(d3.schemeCategory20)
-
-    this.x = d3.scaleLinear()
-      .range([0, 2 * Math.PI])
-    this.y = d3.scaleSqrt()
-      .range([0, this.radius])
-    this.arc = d3.arc()
-      .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
-      .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
-      .innerRadius((d) => Math.max(0, this.y(d.y0)))
-      .outerRadius((d) => Math.max(0, this.y(d.y1)))
-
-    this.svg = d3.select(this.$el.querySelector('svg'))
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .append('g')
-      .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
-
-    this.partition = d3.partition()
-
-    this.transition = d3.transition()
-      .duration(3000)
-
-    this.update()
+    this.setup()
+    window.addEventListener('resize', this.resize)
+  },
+  beforeDestory () {
+    window.removeEventListener('resize', this.resize)
   },
   methods: {
+    setup () {
+      if (this.$el.querySelector('g')) {
+        this.$el.querySelector('g').remove()
+      }
+
+      this.width = this.$refs.sunburst.offsetWidth
+      this.height = this.$refs.sunburst.offsetHeight
+      this.radius = Math.min(this.width, this.height) / 2
+      this.color = d3.scaleOrdinal(d3.schemeCategory20)
+
+      this.x = d3.scaleLinear()
+        .range([0, 2 * Math.PI])
+      this.y = d3.scaleSqrt()
+        .range([0, this.radius])
+      this.arc = d3.arc()
+        .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
+        .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
+        .innerRadius((d) => Math.max(0, this.y(d.y0)))
+        .outerRadius((d) => Math.max(0, this.y(d.y1)))
+
+      this.svg = d3.select(this.$el.querySelector('svg'))
+        .attr('width', this.width)
+        .attr('height', this.height)
+        .append('g')
+        .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
+
+      this.partition = d3.partition()
+
+      this.transition = d3.transition()
+        .duration(750)
+
+      this.update()
+
+      this.needRefresh = false
+    },
     update () {
       this.names = []
       this.childNames = []
@@ -166,6 +195,9 @@ export default {
       this.click(root)
 
       console.timeEnd('rendering')
+    },
+    resize () {
+      this.needRefresh = true
     },
     mouseover (d) {
       if (d.depth === 0) {
@@ -242,7 +274,6 @@ export default {
           }
           return carry.children.find((c) => c.data.name === name)
         }, this.root)
-      console.log(this.pathes, node)
 
       if (this.depth === node.depth) {
         return
@@ -293,6 +324,24 @@ svg path {
     display: flex;
     flex: 1;
     justify-content: center;
+    position: relative;
+    .overlay {
+      background-color: var(--mdc-theme-background);
+      bottom: 0;
+      display: table;
+      height: 100%;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      vertical-align:middle;
+      width: 100%;
+      &>div {
+        display: table-cell;
+        text-align: center;
+        vertical-align: middle;
+      }
+    }
   }
   .message {
     align-items: center;
