@@ -76,14 +76,6 @@ export default {
     this.radius = Math.min(this.width, this.height) / 2
     this.color = d3.scaleOrdinal(d3.schemeCategory20)
 
-    this.svg = d3.select(this.$el.querySelector('svg'))
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .append('g')
-      .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
-
-    this.partition = d3.partition()
-
     this.x = d3.scaleLinear()
       .range([0, 2 * Math.PI])
     this.y = d3.scaleSqrt()
@@ -94,8 +86,16 @@ export default {
       .innerRadius((d) => Math.max(0, this.y(d.y0)))
       .outerRadius((d) => Math.max(0, this.y(d.y1)))
 
+    this.svg = d3.select(this.$el.querySelector('svg'))
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .append('g')
+      .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
+
+    this.partition = d3.partition()
+
     this.transition = d3.transition()
-      .duration(750)
+      .duration(3000)
 
     this.update()
   },
@@ -162,6 +162,8 @@ export default {
         .on('click', this.click)
         .transition(this.transition)
         .style('opacity', 1)
+
+      this.click(root)
 
       console.timeEnd('rendering')
     },
@@ -240,6 +242,7 @@ export default {
           }
           return carry.children.find((c) => c.data.name === name)
         }, this.root)
+      console.log(this.pathes, node)
 
       if (this.depth === node.depth) {
         return
