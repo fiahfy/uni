@@ -16,7 +16,9 @@
         class="overlay"
       >
         <div>
-          <mdc-button @click="setup">Refresh</mdc-button>
+          <div>
+            <mdc-button @click="setup">Refresh</mdc-button>
+          </div>
         </div>
       </div>
     </div>
@@ -324,22 +326,25 @@ svg path {
     display: flex;
     flex: 1;
     justify-content: center;
+    overflow: hidden;
     position: relative;
     .overlay {
       background-color: var(--mdc-theme-background);
       bottom: 0;
-      display: table;
-      height: 100%;
       left: 0;
       position: absolute;
       right: 0;
       top: 0;
-      vertical-align:middle;
-      width: 100%;
       &>div {
-        display: table-cell;
-        text-align: center;
-        vertical-align: middle;
+        display: table;
+        height: 100%;
+        vertical-align:middle;
+        width: 100%;
+        &>div {
+          display: table-cell;
+          text-align: center;
+          vertical-align: middle;
+        }
       }
     }
   }
