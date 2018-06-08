@@ -10,8 +10,8 @@
 * Change theme color (Light/Dark)
 
 
-## Screenshots
-![screenshot](./build/screenshot.png?raw=true)
+## Screenshot
+![screenshot](./build/screenshots/screenshot.png?raw=true)
 
 
 ## Installation
