@@ -20,12 +20,6 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    scanDirectory ({ dispatch }, { dirpath }) {
-      dispatch('chart/scanDirectory', { dirpath })
-    },
-    cancelScan ({ dispatch }) {
-      dispatch('chart/cancelScan')
-    },
     changeRoute ({ dispatch }, payload) {
       router.push(payload)
     },

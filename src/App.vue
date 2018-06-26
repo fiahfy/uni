@@ -5,7 +5,7 @@
     @drop.native.prevent="onDrop"
     @dragover.native.prevent
   >
-    <title-bar v-if="titleBar" />
+    <title-bar />
     <activity-bar />
     <v-content class="fill-height">
       <router-view />
@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import ActivityBar from './components/ActivityBar'
 import NotificationBar from './components/NotificationBar'
 import TitleBar from './components/TitleBar'
@@ -30,9 +30,6 @@ export default {
   computed: {
     ...mapState({
       darkTheme: state => state.settings.darkTheme
-    }),
-    ...mapGetters({
-      titleBar: 'titleBar'
     })
   },
   methods: {

@@ -8,20 +8,23 @@ export const Status = {
   notYet: 'NOT_YET',
   progress: 'PROGRESS',
   done: 'DONE',
-  canceled: 'CANCELED'
+  cancelled: 'CANCELLED',
+  error: 'ERROR'
 }
 
 const dataFilename = 'data.json.gz'
 const dataFilepath = path.join(remote.app.getPath('userData'), dataFilename)
-console.log('data filepath: %s', dataFilepath)
+console.log('data directory: %s', dataFilepath)
 
-let worker
+const worker = new Worker()
 
 export default {
   namespaced: true,
   state: {
     status: Status.notYet,
-    scanedFilepath: null,
+    error: null,
+    directory: null,
+    directoryInput: null,
     progressFilepath: null,
     begunAt: null,
     endedAt: null,
@@ -29,16 +32,19 @@ export default {
   },
   getters: {
     scanedPathes (state) {
-      if (!state.scanedFilepath) {
+      if (!state.directory) {
         return []
       }
-      const pathes = state.scanedFilepath.split(path.sep)
+      const pathes = state.directory.split(path.sep)
       if (pathes.length && pathes[pathes.length - 1] === '') {
         pathes.pop()
       }
       return pathes
     },
-    getNode: () => () => {
+    getNode: (state) => () => {
+      if (state.status === Status.notYet) {
+        return
+      }
       try {
         console.time('read file')
         const buffer = fs.readFileSync(dataFilepath)
@@ -74,23 +80,22 @@ export default {
     }
   },
   actions: {
-    selectDirectory ({ dispatch }) {
+    openDirectory ({ commit }) {
       const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
-      if (!filepathes) {
+      if (!filepathes || !filepathes.length) {
         return
       }
       const filepath = filepathes[0]
-      dispatch('scanDirectory', { dirpath: filepath })
+      commit('setDirectoryInput', { directoryInput: filepath })
     },
-    scanDirectory ({ commit, dispatch }, { dirpath }) {
+    scan ({ commit, dispatch, state }) {
+      if (!state.directoryInput) {
+        return
+      }
       commit('setStatus', { status: Status.progress })
-      commit('setScanedFilepath', { scanedFilepath: dirpath })
+      commit('setDirectory', { directory: state.directoryInput })
       commit('begin')
 
-      if (worker) {
-        worker.terminate()
-      }
-      worker = new Worker()
       worker.onmessage = ({ data: { id, data } }) => {
         switch (id) {
           case 'progress':
@@ -104,20 +109,29 @@ export default {
             commit('end')
             commit('setStatus', { status: Status.done })
             break
+          case 'error':
+            commit('update')
+            commit('end')
+            commit('setStatus', { status: Status.error })
+            commit('setError', { error: new Error(data) })
+            break
         }
       }
-      worker.postMessage({ id: 'defineValues', data: { dataFilepath } })
-      worker.postMessage({ id: 'scanDirectory', data: dirpath })
+      const data = {
+        directory: state.directory,
+        dataFilepath
+      }
+      worker.postMessage({ id: 'scan', data })
     },
-    cancelScan ({ commit }) {
+    cancel ({ commit }) {
       commit('end')
-      commit('setStatus', { status: Status.canceled })
+      commit('setStatus', { status: Status.cancelled })
       if (worker) {
         worker.terminate()
       }
     },
-    browseDirectory ({ dispatch }, { filepath }) {
-      const result = shell.openItem(filepath)
+    browseDirectory ({ dispatch }, { directory }) {
+      const result = shell.openItem(directory)
       if (!result) {
         dispatch('showMessage', { color: 'error', text: 'Invalid directory' }, { root: true })
       }
@@ -127,8 +141,14 @@ export default {
     setStatus (state, { status }) {
       state.status = status
     },
-    setScanedFilepath (state, { scanedFilepath }) {
-      state.scanedFilepath = scanedFilepath
+    setError (state, { error }) {
+      state.error = error
+    },
+    setDirectory (state, { directory }) {
+      state.directory = directory
+    },
+    setDirectoryInput (state, { directoryInput }) {
+      state.directoryInput = directoryInput
     },
     setProgressFilepath (state, { progressFilepath }) {
       state.progressFilepath = progressFilepath

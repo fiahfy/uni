@@ -4,12 +4,16 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 let mainWindow
 
+const send = (...args) => {
+  mainWindow && mainWindow.webContents.send(...args)
+}
+
 const createTemplate = () => {
   const template = [
     {
       label: 'File',
       submenu: [
-        { label: 'Scan Directory...', accelerator: 'CmdOrCtrl+O', click: () => { mainWindow.webContents.send('scanDirectory') } }
+        { label: 'Open...', accelerator: 'CmdOrCtrl+O', click: () => { send('openDirectory') } }
       ]
     },
     {
@@ -61,7 +65,7 @@ const createTemplate = () => {
       submenu: [
         { role: 'about' },
         { type: 'separator' },
-        { label: 'Preferences...', accelerator: 'CmdOrCtrl+,', click: () => { mainWindow.webContents.send('showSettings') } },
+        { label: 'Preferences...', accelerator: 'CmdOrCtrl+,', click: () => { send('showSettings') } },
         { type: 'separator' },
         { role: 'services', submenu: [] },
         { type: 'separator' },
@@ -145,11 +149,11 @@ const createWindow = () => {
   })
 
   mainWindow.on('enter-full-screen', () => {
-    mainWindow.webContents.send('enterFullScreen')
+    send('enterFullScreen')
   })
 
   mainWindow.on('leave-full-screen', () => {
-    mainWindow.webContents.send('leaveFullScreen')
+    send('leaveFullScreen')
   })
 }
 

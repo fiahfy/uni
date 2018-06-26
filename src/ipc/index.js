@@ -1,13 +1,8 @@
-import { ipcRenderer, remote } from 'electron'
+import { ipcRenderer } from 'electron'
 
 export function addIpcRendererListeners (store) {
-  ipcRenderer.on('scanDirectory', () => {
-    const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
-    if (!filepathes) {
-      return
-    }
-    const filepath = filepathes[0]
-    store.dispatch('scanDirectory', { dirpath: filepath })
+  ipcRenderer.on('openDirectory', () => {
+    store.dispatch('chart/openDirectory')
   })
   ipcRenderer.on('enterFullScreen', () => {
     store.commit('setFullScreen', { fullScreen: true })
