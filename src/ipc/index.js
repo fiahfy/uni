@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-export function addIpcRendererListeners (store) {
+export const addIpcRendererListeners = (store) => {
   ipcRenderer.on('openDirectory', () => {
     store.dispatch('chart/openDirectory')
   })

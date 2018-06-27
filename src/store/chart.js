@@ -114,10 +114,13 @@ export default {
       worker.postMessage({ id: 'scan', data })
     },
     cancel ({ commit }) {
+      console.log('st cancelling2')
       commit('end')
       commit('setStatus', { status: Status.cancelled })
+      console.log('st cancelling1')
       if (worker) {
-        worker.terminate()
+        console.log('st cancelling')
+        worker.postMessage({ id: 'cancel' })
       }
     },
     browseDirectory ({ dispatch }, { filepath }) {

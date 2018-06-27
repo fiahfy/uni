@@ -17,23 +17,9 @@ const write = (filepath, data) => {
   console.timeEnd('write')
 }
 
-const unlink = (filepath) => {
-  try {
-    fs.accessSync(filepath)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      return
-    }
-    throw e
-  }
-  console.time('unlink')
-  fs.unlinkSync(filepath)
-  console.timeEnd('unlink')
-}
-
 const exists = (filepath) => {
   try {
-    fs.statSync(filepath)
+    fs.accessSync(filepath)
     return true
   } catch (e) {
     if (e.code === 'ENOENT') {
@@ -41,6 +27,15 @@ const exists = (filepath) => {
     }
     throw e
   }
+}
+
+const unlink = (filepath) => {
+  if (!exists(filepath)) {
+    return
+  }
+  console.time('unlink')
+  fs.unlinkSync(filepath)
+  console.timeEnd('unlink')
 }
 
 onmessage = ({ data: { id, data } }) => {
@@ -77,6 +72,10 @@ onmessage = ({ data: { id, data } }) => {
         console.timeEnd('scan')
       })
       scanner.scan(directory)
+      break
+    case 'cancel':
+      console.log('wk cancelling')
+      scanner.cancel()
       break
   }
 }
