@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 import ActivityBar from './components/ActivityBar'
 import NotificationBar from './components/NotificationBar'
 import TitleBar from './components/TitleBar'
@@ -42,10 +42,10 @@ export default {
         return
       }
       const dirpath = files[0].path
-      this.scan({ dirpath })
+      this.setDirectoryInput({ directoryInput: dirpath })
     },
-    ...mapActions({
-      scan: 'scan'
+    ...mapMutations({
+      setDirectoryInput: 'chart/setDirectoryInput'
     })
   }
 }

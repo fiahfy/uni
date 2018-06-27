@@ -31,16 +31,6 @@ export default {
     updatedAt: null
   },
   getters: {
-    scanedPathes (state) {
-      if (!state.directory) {
-        return []
-      }
-      const pathes = state.directory.split(path.sep)
-      if (pathes.length && pathes[pathes.length - 1] === '') {
-        pathes.pop()
-      }
-      return pathes
-    },
     getNode: (state) => () => {
       if (state.status === Status.notYet) {
         return
@@ -130,8 +120,8 @@ export default {
         worker.terminate()
       }
     },
-    browseDirectory ({ dispatch }, { directory }) {
-      const result = shell.openItem(directory)
+    browseDirectory ({ dispatch }, { filepath }) {
+      const result = shell.openItem(filepath)
       if (!result) {
         dispatch('showMessage', { color: 'error', text: 'Invalid directory' }, { root: true })
       }

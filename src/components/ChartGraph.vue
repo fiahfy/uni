@@ -3,7 +3,10 @@
     class="chart-graph"
     column
   >
-    <v-flex ref="sunburst" class="scroll-y">
+    <v-flex
+      ref="sunburst"
+      class="scroll-y"
+    >
       <svg />
     </v-flex>
 
@@ -52,14 +55,13 @@ export default {
   },
   computed: {
     pathes () {
-      return [...this.scanedPathes, ...this.names, ...this.childNames]
+      return [this.directory, ...this.names, ...this.childNames]
     },
     ...mapState({
-      status: state => state.chart.status,
+      directory: state => state.chart.directory,
       updatedAt: state => state.chart.updatedAt
     }),
     ...mapGetters({
-      scanedPathes: 'chart/scanedPathes',
       getNode: 'chart/getNode'
     })
   },
@@ -73,19 +75,17 @@ export default {
     this.debounced = debounce(() => {
       this.setup()
     }, 1000)
-    window.addEventListener('resize', this.resize)
+    window.addEventListener('resize', this.debounced)
   },
   beforeDestory () {
-    window.removeEventListener('resize', this.resize)
+    window.removeEventListener('resize', this.debounced)
   },
   methods: {
     setup () {
       if (this.$el.querySelector('g')) {
         this.$el.querySelector('g').remove()
       }
-console.log(1)
-console.log(this.$refs.sunburst)
-console.log(this.$refs.sunburst.offsetHeight)
+
       this.width = this.$refs.sunburst.offsetWidth
       this.height = this.$refs.sunburst.offsetHeight - 10
       this.radius = Math.min(this.width, this.height) / 2
@@ -179,9 +179,6 @@ console.log(this.$refs.sunburst.offsetHeight)
 
       console.timeEnd('rendering')
     },
-    resize () {
-      this.debounced()
-    },
     mouseover (d) {
       if (d.depth === 0) {
         return
@@ -209,7 +206,7 @@ console.log(this.$refs.sunburst.offsetHeight)
       }
       const ancestors = d.ancestors().reverse()
       const filepath = [
-        ...this.scanedPathes,
+        this.directory,
         ...this.names,
         ...ancestors.slice(this.names.length + 1).map((d) => d.data.name)
       ].join(path.sep)
@@ -246,11 +243,8 @@ console.log(this.$refs.sunburst.offsetHeight)
         .attrTween('d', (d) => () => this.arc(d))
     },
     pathClick (e, index) {
-      if (index < this.scanedPathes.length - 1) {
-        index = this.scanedPathes.length - 1
-      }
       const node = this.pathes
-        .slice(this.scanedPathes.length, index + 1)
+        .slice(1, index + 1)
         .reduce((carry, name) => {
           if (!carry) {
             return carry
