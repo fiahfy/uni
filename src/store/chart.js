@@ -82,6 +82,7 @@ export default {
       if (!state.directoryInput) {
         return
       }
+
       commit('setStatus', { status: Status.progress })
       commit('setDirectory', { directory: state.directoryInput })
       commit('begin')

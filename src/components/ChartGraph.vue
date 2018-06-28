@@ -8,17 +8,21 @@
       class="scroll-y"
     >
       <svg />
+      <div
+        v-if="loading"
+        class="mask"
+      />
     </v-flex>
 
-    <v-card>
+    <v-card v-if="pathes.length">
       <v-card-title>
-        Size: {{ size|readableSize }} ({{ (size / totalSize * 100).toFixed(2) }} %)
+        Size: {{ size|readableSize }} <template v-if="size">({{ (size / totalSize * 100).toFixed(2) }} %)</template>
       </v-card-title>
       <v-card-actions>
         <v-chip
           v-for="(p, index) of pathes"
           :key="index"
-          @click="(e) => pathClick(e, index)"
+          @click="(e) => onChipClick(e, index)"
         >
           {{ p }}{{ sep }}
         </v-chip>
@@ -49,16 +53,27 @@ export default {
       sep: path.sep,
       names: [],
       childNames: [],
+      loading: false,
       size: 0,
       totalSize: 0
     }
   },
   computed: {
     pathes () {
+      if (this.directory === null) {
+        return []
+      }
       return [this.directory, ...this.names, ...this.childNames]
     },
     ...mapState({
-      directory: state => state.chart.directory,
+      directory: (state) => {
+        // Remove trailing seperator
+        const directory = state.chart.directory
+        if (directory.slice(-1) === path.sep) {
+          return directory.slice(0, directory.length - 1)
+        }
+        return directory
+      },
       updatedAt: state => state.chart.updatedAt
     }),
     ...mapGetters({
@@ -71,17 +86,103 @@ export default {
     }
   },
   mounted () {
-    this.setup()
+    console.log('mounted')
     this.debounced = debounce(() => {
       this.setup()
     }, 1000)
-    window.addEventListener('resize', this.debounced)
+    window.addEventListener('resize', this.onResize)
+    this.debounced()
   },
-  beforeDestory () {
-    window.removeEventListener('resize', this.debounced)
+  beforeDestroy () {
+    console.log('destroy')
+    window.removeEventListener('resize', this.onResize)
   },
   methods: {
+    onResize () {
+      console.log('resize')
+      this.debounced()
+    },
+    onMouseOver (d) {
+      if (d.depth === 0) {
+        return
+      }
+      const ancestors = d.ancestors().reverse()
+
+      this.childNames = ancestors.slice(this.names.length + 1).map((d) => d.data.name)
+      this.size = d.data.sum
+
+      this.svg.selectAll('path')
+        .style('opacity', 0.3)
+        .filter((d) => ancestors.indexOf(d) >= 0)
+        .style('opacity', 1)
+    },
+    onMouseLeave (d) {
+      this.childNames = []
+      this.size = this.totalSize
+
+      this.svg.selectAll('path')
+        .style('opacity', 1)
+    },
+    onContextMenu (d) {
+      if (d.depth === 0) {
+        return
+      }
+      const ancestors = d.ancestors().reverse()
+      const filepath = [
+        this.directory,
+        ...this.names,
+        ...ancestors.slice(this.names.length + 1).map((d) => d.data.name)
+      ].join(path.sep)
+
+      ContextMenu.show(d3.event, [
+        { label: 'Open', click: () => { this.browseDirectory({ filepath }) } }
+      ])
+    },
+    onClick (d) {
+      if (!d.children) {
+        return
+      }
+      if (this.depth === d.depth && d.parent) {
+        d = d.parent
+      }
+      const ancestors = d.ancestors().reverse()
+
+      this.depth = d.depth
+      this.names = ancestors.slice(1).map((d) => d.data.name)
+      this.childNames = []
+
+      this.svg
+        .transition(this.transition)
+        .tween('scale', () => {
+          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
+          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
+          const yr = d3.interpolate(this.y.range(), [0, this.radius])
+          return (t) => {
+            this.x.domain(xd(t))
+            this.y.domain(yd(t)).range(yr(t))
+          }
+        })
+        .selectAll('path')
+        .attrTween('d', (d) => () => this.arc(d))
+    },
+    onChipClick (e, index) {
+      const node = this.pathes
+        .slice(1, index + 1)
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.data.name === name)
+        }, this.root)
+
+      if (this.depth === node.depth) {
+        return
+      }
+
+      this.onClick(node)
+    },
     setup () {
+      console.log('setup')
       if (this.$el.querySelector('g')) {
         this.$el.querySelector('g').remove()
       }
@@ -119,10 +220,13 @@ export default {
       this.childNames = []
       this.size = this.totalSize = 0
 
+      this.loading = true
+
       const node = this.getNode()
       // console.log(node)
       if (!node) {
         Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
+        this.loading = false
         return
       }
 
@@ -130,6 +234,7 @@ export default {
 
       const root = d3.hierarchy(node)
         .sum((d) => d.size)
+
       root
         .each((d) => {
           d.data.sum = d.value
@@ -168,95 +273,18 @@ export default {
         .style('fill-rule', 'evenodd')
         .style('cursor', (d) => d.children ? 'pointer' : 'auto')
         .style('opacity', 0)
-        .on('mouseover', this.mouseover)
-        .on('mouseleave', this.mouseleave)
-        .on('contextmenu', this.contextmenu)
-        .on('click', this.click)
+        .on('mouseover', this.onMouseOver)
+        .on('mouseleave', this.onMouseLeave)
+        .on('contextmenu', this.onContextMenu)
+        .on('click', this.onClick)
         .transition(this.transition)
         .style('opacity', 1)
 
-      this.click(root)
+      this.onClick(root)
 
       console.timeEnd('rendering')
-    },
-    mouseover (d) {
-      if (d.depth === 0) {
-        return
-      }
-      const ancestors = d.ancestors().reverse()
 
-      this.childNames = ancestors.slice(this.names.length + 1).map((d) => d.data.name)
-      this.size = d.data.sum
-
-      this.svg.selectAll('path')
-        .style('opacity', 0.3)
-        .filter((d) => ancestors.indexOf(d) >= 0)
-        .style('opacity', 1)
-    },
-    mouseleave (d) {
-      this.childNames = []
-      this.size = this.totalSize
-
-      this.svg.selectAll('path')
-        .style('opacity', 1)
-    },
-    contextmenu (d) {
-      if (d.depth === 0) {
-        return
-      }
-      const ancestors = d.ancestors().reverse()
-      const filepath = [
-        this.directory,
-        ...this.names,
-        ...ancestors.slice(this.names.length + 1).map((d) => d.data.name)
-      ].join(path.sep)
-
-      ContextMenu.show(d3.event, [
-        { label: 'Open', click: () => { this.browseDirectory({ filepath }) } }
-      ])
-    },
-    click (d) {
-      if (!d.children) {
-        return
-      }
-      if (this.depth === d.depth && d.parent) {
-        d = d.parent
-      }
-      const ancestors = d.ancestors().reverse()
-
-      this.depth = d.depth
-      this.names = ancestors.slice(1).map((d) => d.data.name)
-      this.childNames = []
-
-      this.svg
-        .transition(this.transition)
-        .tween('scale', () => {
-          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-          const yr = d3.interpolate(this.y.range(), [0, this.radius])
-          return (t) => {
-            this.x.domain(xd(t))
-            this.y.domain(yd(t)).range(yr(t))
-          }
-        })
-        .selectAll('path')
-        .attrTween('d', (d) => () => this.arc(d))
-    },
-    pathClick (e, index) {
-      const node = this.pathes
-        .slice(1, index + 1)
-        .reduce((carry, name) => {
-          if (!carry) {
-            return carry
-          }
-          return carry.children.find((c) => c.data.name === name)
-        }, this.root)
-
-      if (this.depth === node.depth) {
-        return
-      }
-
-      this.click(node)
+      this.loading = false
     },
     ...mapActions({
       browseDirectory: 'chart/browseDirectory'
@@ -276,6 +304,18 @@ svg path {
 
 <style scoped lang="scss">
 .chart-graph {
+  .flex {
+    position: relative;
+    .mask {
+      background-color: white;
+      bottom: 0;
+      left: 0;
+      opacity: 0.6;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+  }
   .card__actions {
     overflow: auto;
   }
