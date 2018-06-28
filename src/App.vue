@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { mapMutations, mapState } from 'vuex'
+import { mapActions, mapMutations, mapState } from 'vuex'
 import ActivityBar from './components/ActivityBar'
 import NotificationBar from './components/NotificationBar'
 import TitleBar from './components/TitleBar'
@@ -32,6 +32,9 @@ export default {
       darkTheme: state => state.settings.darkTheme
     })
   },
+  created () {
+    this.initialize()
+  },
   methods: {
     onContextMenu (e) {
       ContextMenu.show(e)
@@ -46,6 +49,9 @@ export default {
     },
     ...mapMutations({
       setDirectoryInput: 'chart/setDirectoryInput'
+    }),
+    ...mapActions({
+      initialize: 'chart/initialize'
     })
   }
 }

@@ -70,6 +70,11 @@ export default {
     }
   },
   actions: {
+    initialize ({ commit, state }) {
+      if (state.status === Status.progress) {
+        commit('setStatus', { status: Status.cancelled })
+      }
+    },
     openDirectory ({ commit }) {
       const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
       if (!filepathes || !filepathes.length) {
@@ -121,7 +126,7 @@ export default {
       console.log('st cancelling1')
       if (worker) {
         console.log('st cancelling')
-        worker.postMessage({ id: 'cancel' })
+        worker.terminate()
       }
     },
     browseDirectory ({ dispatch }, { filepath }) {

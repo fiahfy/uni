@@ -18,11 +18,12 @@
     />
     <v-btn
       v-if="progress"
-      :title="'Cancel'"
+      :title="'Scanning'"
+      disabled
       @click="cancel"
     >
-      Cancel
-      <v-icon right>cancel</v-icon>
+      Scanning
+      <v-icon right>find_in_page</v-icon>
     </v-btn>
     <v-btn
       v-else

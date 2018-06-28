@@ -73,9 +73,5 @@ onmessage = ({ data: { id, data } }) => {
       })
       scanner.scan(directory)
       break
-    case 'cancel':
-      console.log('wk cancelling')
-      scanner.cancel()
-      break
   }
 }
