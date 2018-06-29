@@ -28,6 +28,15 @@
         </v-chip>
       </v-card-actions>
     </v-card>
+
+    <!-- <v-tooltip
+      v-model="tooltip.show"
+      :position-x="tooltip.x"
+      :position-y="tooltip.y"
+      top
+    >
+      <span>{{ tooltip.text }}</span>
+    </v-tooltip> -->
   </v-layout>
 </template>
 
@@ -55,7 +64,13 @@ export default {
       childNames: [],
       loading: false,
       size: 0,
-      totalSize: 0
+      totalSize: 0,
+      tooltip: {
+        show: false,
+        x: 0,
+        y: 0,
+        text: ''
+      }
     }
   },
   computed: {
@@ -69,7 +84,7 @@ export default {
       directory: (state) => {
         // Remove trailing seperator
         const directory = state.chart.directory
-        if (directory.slice(-1) === path.sep) {
+        if (directory && directory.slice(-1) === path.sep) {
           return directory.slice(0, directory.length - 1)
         }
         return directory
@@ -86,7 +101,6 @@ export default {
     }
   },
   mounted () {
-    console.log('mounted')
     this.debounced = debounce(() => {
       this.setup()
     }, 1000)
@@ -94,12 +108,10 @@ export default {
     this.debounced()
   },
   beforeDestroy () {
-    console.log('destroy')
     window.removeEventListener('resize', this.onResize)
   },
   methods: {
     onResize () {
-      console.log('resize')
       this.debounced()
     },
     onMouseOver (d) {
@@ -115,6 +127,11 @@ export default {
         .style('opacity', 0.3)
         .filter((d) => ancestors.indexOf(d) >= 0)
         .style('opacity', 1)
+
+      this.tooltip.show = true
+      this.tooltip.x = d3.event.clientX
+      this.tooltip.y = 100//d3.event.clientY
+      this.tooltip.text = d.data.name
     },
     onMouseLeave (d) {
       this.childNames = []
@@ -122,6 +139,8 @@ export default {
 
       this.svg.selectAll('path')
         .style('opacity', 1)
+
+      this.tooltip.show = false
     },
     onContextMenu (d) {
       if (d.depth === 0) {
@@ -182,7 +201,6 @@ export default {
       this.onClick(node)
     },
     setup () {
-      console.log('setup')
       if (this.$el.querySelector('g')) {
         this.$el.querySelector('g').remove()
       }

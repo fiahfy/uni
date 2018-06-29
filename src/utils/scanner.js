@@ -4,15 +4,10 @@ import path from 'path'
 const interval = 100
 
 let scanning = false
-let cancelling = true
 let lastProgressTime = 0
 let callbacks = {}
 
 const scanFile = (filepath, node) => {
-  if (cancelling) {
-    return
-  }
-
   const now = (new Date()).getTime()
   if (now - lastProgressTime > interval) {
     lastProgressTime = now
@@ -52,20 +47,13 @@ export const scan = (filepath) => {
     return
   }
   scanning = true
-  cancelling = false
 
   node = {}
   lastProgressTime = 0
-  setTimeout(() => {
-    scanFile(filepath, node)
-    send('complete')
-    scanning = false
-  })
-}
+  scanFile(filepath, node)
 
-export const cancel = () => {
-  console.log('cancelling')
-  cancelling = true
+  send('complete')
+  scanning = false
 }
 
 export const on = (event, callback) => {

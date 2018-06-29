@@ -85,6 +85,7 @@ export default {
     },
     scan ({ commit, dispatch, state }) {
       if (!state.directoryInput) {
+        dispatch('showMessage', { color: 'error', text: 'Select scan directory' }, { root: true })
         return
       }
 
@@ -120,12 +121,9 @@ export default {
       worker.postMessage({ id: 'scan', data })
     },
     cancel ({ commit }) {
-      console.log('st cancelling2')
       commit('end')
       commit('setStatus', { status: Status.cancelled })
-      console.log('st cancelling1')
       if (worker) {
-        console.log('st cancelling')
         worker.terminate()
       }
     },
