@@ -130,7 +130,7 @@ export default {
 
       this.tooltip.show = true
       this.tooltip.x = d3.event.clientX
-      this.tooltip.y = 100//d3.event.clientY
+      this.tooltip.y = d3.event.clientY
       this.tooltip.text = d.data.name
     },
     onMouseLeave (d) {
