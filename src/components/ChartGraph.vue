@@ -121,7 +121,7 @@ export default {
       const ancestors = d.ancestors().reverse()
 
       this.childNames = ancestors.slice(this.names.length + 1).map((d) => d.data.name)
-      this.size = d.data.sum
+      this.size = d.value
 
       this.svg.selectAll('path')
         .style('opacity', 0.3)
@@ -241,7 +241,7 @@ export default {
       this.loading = true
 
       const node = this.getNode()
-      // console.log(node)
+      console.log(node)
       if (!node) {
         Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
         this.loading = false
@@ -251,28 +251,28 @@ export default {
       console.time('rendering')
 
       const root = d3.hierarchy(node)
-        .sum((d) => d.size)
+        // .sum((d) => d.size)
 
-      root
-        .each((d) => {
-          d.data.sum = d.value
-          if (d.depth === 0) {
-            return
-          }
-          if (d.depth > 11) {
-            d.children = null
-            return
-          }
-          if (!d.children) {
-            return
-          }
-          d.children = d.children.filter((c) => c.value / root.value > 0.001)
-        })
-        // .sum((d) => d.sum)
+      // root
+      //   .each((d) => {
+      //     d.data.sum = d.value
+      //     if (d.depth === 0) {
+      //       return
+      //     }
+      //     if (d.depth > 11) {
+      //       d.children = null
+      //       return
+      //     }
+      //     if (!d.children) {
+      //       return
+      //     }
+      //     d.children = d.children.filter((c) => c.value / root.value > 0.001)
+      //   })
+      //   // .sum((d) => d.sum)
 
       this.root = root
       this.depth = 0
-      this.size = this.totalSize = root.data.sum
+      this.size = this.totalSize = root.value
 
       const path = this.svg.selectAll('path')
         .data(this.partition(root).descendants(), (d) => d)

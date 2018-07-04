@@ -59,7 +59,7 @@ onmessage = ({ data: { id, data } }) => {
         const now = (new Date()).getTime()
         if (now - time > refreshInterval + increaseInterval * times) {
           console.log('refresh')
-          write(dataFilepath, scanner.node)
+          write(dataFilepath, scanner.getNode())
           postMessage({ id: 'refresh' })
           time = (new Date()).getTime()
           times++
@@ -67,7 +67,7 @@ onmessage = ({ data: { id, data } }) => {
       })
       scanner.on('complete', () => {
         console.log('complete')
-        write(dataFilepath, scanner.node)
+        write(dataFilepath, scanner.getNode())
         postMessage({ id: 'complete' })
         console.timeEnd('scan')
       })
