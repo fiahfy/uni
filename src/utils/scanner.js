@@ -43,30 +43,24 @@ const send = (event, args) => {
   }
 }
 
-const calc = (node) => {
+const sum = (node) => {
   if (!node.children) {
-    return { ...node }
+    return
   }
-  node.children = [...node.children].filter((child) => !!child.name).map((child) => {
-    if (child.value) {
-      return { ...child }
-    }
-    return calc(child)
-  })
-  node.value = node.children.reduce((carry, child) => carry + child.value, 0)
-  return { ...node }
+  node.children.forEach((child) => sum(child))
+  node.value = node.children.reduce((carry, child) => carry + (child.value || 0), 0)
 }
 
 const reduce = (depth, limit, node) => {
   if (!node.children) {
-    return node
+    return
   }
-  if (depth > 10) {
+  if (depth > 11) {
     delete node.children
-    return node
+    return
   }
-  node.children = [...node.children].filter((child) => child.value > limit).map((child) => reduce(depth + 1, limit, child))
-  return node
+  node.children = node.children.filter((child) => child.value > limit)
+  node.children.forEach((child) => reduce(depth + 1, limit, child))
 }
 
 export const scan = (filepath) => {
@@ -88,12 +82,9 @@ export const on = (event, callback) => {
 }
 
 export const getNode = () => {
-  console.log(node)
-  console.log({ ...node })
-  const root = calc({ ...node })
-  console.log(root)
+  const root = JSON.parse(JSON.stringify(node))
+  sum(root)
   const limit = root.value * 0.001
-  const result = reduce(0, limit, root)
-  console.log(result)
-  return result
+  reduce(0, limit, root)
+  return root
 }

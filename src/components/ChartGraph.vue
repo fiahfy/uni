@@ -241,7 +241,6 @@ export default {
       this.loading = true
 
       const node = this.getNode()
-      console.log(node)
       if (!node) {
         Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
         this.loading = false
@@ -251,24 +250,6 @@ export default {
       console.time('rendering')
 
       const root = d3.hierarchy(node)
-        // .sum((d) => d.size)
-
-      // root
-      //   .each((d) => {
-      //     d.data.sum = d.value
-      //     if (d.depth === 0) {
-      //       return
-      //     }
-      //     if (d.depth > 11) {
-      //       d.children = null
-      //       return
-      //     }
-      //     if (!d.children) {
-      //       return
-      //     }
-      //     d.children = d.children.filter((c) => c.value / root.value > 0.001)
-      //   })
-      //   // .sum((d) => d.sum)
 
       this.root = root
       this.depth = 0
