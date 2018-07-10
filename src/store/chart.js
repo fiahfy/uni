@@ -85,7 +85,7 @@ export default {
     },
     scan ({ commit, dispatch, state }) {
       if (!state.directoryInput) {
-        dispatch('showMessage', { color: 'error', text: 'Select scan directory' }, { root: true })
+        dispatch('showMessage', { color: 'error', text: 'Directory is not specified' }, { root: true })
         return
       }
 
