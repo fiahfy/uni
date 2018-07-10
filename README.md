@@ -7,7 +7,7 @@
 
 ## Features
 * Pie chart graph view
-* Change theme color (Light/Dark)
+* Change theme (Light/Dark)
 
 
 ## Screenshot
