@@ -19,13 +19,15 @@
         Size: {{ size|readableSize }} <template v-if="size">({{ (size / totalSize * 100).toFixed(2) }} %)</template>
       </v-card-title>
       <v-card-actions>
-        <v-chip
-          v-for="(p, index) of pathes"
-          :key="index"
-          @click="(e) => onChipClick(e, index)"
-        >
-          {{ p }}{{ sep }}
-        </v-chip>
+        <div class="pa-1">
+          <v-chip
+            v-for="(p, index) of pathes"
+            :key="index"
+            @click="(e) => onChipClick(e, index)"
+          >
+            {{ p }}{{ sep }}
+          </v-chip>
+        </div>
       </v-card-actions>
     </v-card>
 
@@ -315,8 +317,12 @@ svg path {
       top: 0;
     }
   }
-  .card__actions {
+  .v-card__actions {
     overflow: auto;
+    padding: 0;
+    &>div {
+      white-space: nowrap;
+    }
   }
 }
 </style>
