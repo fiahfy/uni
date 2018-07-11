@@ -58,16 +58,20 @@ onmessage = ({ data: { id, data } }) => {
         postMessage({ id: 'progress', data: filepath })
         const now = (new Date()).getTime()
         if (now - time > refreshInterval + increaseInterval * times) {
-          console.log('refresh')
-          write(dataFilepath, scanner.node)
+          console.log('refresh: %o', new Date())
+          console.time('output')
+          write(dataFilepath, scanner.getNode())
+          console.timeEnd('output')
           postMessage({ id: 'refresh' })
           time = (new Date()).getTime()
           times++
         }
       })
       scanner.on('complete', () => {
-        console.log('complete')
-        write(dataFilepath, scanner.node)
+        console.log('complete: %o', new Date())
+        console.time('output')
+        write(dataFilepath, scanner.getNode())
+        console.timeEnd('output')
         postMessage({ id: 'complete' })
         console.timeEnd('scan')
       })

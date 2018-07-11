@@ -1,7 +1,8 @@
 {
   "appId": "net.fiahfy.electron-disk-analyzer",
   "files": [
-    "!dist"
+    "main.js",
+    "app/**/*"
   ],
   "mac": {
     "target": ["dmg"]

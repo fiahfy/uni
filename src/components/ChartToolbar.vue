@@ -6,15 +6,12 @@
   >
     <v-text-field
       v-model="directoryInput"
-      :prepend-icon-cb="prependIconCallback"
       name="directory"
-      class="mx-3"
       label="Path"
       prepend-icon="folder"
       single-line
       hide-details
-      full-width
-      tabindex="-1"
+      @click:prepend="onPrependClick"
     />
     <v-btn
       v-if="progress"
@@ -59,7 +56,7 @@ export default {
     })
   },
   methods: {
-    prependIconCallback () {
+    onPrependClick () {
       this.openDirectory()
     },
     ...mapActions({
@@ -70,9 +67,3 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss">
-.chart-toolbar /deep/ .input-group--text-field label {
-  margin-left: 0;
-}
-</style>
