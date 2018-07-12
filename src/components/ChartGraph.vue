@@ -31,14 +31,14 @@
       </v-card-actions>
     </v-card>
 
-    <!-- <v-tooltip
+    <v-tooltip
       v-model="tooltip.show"
       :position-x="tooltip.x"
       :position-y="tooltip.y"
       top
     >
       <span>{{ tooltip.text }}</span>
-    </v-tooltip> -->
+    </v-tooltip>
   </v-layout>
 </template>
 
