@@ -82,7 +82,7 @@ export const on = (event, callback) => {
 
 export const getNode = () => {
   console.log('deepcopy: %o', new Date())
-  const root = new Notification('', {data: node, silent: true}).data
+  const root = JSON.parse(JSON.stringify(node))
   console.log('sum: %o', new Date())
   sum(root)
   console.log('reduce: %o', new Date())
