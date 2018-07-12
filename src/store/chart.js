@@ -105,12 +105,14 @@ export default {
             commit('update')
             commit('end')
             commit('setStatus', { status: Status.done })
+            dispatch('showNotification', { title: 'Scan', body: 'Scan finished' }, { root: true })
             break
           case 'error':
             commit('update')
             commit('end')
             commit('setStatus', { status: Status.error })
             commit('setError', { error: new Error(data) })
+            dispatch('showNotification', { title: 'Scan', body: 'Scan failed' }, { root: true })
             break
         }
       }

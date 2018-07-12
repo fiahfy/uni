@@ -20,15 +20,18 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    changeRoute ({ dispatch }, payload) {
+    changeRoute (_, payload) {
       router.push(payload)
     },
     changeTitle ({ commit }, { title = Package.productName }) {
       document.title = title
       commit('setTitle', { title })
     },
-    showMessage ({ commit, dispatch, state }, message) {
+    showMessage ({ commit }, message) {
       commit('setMessage', { message })
+    },
+    showNotification (_, { title, body }) {
+      new Notification(title, { body }) // eslint-disable-line no-new
     }
   },
   mutations: {
