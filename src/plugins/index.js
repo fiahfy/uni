@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify'
-import VueMoment from 'vue-moment'
 import { buildText } from '~/utils/accelerator'
 
 Vue.use(Vuetify, {
@@ -9,8 +8,6 @@ Vue.use(Vuetify, {
     accent: '#ff4081'
   }
 })
-
-Vue.use(VueMoment)
 
 Vue.filter('accelerator', (title, accelerator) => {
   return `${title} (${buildText(accelerator)})`
