@@ -215,7 +215,7 @@ export default {
       this.width = this.$refs.sunburst.offsetWidth
       this.height = this.$refs.sunburst.offsetHeight - 10
       this.radius = Math.min(this.width, this.height) / 2
-      this.color = d3.scaleOrdinal(d3.schemeCategory20)
+      this.color = d3.scaleOrdinal(d3.schemePaired)
 
       this.x = d3.scaleLinear().range([0, 2 * Math.PI])
       this.y = d3.scaleSqrt().range([0, this.radius])

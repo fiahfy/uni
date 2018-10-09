@@ -39,6 +39,12 @@ const createTemplate = () => {
     {
       label: 'View',
       submenu: [
+        {
+          label: 'Chart',
+          accelerator: 'CmdOrCtrl+Shift+C',
+          click: () => send('showChart')
+        },
+        { type: 'separator' },
         { role: 'reload' },
         { role: 'forcereload' },
         { role: 'toggledevtools' },
