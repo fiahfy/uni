@@ -9,7 +9,7 @@
       <v-list-tile
         v-for="item in items"
         :key="item.name"
-        :title="item.title"
+        :title="item.title|accelerator(item.accelerator)"
         @click="(e) => onItemClick(e, item)"
       >
         <v-list-tile-action>
@@ -21,31 +21,39 @@
 </template>
 
 <script>
-import { buildText } from '~/utils/accelerator'
-
 export default {
-  data () {
+  data() {
     return {
       items: [
-        { name: 'chart', icon: 'pie_chart', title: `Chart (${buildText('CmdOrCtrl+Shift+C')})` },
-        { name: 'settings', icon: 'settings', title: `Settings (${buildText('CmdOrCtrl+,')})` }
+        {
+          name: 'chart',
+          icon: 'pie_chart',
+          title: 'Chart',
+          accelerator: 'CmdOrCtrl+Shift+C'
+        },
+        {
+          name: 'settings',
+          icon: 'settings',
+          title: 'Settings',
+          accelerator: 'CmdOrCtrl+,'
+        }
       ]
     }
   },
   watch: {
-    '$route' (to) { // eslint-disable-line object-shorthand
+    $route(to) {
       this.updateItems(to.name)
     }
   },
-  mounted () {
+  mounted() {
     this.updateItems(this.$route.name)
   },
   methods: {
-    onItemClick (e, item) {
+    onItemClick(e, item) {
       this.$router.push({ name: item.name })
     },
-    updateItems (name) {
-      this.items = this.items.map(item => ({
+    updateItems(name) {
+      this.items = this.items.map((item) => ({
         ...item,
         color: item.name === name ? 'primary' : null
       }))

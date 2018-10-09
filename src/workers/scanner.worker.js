@@ -40,7 +40,7 @@ const unlink = (filepath) => {
 
 onmessage = ({ data: { id, data } }) => {
   switch (id) {
-    case 'scan':
+    case 'scan': {
       const { directory, dataFilepath } = data
       unlink(dataFilepath)
       postMessage({ id: 'refresh' })
@@ -52,18 +52,18 @@ onmessage = ({ data: { id, data } }) => {
 
       console.log('Begin scan directory: %s', directory)
       console.time('scan')
-      let time = (new Date()).getTime()
+      let time = new Date().getTime()
       let times = 0
       scanner.on('progress', (filepath) => {
         postMessage({ id: 'progress', data: filepath })
-        const now = (new Date()).getTime()
+        const now = new Date().getTime()
         if (now - time > refreshInterval + increaseInterval * times) {
           console.log('refresh: %o', new Date())
           console.time('output')
           write(dataFilepath, scanner.getNode())
           console.timeEnd('output')
           postMessage({ id: 'refresh' })
-          time = (new Date()).getTime()
+          time = new Date().getTime()
           times++
         }
       })
@@ -77,5 +77,6 @@ onmessage = ({ data: { id, data } }) => {
       })
       scanner.scan(directory)
       break
+    }
   }
 }

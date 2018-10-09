@@ -41,22 +41,22 @@ import { Status } from '~/store/chart'
 export default {
   computed: {
     directoryInput: {
-      get () {
+      get() {
         return this.$store.state.chart.directoryInput
       },
-      set (value) {
+      set(value) {
         this.$store.commit('chart/setDirectoryInput', { directoryInput: value })
       }
     },
-    progress () {
+    progress() {
       return this.status === Status.progress
     },
     ...mapState({
-      status: state => state.chart.status
+      status: (state) => state.chart.status
     })
   },
   methods: {
-    onPrependClick () {
+    onPrependClick() {
       this.openDirectory()
     },
     ...mapActions({

@@ -29,17 +29,17 @@ export default {
   },
   computed: {
     ...mapState({
-      darkTheme: state => state.settings.darkTheme
+      darkTheme: (state) => state.settings.darkTheme
     })
   },
-  created () {
+  created() {
     this.initialize()
   },
   methods: {
-    onContextMenu (e) {
+    onContextMenu(e) {
       ContextMenu.show(e)
     },
-    onDrop (e) {
+    onDrop(e) {
       const files = Array.from(e.dataTransfer.files)
       if (!files.length) {
         return

@@ -60,9 +60,9 @@ export default {
       if (!state.begunAt) {
         return null
       }
-      return (new Date()).getTime() - state.begunAt
+      return new Date().getTime() - state.begunAt
     },
-    totalTime (state) {
+    totalTime(state) {
       if (!state.begunAt || !state.endedAt) {
         return null
       }
@@ -70,22 +70,28 @@ export default {
     }
   },
   actions: {
-    initialize ({ commit, state }) {
+    initialize({ commit, state }) {
       if (state.status === Status.progress) {
         commit('setStatus', { status: Status.cancelled })
       }
     },
-    openDirectory ({ commit }) {
-      const filepathes = remote.dialog.showOpenDialog({ properties: ['openDirectory'] })
+    openDirectory({ commit }) {
+      const filepathes = remote.dialog.showOpenDialog({
+        properties: ['openDirectory']
+      })
       if (!filepathes || !filepathes.length) {
         return
       }
       const filepath = filepathes[0]
       commit('setDirectoryInput', { directoryInput: filepath })
     },
-    scan ({ commit, dispatch, state }) {
+    scan({ commit, dispatch, state }) {
       if (!state.directoryInput) {
-        dispatch('showMessage', { color: 'error', text: 'Directory is not specified' }, { root: true })
+        dispatch(
+          'showMessage',
+          { color: 'error', text: 'Directory is not specified' },
+          { root: true }
+        )
         return
       }
 
@@ -105,14 +111,22 @@ export default {
             commit('update')
             commit('end')
             commit('setStatus', { status: Status.done })
-            dispatch('showNotification', { title: 'Scan', body: 'Scan finished' }, { root: true })
+            dispatch(
+              'showNotification',
+              { title: 'Scan', body: 'Scan finished' },
+              { root: true }
+            )
             break
           case 'error':
             commit('update')
             commit('end')
             commit('setStatus', { status: Status.error })
             commit('setError', { error: new Error(data) })
-            dispatch('showNotification', { title: 'Scan', body: 'Scan failed' }, { root: true })
+            dispatch(
+              'showNotification',
+              { title: 'Scan', body: 'Scan failed' },
+              { root: true }
+            )
             break
         }
       }
@@ -122,44 +136,48 @@ export default {
       }
       worker.postMessage({ id: 'scan', data })
     },
-    cancel ({ commit }) {
+    cancel({ commit }) {
       commit('end')
       commit('setStatus', { status: Status.cancelled })
       if (worker) {
         worker.terminate()
       }
     },
-    browseDirectory ({ dispatch }, { filepath }) {
+    browseDirectory({ dispatch }, { filepath }) {
       const result = shell.openItem(filepath)
       if (!result) {
-        dispatch('showMessage', { color: 'error', text: 'Invalid directory' }, { root: true })
+        dispatch(
+          'showMessage',
+          { color: 'error', text: 'Invalid directory' },
+          { root: true }
+        )
       }
     }
   },
   mutations: {
-    setStatus (state, { status }) {
+    setStatus(state, { status }) {
       state.status = status
     },
-    setError (state, { error }) {
+    setError(state, { error }) {
       state.error = error
     },
-    setDirectory (state, { directory }) {
+    setDirectory(state, { directory }) {
       state.directory = directory
     },
-    setDirectoryInput (state, { directoryInput }) {
+    setDirectoryInput(state, { directoryInput }) {
       state.directoryInput = directoryInput
     },
-    setProgressFilepath (state, { progressFilepath }) {
+    setProgressFilepath(state, { progressFilepath }) {
       state.progressFilepath = progressFilepath
     },
-    begin (state) {
-      state.begunAt = (new Date()).getTime()
+    begin(state) {
+      state.begunAt = new Date().getTime()
     },
-    end (state) {
-      state.endedAt = (new Date()).getTime()
+    end(state) {
+      state.endedAt = new Date().getTime()
     },
-    update (state) {
-      state.updatedAt = (new Date()).getTime()
+    update(state) {
+      state.updatedAt = new Date().getTime()
     }
   }
 }

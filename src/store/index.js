@@ -15,33 +15,33 @@ export default new Vuex.Store({
     fullScreen: false
   },
   getters: {
-    titleBar (state) {
+    titleBar(state) {
       return process.platform === 'darwin' && !state.fullScreen
     }
   },
   actions: {
-    changeRoute (_, payload) {
+    changeRoute(_, payload) {
       router.push(payload)
     },
-    changeTitle ({ commit }, { title = Package.productName }) {
+    changeTitle({ commit }, { title = Package.productName }) {
       document.title = title
       commit('setTitle', { title })
     },
-    showMessage ({ commit }, message) {
+    showMessage({ commit }, message) {
       commit('setMessage', { message })
     },
-    showNotification (_, { title, body }) {
-      new Notification(title, { body }) // eslint-disable-line no-new
+    showNotification(_, { title, body }) {
+      new Notification(title, { body })
     }
   },
   mutations: {
-    setTitle (state, { title }) {
+    setTitle(state, { title }) {
       state.title = title
     },
-    setMessage (state, { message }) {
+    setMessage(state, { message }) {
       state.message = message
     },
-    setFullScreen (state, { fullScreen }) {
+    setFullScreen(state, { fullScreen }) {
       state.fullScreen = fullScreen
     }
   },
@@ -51,10 +51,7 @@ export default new Vuex.Store({
   },
   plugins: [
     createPersistedState({
-      paths: [
-        'chart',
-        'settings'
-      ]
+      paths: ['chart', 'settings']
     })
   ]
 })

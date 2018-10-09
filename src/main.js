@@ -13,7 +13,13 @@ const createTemplate = () => {
     {
       label: 'File',
       submenu: [
-        { label: 'Open...', accelerator: 'CmdOrCtrl+O', click: () => { send('openDirectory') } }
+        {
+          label: 'Open...',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => {
+            send('openDirectory')
+          }
+        }
       ]
     },
     {
@@ -46,15 +52,17 @@ const createTemplate = () => {
     },
     {
       role: 'window',
-      submenu: [
-        { role: 'close' },
-        { role: 'minimize' }
-      ]
+      submenu: [{ role: 'close' }, { role: 'minimize' }]
     },
     {
       role: 'help',
       submenu: [
-        { label: 'Learn More', click: () => { shell.openExternal('https://github.com/fiahfy/uni') } }
+        {
+          label: 'Learn More',
+          click: () => {
+            shell.openExternal('https://github.com/fiahfy/uni')
+          }
+        }
       ]
     }
   ]
@@ -65,7 +73,13 @@ const createTemplate = () => {
       submenu: [
         { role: 'about' },
         { type: 'separator' },
-        { label: 'Preferences...', accelerator: 'CmdOrCtrl+,', click: () => { send('showSettings') } },
+        {
+          label: 'Preferences...',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => {
+            send('showSettings')
+          }
+        },
         { type: 'separator' },
         { role: 'services', submenu: [] },
         { type: 'separator' },
@@ -83,10 +97,7 @@ const createTemplate = () => {
           { type: 'separator' },
           {
             label: 'Speech',
-            submenu: [
-              { role: 'startspeaking' },
-              { role: 'stopspeaking' }
-            ]
+            submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }]
           }
         )
       } else if (menu.role === 'window') {
@@ -137,10 +148,9 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu)
 
   if (process.env.NODE_ENV !== 'production') {
-    installExtension(VUEJS_DEVTOOLS.id)
-      .catch((err) => {
-        console.log('Unable to install `vue-devtools`: \n', err) // eslint-disable-line no-console
-      })
+    installExtension(VUEJS_DEVTOOLS.id).catch((err) => {
+      console.log('Unable to install `vue-devtools`: \n', err) // eslint-disable-line no-console
+    })
     mainWindow.openDevTools()
   }
 
