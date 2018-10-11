@@ -10,6 +10,9 @@ export const addIpcRendererListeners = (store) => {
   ipcRenderer.on('leaveFullScreen', () => {
     store.commit('setFullScreen', { fullScreen: false })
   })
+  ipcRenderer.on('showChart', () => {
+    store.dispatch('changeRoute', { name: 'chart' })
+  })
   ipcRenderer.on('showSettings', () => {
     store.dispatch('changeRoute', { name: 'settings' })
   })

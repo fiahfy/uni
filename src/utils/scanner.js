@@ -9,7 +9,7 @@ let callbacks = {}
 let node = {}
 
 const scanFile = (filepath, depth, node) => {
-  const now = (new Date()).getTime()
+  const now = new Date().getTime()
   if (now - lastProgressTime > interval) {
     lastProgressTime = now
     send('progress', filepath)
@@ -51,7 +51,10 @@ const sum = (node) => {
     return
   }
   node.children.forEach((child) => sum(child))
-  node.value = node.children.reduce((carry, child) => carry + (child.value || 0), 0)
+  node.value = node.children.reduce(
+    (carry, child) => carry + (child.value || 0),
+    0
+  )
 }
 
 const reduce = (limit, node) => {

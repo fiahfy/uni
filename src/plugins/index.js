@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify'
-import VueMoment from 'vue-moment'
-import { buildText } from '~/utils/accelerator'
+import electronAcceleratorFormatter from '@fiahfy/electron-accelerator-formatter'
 
 Vue.use(Vuetify, {
   theme: {
@@ -10,10 +9,8 @@ Vue.use(Vuetify, {
   }
 })
 
-Vue.use(VueMoment)
-
 Vue.filter('accelerator', (title, accelerator) => {
-  return `${title} (${buildText(accelerator)})`
+  return `${title} (${electronAcceleratorFormatter(accelerator)})`
 })
 
 Vue.filter('readableSize', (bytes) => {

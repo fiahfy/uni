@@ -17,16 +17,16 @@ import { mapGetters, mapState } from 'vuex'
 import { Status } from '~/store/chart'
 
 export default {
-  data () {
+  data() {
     return {
       time: 0
     }
   },
   computed: {
-    alert () {
+    alert() {
       return true
     },
-    type () {
+    type() {
       switch (this.status) {
         case Status.notYet:
         case Status.progress:
@@ -40,7 +40,7 @@ export default {
       }
       return ''
     },
-    text () {
+    text() {
       switch (this.status) {
         case Status.notYet:
           return 'Select scan directory and click scan'
@@ -54,7 +54,7 @@ export default {
           return `${this.error.message} "${this.directory}"`
       }
     },
-    subText () {
+    subText() {
       switch (this.status) {
         case Status.progress:
         case Status.done:
@@ -64,16 +64,16 @@ export default {
       }
     },
     ...mapState({
-      status: state => state.chart.status,
-      error: state => state.chart.error,
-      directory: state => state.chart.directory,
-      progressFilepath: state => state.chart.progressFilepath
+      status: (state) => state.chart.status,
+      error: (state) => state.chart.error,
+      directory: (state) => state.chart.directory,
+      progressFilepath: (state) => state.chart.progressFilepath
     }),
     ...mapGetters({
       getScanTime: 'chart/getScanTime'
     })
   },
-  mounted () {
+  mounted() {
     window.setInterval(() => {
       this.time = (this.getScanTime() / 1000).toFixed(2)
     }, 0)

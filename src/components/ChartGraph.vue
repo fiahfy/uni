@@ -53,13 +53,13 @@ const debounce = (callback, milli) => {
   return (...args) => {
     clearTimeout(timer)
     timer = setTimeout(() => {
-      callback(...args) // eslint-disable-line standard/no-callback-literal
+      callback(...args)
     }, milli)
   }
 }
 
 export default {
-  data () {
+  data() {
     return {
       sep: path.sep,
       names: [],
@@ -76,7 +76,7 @@ export default {
     }
   },
   computed: {
-    pathes () {
+    pathes() {
       if (this.directory === null) {
         return []
       }
@@ -91,41 +91,44 @@ export default {
         }
         return directory
       },
-      updatedAt: state => state.chart.updatedAt
+      updatedAt: (state) => state.chart.updatedAt
     }),
     ...mapGetters({
       getNode: 'chart/getNode'
     })
   },
   watch: {
-    updatedAt () {
+    updatedAt() {
       this.update()
     }
   },
-  mounted () {
+  mounted() {
     this.debounced = debounce(() => {
       this.setup()
     }, 1000)
     window.addEventListener('resize', this.onResize)
     this.debounced()
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('resize', this.onResize)
   },
   methods: {
-    onResize () {
+    onResize() {
       this.debounced()
     },
-    onMouseOver (d) {
+    onMouseOver(d) {
       if (d.depth === 0) {
         return
       }
       const ancestors = d.ancestors().reverse()
 
-      this.childNames = ancestors.slice(this.names.length + 1).map((d) => d.data.name)
+      this.childNames = ancestors
+        .slice(this.names.length + 1)
+        .map((d) => d.data.name)
       this.size = d.value
 
-      this.svg.selectAll('path')
+      this.svg
+        .selectAll('path')
         .style('opacity', 0.3)
         .filter((d) => ancestors.indexOf(d) >= 0)
         .style('opacity', 1)
@@ -135,16 +138,15 @@ export default {
       this.tooltip.y = d3.event.clientY
       this.tooltip.text = d.data.name
     },
-    onMouseLeave (d) {
+    onMouseLeave() {
       this.childNames = []
       this.size = this.totalSize
 
-      this.svg.selectAll('path')
-        .style('opacity', 1)
+      this.svg.selectAll('path').style('opacity', 1)
 
       this.tooltip.show = false
     },
-    onContextMenu (d) {
+    onContextMenu(d) {
       if (d.depth === 0) {
         return
       }
@@ -156,10 +158,15 @@ export default {
       ].join(path.sep)
 
       ContextMenu.show(d3.event, [
-        { label: 'Open', click: () => { this.browseDirectory({ filepath }) } }
+        {
+          label: 'Open',
+          click: () => {
+            this.browseDirectory({ filepath })
+          }
+        }
       ])
     },
-    onClick (d) {
+    onClick(d) {
       if (!d.children) {
         return
       }
@@ -186,15 +193,13 @@ export default {
         .selectAll('path')
         .attrTween('d', (d) => () => this.arc(d))
     },
-    onChipClick (e, index) {
-      const node = this.pathes
-        .slice(1, index + 1)
-        .reduce((carry, name) => {
-          if (!carry) {
-            return carry
-          }
-          return carry.children.find((c) => c.data.name === name)
-        }, this.root)
+    onChipClick(e, index) {
+      const node = this.pathes.slice(1, index + 1).reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.data.name === name)
+      }, this.root)
 
       if (this.depth === node.depth) {
         return
@@ -202,7 +207,7 @@ export default {
 
       this.onClick(node)
     },
-    setup () {
+    setup() {
       if (this.$el.querySelector('g')) {
         this.$el.querySelector('g').remove()
       }
@@ -210,19 +215,19 @@ export default {
       this.width = this.$refs.sunburst.offsetWidth
       this.height = this.$refs.sunburst.offsetHeight - 10
       this.radius = Math.min(this.width, this.height) / 2
-      this.color = d3.scaleOrdinal(d3.schemeCategory20)
+      this.color = d3.scaleOrdinal(d3.schemePaired)
 
-      this.x = d3.scaleLinear()
-        .range([0, 2 * Math.PI])
-      this.y = d3.scaleSqrt()
-        .range([0, this.radius])
-      this.arc = d3.arc()
+      this.x = d3.scaleLinear().range([0, 2 * Math.PI])
+      this.y = d3.scaleSqrt().range([0, this.radius])
+      this.arc = d3
+        .arc()
         .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
         .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
         .innerRadius((d) => Math.max(0, this.y(d.y0)))
         .outerRadius((d) => Math.max(0, this.y(d.y1)))
 
-      this.svg = d3.select(this.$el.querySelector('svg'))
+      this.svg = d3
+        .select(this.$el.querySelector('svg'))
         .attr('width', this.width)
         .attr('height', this.height)
         .append('g')
@@ -230,12 +235,11 @@ export default {
 
       this.partition = d3.partition()
 
-      this.transition = d3.transition()
-        .duration(750)
+      this.transition = d3.transition().duration(750)
 
       this.update()
     },
-    update () {
+    update() {
       this.names = []
       this.childNames = []
       this.size = this.totalSize = 0
@@ -244,7 +248,9 @@ export default {
 
       const node = this.getNode()
       if (!node) {
-        Array.from(this.$el.querySelectorAll('path')).forEach((el) => el.remove())
+        Array.from(this.$el.querySelectorAll('path')).forEach((el) =>
+          el.remove()
+        )
         this.loading = false
         return
       }
@@ -257,22 +263,31 @@ export default {
       this.depth = 0
       this.size = this.totalSize = root.value
 
-      const path = this.svg.selectAll('path')
+      const path = this.svg
+        .selectAll('path')
         .data(this.partition(root).descendants(), (d) => d)
 
-      path.exit()
+      path
+        .exit()
         .style('opacity', 1)
         .transition(this.transition)
         .style('opacity', 0)
         .remove()
 
       path
-        .enter().append('path')
+        .enter()
+        .append('path')
         // .merge(path)
         .attr('d', this.arc)
-        .style('fill', (d) => d.depth === 0 ? 'transparent' : this.color((d.children ? d : d.parent).data.name))
+        .style(
+          'fill',
+          (d) =>
+            d.depth === 0
+              ? 'transparent'
+              : this.color((d.children ? d : d.parent).data.name)
+        )
         .style('fill-rule', 'evenodd')
-        .style('cursor', (d) => d.children ? 'pointer' : 'auto')
+        .style('cursor', (d) => (d.children ? 'pointer' : 'auto'))
         .style('opacity', 0)
         .on('mouseover', this.onMouseOver)
         .on('mouseleave', this.onMouseLeave)
@@ -320,7 +335,7 @@ svg path {
   .v-card__actions {
     overflow: auto;
     padding: 0;
-    &>div {
+    & > div {
       white-space: nowrap;
     }
   }
