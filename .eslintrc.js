@@ -7,5 +7,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:vue/recommended',
     'plugin:prettier/recommended'
-  ]
+  ],
+  rules: {
+    'no-console': 'off'
+  }
 }
