@@ -16,7 +16,7 @@
 
     <v-card v-if="pathes.length">
       <v-card-title>
-        Size: {{ size|readableSize }} <template v-if="size">({{ (size / totalSize * 100).toFixed(2) }} %)</template>
+        Total size: {{ totalSize|readableSize }}
       </v-card-title>
       <v-card-actions>
         <div class="pa-1">
@@ -37,7 +37,10 @@
       :position-y="tooltip.y"
       top
     >
-      <span>{{ tooltip.text }}</span>
+      <p class="ma-0">
+        {{ tooltip.text }}<br>
+        <small>{{ size|readableSize }} ({{ percentage }} %)</small>
+      </p>
     </v-tooltip>
   </v-layout>
 </template>
@@ -81,6 +84,9 @@ export default {
         return []
       }
       return [this.directory, ...this.names, ...this.childNames]
+    },
+    percentage() {
+      return ((this.size / this.totalSize) * 100).toFixed(2)
     },
     ...mapState({
       directory: (state) => {
