@@ -85,7 +85,7 @@ export default {
       const filepath = filepathes[0]
       commit('setDirectoryInput', { directoryInput: filepath })
     },
-    scan({ commit, dispatch, state }) {
+    scan({ commit, dispatch, rootState, state }) {
       if (!state.directoryInput) {
         dispatch(
           'showMessage',
@@ -132,6 +132,7 @@ export default {
       }
       const data = {
         directory: state.directory,
+        refreshInterval: rootState.settings.refreshInterval,
         dataFilepath
       }
       worker.postMessage({ id: 'scan', data })

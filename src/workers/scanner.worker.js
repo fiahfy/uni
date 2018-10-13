@@ -2,7 +2,6 @@ import fs from 'fs'
 import zlib from 'zlib'
 import * as scanner from '~/utils/scanner'
 
-const refreshInterval = 5000
 const increaseInterval = 0
 
 const write = (filepath, data) => {
@@ -41,7 +40,8 @@ const unlink = (filepath) => {
 onmessage = ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, dataFilepath } = data
+      const { directory, dataFilepath, refreshInterval } = data
+      console.log(data)
       unlink(dataFilepath)
       postMessage({ id: 'refresh' })
 
@@ -57,7 +57,7 @@ onmessage = ({ data: { id, data } }) => {
       scanner.on('progress', (filepath) => {
         postMessage({ id: 'progress', data: filepath })
         const now = new Date().getTime()
-        if (now - time > refreshInterval + increaseInterval * times) {
+        if (now - time > Number(refreshInterval) + increaseInterval * times) {
           console.log('refresh: %o', new Date())
           console.time('output')
           write(dataFilepath, scanner.getNode())

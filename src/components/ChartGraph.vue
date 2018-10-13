@@ -47,13 +47,19 @@
       v-if="!totalSize"
       class="message"
     >
-      <v-layout
-        align-center
-        justify-center
-        fill-height
+      <v-card
+        class="fill-height"
+        flat
+        tile
       >
-        <v-flex class="text-xs-center caption">No data</v-flex>
-      </v-layout>
+        <v-layout
+          align-center
+          justify-center
+          fill-height
+        >
+          <v-flex class="text-xs-center caption">No data</v-flex>
+        </v-layout>
+      </v-card>
     </div>
   </v-layout>
 </template>
