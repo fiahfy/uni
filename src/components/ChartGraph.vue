@@ -16,7 +16,7 @@
 
     <v-card v-if="pathes.length">
       <v-card-title>
-        Size: {{ size|readableSize }} <template v-if="size">({{ (size / totalSize * 100).toFixed(2) }} %)</template>
+        Total size: {{ totalSize|readableSize }}
       </v-card-title>
       <v-card-actions>
         <div class="pa-1">
@@ -37,8 +37,30 @@
       :position-y="tooltip.y"
       top
     >
-      <span>{{ tooltip.text }}</span>
+      <p class="ma-0">
+        {{ tooltip.text }}<br>
+        <small>{{ size|readableSize }} ({{ percentage }} %)</small>
+      </p>
     </v-tooltip>
+
+    <div
+      v-if="!totalSize"
+      class="message"
+    >
+      <v-card
+        class="fill-height"
+        flat
+        tile
+      >
+        <v-layout
+          align-center
+          justify-center
+          fill-height
+        >
+          <v-flex class="text-xs-center caption">No data</v-flex>
+        </v-layout>
+      </v-card>
+    </div>
   </v-layout>
 </template>
 
@@ -81,6 +103,9 @@ export default {
         return []
       }
       return [this.directory, ...this.names, ...this.childNames]
+    },
+    percentage() {
+      return ((this.size / this.totalSize) * 100).toFixed(2)
     },
     ...mapState({
       directory: (state) => {
@@ -255,8 +280,6 @@ export default {
         return
       }
 
-      console.time('rendering')
-
       const root = d3.hierarchy(node)
 
       this.root = root
@@ -298,8 +321,6 @@ export default {
 
       this.onClick(root)
 
-      console.timeEnd('rendering')
-
       this.loading = false
     },
     ...mapActions({
@@ -320,6 +341,7 @@ svg path {
 
 <style scoped lang="scss">
 .chart-graph {
+  position: relative;
   .flex {
     position: relative;
     .mask {
@@ -338,6 +360,15 @@ svg path {
     & > div {
       white-space: nowrap;
     }
+  }
+  .message {
+    background-color: white;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
   }
 }
 </style>

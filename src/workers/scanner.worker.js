@@ -1,21 +1,8 @@
 import fs from 'fs'
-import zlib from 'zlib'
 import * as scanner from '~/utils/scanner'
+import * as Storage from '~/utils/storage'
 
-const refreshInterval = 3000
-const increaseInterval = 1000
-
-const write = (filepath, data) => {
-  console.time('stringify')
-  const json = JSON.stringify(data)
-  console.timeEnd('stringify')
-  console.time('compress')
-  const buffer = zlib.gzipSync(json)
-  console.timeEnd('compress')
-  console.time('write')
-  fs.writeFileSync(filepath, buffer)
-  console.timeEnd('write')
-}
+const increaseInterval = 0
 
 const exists = (filepath) => {
   try {
@@ -29,20 +16,12 @@ const exists = (filepath) => {
   }
 }
 
-const unlink = (filepath) => {
-  if (!exists(filepath)) {
-    return
-  }
-  console.time('unlink')
-  fs.unlinkSync(filepath)
-  console.timeEnd('unlink')
-}
-
 onmessage = ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, dataFilepath } = data
-      unlink(dataFilepath)
+      const { directory, refreshInterval, dataFilepath } = data
+
+      Storage.unlink(dataFilepath)
       postMessage({ id: 'refresh' })
 
       if (!exists(directory)) {
@@ -50,30 +29,21 @@ onmessage = ({ data: { id, data } }) => {
         return
       }
 
-      console.log('Begin scan directory: %s', directory)
-      console.time('scan')
       let time = new Date().getTime()
       let times = 0
       scanner.on('progress', (filepath) => {
         postMessage({ id: 'progress', data: filepath })
         const now = new Date().getTime()
-        if (now - time > refreshInterval + increaseInterval * times) {
-          console.log('refresh: %o', new Date())
-          console.time('output')
-          write(dataFilepath, scanner.getNode())
-          console.timeEnd('output')
+        if (now - time > Number(refreshInterval) + increaseInterval * times) {
+          Storage.write(dataFilepath, scanner.getNode())
           postMessage({ id: 'refresh' })
           time = new Date().getTime()
           times++
         }
       })
       scanner.on('complete', () => {
-        console.log('complete: %o', new Date())
-        console.time('output')
-        write(dataFilepath, scanner.getNode())
-        console.timeEnd('output')
+        Storage.write(dataFilepath, scanner.getNode())
         postMessage({ id: 'complete' })
-        console.timeEnd('scan')
       })
       scanner.scan(directory)
       break
