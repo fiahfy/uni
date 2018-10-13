@@ -2,8 +2,8 @@ import fs from 'fs'
 import zlib from 'zlib'
 import * as scanner from '~/utils/scanner'
 
-const refreshInterval = 3000
-const increaseInterval = 1000
+const refreshInterval = 5000
+const increaseInterval = 0
 
 const write = (filepath, data) => {
   console.time('stringify')

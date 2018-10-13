@@ -43,7 +43,7 @@ export default {
     text() {
       switch (this.status) {
         case Status.notYet:
-          return 'Select scan directory and click scan'
+          return 'Select directory and scan'
         case Status.progress:
           return `Scanning... "${this.progressFilepath}"`
         case Status.done:

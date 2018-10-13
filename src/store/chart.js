@@ -24,7 +24,7 @@ export default {
     status: Status.notYet,
     error: null,
     directory: null,
-    directoryInput: null,
+    directoryInput: remote.app.getPath('home'),
     progressFilepath: null,
     begunAt: null,
     endedAt: null,

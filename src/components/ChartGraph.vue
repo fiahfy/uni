@@ -42,6 +42,19 @@
         <small>{{ size|readableSize }} ({{ percentage }} %)</small>
       </p>
     </v-tooltip>
+
+    <div
+      v-if="!totalSize"
+      class="message"
+    >
+      <v-layout
+        align-center
+        justify-center
+        fill-height
+      >
+        <v-flex class="text-xs-center caption">No data</v-flex>
+      </v-layout>
+    </div>
   </v-layout>
 </template>
 
@@ -326,6 +339,7 @@ svg path {
 
 <style scoped lang="scss">
 .chart-graph {
+  position: relative;
   .flex {
     position: relative;
     .mask {
@@ -344,6 +358,15 @@ svg path {
     & > div {
       white-space: nowrap;
     }
+  }
+  .message {
+    background-color: white;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
   }
 }
 </style>
