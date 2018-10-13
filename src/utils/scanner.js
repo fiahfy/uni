@@ -35,7 +35,7 @@ const scanFile = (filepath, depth, node) => {
       node.value = stats.size
     }
   } catch (e) {
-    console.error(e)
+    //
   }
 }
 
@@ -84,11 +84,8 @@ export const on = (event, callback) => {
 }
 
 export const getNode = () => {
-  console.log('deepcopy: %o', new Date())
   const root = JSON.parse(JSON.stringify(node))
-  console.log('sum: %o', new Date())
   sum(root)
-  console.log('reduce: %o', new Date())
   const limit = root.value * 0.001
   reduce(limit, root)
   return root

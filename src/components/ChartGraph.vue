@@ -280,8 +280,6 @@ export default {
         return
       }
 
-      console.time('rendering')
-
       const root = d3.hierarchy(node)
 
       this.root = root
@@ -322,8 +320,6 @@ export default {
         .style('opacity', 1)
 
       this.onClick(root)
-
-      console.timeEnd('rendering')
 
       this.loading = false
     },

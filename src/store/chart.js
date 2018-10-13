@@ -1,7 +1,5 @@
-import fs from 'fs'
-import path from 'path'
-import zlib from 'zlib'
 import { remote, shell } from 'electron'
+import * as Storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
 
 export const Status = {
@@ -11,10 +9,6 @@ export const Status = {
   cancelled: 'CANCELLED',
   error: 'ERROR'
 }
-
-const dataFilename = 'data.json.gz'
-const dataFilepath = path.join(remote.app.getPath('userData'), dataFilename)
-console.log('data directory: %s', dataFilepath)
 
 const worker = new Worker()
 
@@ -35,20 +29,7 @@ export default {
       if (state.status === Status.notYet) {
         return
       }
-      try {
-        console.time('read file')
-        const buffer = fs.readFileSync(dataFilepath)
-        console.timeEnd('read file')
-        console.time('decompress')
-        const json = zlib.gunzipSync(buffer)
-        console.timeEnd('decompress')
-        console.time('parse')
-        const data = JSON.parse(json)
-        console.timeEnd('parse')
-        return data
-      } catch (e) {
-        return null
-      }
+      return Storage.read(Storage.getFilepath())
     },
     getScanTime: (state, getters) => () => {
       if (state.status === Status.progress) {
@@ -85,7 +66,7 @@ export default {
       const filepath = filepathes[0]
       commit('setDirectoryInput', { directoryInput: filepath })
     },
-    scan({ commit, dispatch, rootState, state }) {
+    scan({ commit, dispatch, getters, rootState, state }) {
       if (!state.directoryInput) {
         dispatch(
           'showMessage',
@@ -107,16 +88,18 @@ export default {
           case 'refresh':
             commit('update')
             break
-          case 'complete':
+          case 'complete': {
             commit('update')
             commit('end')
             commit('setStatus', { status: Status.done })
+            const sec = (getters.getScanTime() / 1000).toFixed(2)
             dispatch(
               'showNotification',
-              { title: 'Scan', body: 'Scan finished' },
+              { title: 'Scan finished', body: `Total time: ${sec} sec` },
               { root: true }
             )
             break
+          }
           case 'error':
             commit('update')
             commit('end')
@@ -124,7 +107,7 @@ export default {
             commit('setError', { error: new Error(data) })
             dispatch(
               'showNotification',
-              { title: 'Scan', body: 'Scan failed' },
+              { title: 'Scan failed' },
               { root: true }
             )
             break
@@ -133,7 +116,7 @@ export default {
       const data = {
         directory: state.directory,
         refreshInterval: rootState.settings.refreshInterval,
-        dataFilepath
+        dataFilepath: Storage.getFilepath()
       }
       worker.postMessage({ id: 'scan', data })
     },
