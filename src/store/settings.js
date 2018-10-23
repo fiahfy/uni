@@ -2,7 +2,7 @@ export default {
   namespaced: true,
   state: {
     darkTheme: false,
-    refreshInterval: 1000
+    refreshInterval: 5000
   },
   mutations: {
     setDarkTheme(state, { darkTheme }) {
