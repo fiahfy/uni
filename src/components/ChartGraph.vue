@@ -353,7 +353,7 @@ svg path {
   .v-card__actions {
     overflow: auto;
     padding: 0;
-    & > div {
+    > div {
       white-space: nowrap;
     }
   }
