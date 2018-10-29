@@ -52,19 +52,13 @@ export default {
     progress() {
       return this.status === Status.progress
     },
-    ...mapState({
-      status: (state) => state.chart.status
-    })
+    ...mapState('chart', ['status'])
   },
   methods: {
     onPrependClick() {
       this.openDirectory()
     },
-    ...mapActions({
-      openDirectory: 'chart/openDirectory',
-      scan: 'chart/scan',
-      cancel: 'chart/cancel'
-    })
+    ...mapActions('chart', ['openDirectory', 'scan', 'cancel'])
   }
 }
 </script>

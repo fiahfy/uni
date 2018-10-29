@@ -63,15 +63,8 @@ export default {
           return ''
       }
     },
-    ...mapState({
-      status: (state) => state.chart.status,
-      error: (state) => state.chart.error,
-      directory: (state) => state.chart.directory,
-      progressFilepath: (state) => state.chart.progressFilepath
-    }),
-    ...mapGetters({
-      getScanTime: 'chart/getScanTime'
-    })
+    ...mapState('chart', ['status', 'error', 'directory', 'progressFilepath']),
+    ...mapGetters('chart', ['getScanTime'])
   },
   mounted() {
     window.setInterval(() => {

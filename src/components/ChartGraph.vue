@@ -115,12 +115,10 @@ export default {
           return directory.slice(0, directory.length - 1)
         }
         return directory
-      },
-      updatedAt: (state) => state.chart.updatedAt
+      }
     }),
-    ...mapGetters({
-      getNode: 'chart/getNode'
-    })
+    ...mapState('chart', ['updatedAt']),
+    ...mapGetters('chart', ['getNode'])
   },
   watch: {
     updatedAt() {
@@ -323,9 +321,7 @@ export default {
 
       this.loading = false
     },
-    ...mapActions({
-      browseDirectory: 'chart/browseDirectory'
-    })
+    ...mapActions('chart', ['browseDirectory'])
   }
 }
 </script>

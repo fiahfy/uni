@@ -26,9 +26,7 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      message: (state) => state.message
-    })
+    ...mapState(['message'])
   },
   watch: {
     snackbar(value) {
@@ -64,9 +62,7 @@ export default {
       this.color = message.color
       this.text = message.text
     },
-    ...mapMutations({
-      setMessage: 'setMessage'
-    })
+    ...mapMutations(['setMessage'])
   }
 }
 </script>

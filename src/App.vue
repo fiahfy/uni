@@ -28,9 +28,7 @@ export default {
     TitleBar
   },
   computed: {
-    ...mapState({
-      darkTheme: (state) => state.settings.darkTheme
-    })
+    ...mapState('settings', ['darkTheme'])
   },
   created() {
     this.initialize()
@@ -47,12 +45,8 @@ export default {
       const dirpath = files[0].path
       this.setDirectoryInput({ directoryInput: dirpath })
     },
-    ...mapMutations({
-      setDirectoryInput: 'chart/setDirectoryInput'
-    }),
-    ...mapActions({
-      initialize: 'chart/initialize'
-    })
+    ...mapMutations('chart', ['setDirectoryInput']),
+    ...mapActions('chart', ['initialize'])
   }
 }
 </script>
