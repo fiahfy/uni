@@ -1,22 +1,18 @@
 <template>
   <v-container class="settings">
-    <v-subheader>General</v-subheader>
-    <v-container>
-      <v-checkbox v-model="darkTheme" label="Use dark theme" />
-    </v-container>
+    <v-subheader class="pl-0">General</v-subheader>
+    <v-checkbox v-model="darkTheme" class="mt-0" label="Use dark theme" />
 
-    <v-subheader>Scan</v-subheader>
-    <v-container>
-      <v-text-field
-        v-model="refreshInterval"
-        label="Refresh interval"
-        type="number"
-        min="1000"
-        step="1000"
-        required
-        suffix="ms"
-      />
-    </v-container>
+    <v-subheader class="pl-0">Scan</v-subheader>
+    <v-text-field
+      v-model="refreshInterval"
+      type="number"
+      required
+      label="Refresh interval"
+      min="1000"
+      step="1000"
+      suffix="ms"
+    />
   </v-container>
 </template>
 
