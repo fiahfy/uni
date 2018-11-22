@@ -1,4 +1,4 @@
-import { remote, shell } from 'electron'
+import { remote, shell, clipboard } from 'electron'
 import * as Storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
 
@@ -138,6 +138,9 @@ export default {
           { root: true }
         )
       }
+    },
+    writeToClipboard(_, { filepath }) {
+      clipboard.writeText(filepath)
     }
   },
   mutations: {

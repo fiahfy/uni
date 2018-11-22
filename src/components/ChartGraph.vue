@@ -164,6 +164,13 @@ export default {
           click: () => {
             this.browseDirectory({ filepath })
           }
+        },
+        { type: 'separator' },
+        {
+          label: 'Copy path',
+          click: () => {
+            this.writeToClipboard({ filepath })
+          }
         }
       ])
     },
@@ -297,7 +304,7 @@ export default {
 
       this.loading = false
     },
-    ...mapActions('chart', ['browseDirectory'])
+    ...mapActions('chart', ['browseDirectory', 'writeClipboard'])
   }
 }
 </script>
