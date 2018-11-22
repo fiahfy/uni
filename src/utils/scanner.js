@@ -4,13 +4,34 @@ import path from 'path'
 const interval = 100
 
 let scanning = false
+let cancelling = false
 let lastProgressTime = 0
 let callbacks = {}
 let node = {}
 
-const scanFile = (filepath, depth, node) => {
+const delay = (millis = 0) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, millis)
+  })
+}
+
+const send = (event, args) => {
+  const callback = callbacks[event]
+  if (callback) {
+    callback(args)
+  }
+}
+
+const scanFile = async (filepath, depth, node) => {
+  if (cancelling) {
+    return
+  }
+
   const now = new Date().getTime()
   if (now - lastProgressTime > interval) {
+    await delay() // wait for receiving cancel request
     lastProgressTime = now
     send('progress', filepath)
   }
@@ -21,12 +42,13 @@ const scanFile = (filepath, depth, node) => {
       node.name = path.basename(filepath)
       node.value = 0
       node.children = []
-      fs.readdirSync(filepath).forEach((filename) => {
+      const filenames = fs.readdirSync(filepath)
+      for (let filename of filenames) {
         const childNode = {}
         node.children = [...node.children, childNode]
-        scanFile(path.join(filepath, filename), depth + 1, childNode)
+        await scanFile(path.join(filepath, filename), depth + 1, childNode)
         node.value += childNode.value
-      })
+      }
       if (depth > 10) {
         delete node.children
       }
@@ -36,13 +58,6 @@ const scanFile = (filepath, depth, node) => {
     }
   } catch (e) {
     //
-  }
-}
-
-const send = (event, args) => {
-  const callback = callbacks[event]
-  if (callback) {
-    callback(args)
   }
 }
 
@@ -65,18 +80,23 @@ const reduce = (limit, node) => {
   node.children.forEach((child) => reduce(limit, child))
 }
 
-export const scan = (filepath) => {
+export const scan = async (filepath) => {
   if (scanning) {
     return
   }
+  cancelling = false
   scanning = true
 
   node = {}
   lastProgressTime = 0
-  scanFile(filepath, 0, node)
+  await scanFile(filepath, 0, node)
 
   send('complete')
   scanning = false
+}
+
+export const cancel = () => {
+  cancelling = true
 }
 
 export const on = (event, callback) => {

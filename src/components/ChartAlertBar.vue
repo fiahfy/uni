@@ -1,7 +1,6 @@
 <template>
   <v-alert
-    v-if="type"
-    :value="alert"
+    :value="true"
     :type="type"
     class="chart-alert-bar ma-0"
   >
@@ -23,9 +22,6 @@ export default {
     }
   },
   computed: {
-    alert() {
-      return true
-    },
     type() {
       switch (this.status) {
         case Status.notYet:
@@ -33,12 +29,12 @@ export default {
           return 'info'
         case Status.done:
           return 'success'
+        case Status.cancelling:
         case Status.cancelled:
           return 'warning'
         case Status.error:
           return 'error'
       }
-      return ''
     },
     text() {
       switch (this.status) {
@@ -48,6 +44,8 @@ export default {
           return `Scanning... "${this.progressFilepath}"`
         case Status.done:
           return `Scaned directory "${this.directory}"`
+        case Status.cancelling:
+          return 'Cancelling...'
         case Status.cancelled:
           return 'Cancelled'
         case Status.error:

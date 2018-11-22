@@ -6,11 +6,12 @@ export const Status = {
   notYet: 'NOT_YET',
   progress: 'PROGRESS',
   done: 'DONE',
+  cancelling: 'CANCELLING',
   cancelled: 'CANCELLED',
   error: 'ERROR'
 }
 
-const worker = new Worker()
+const worker = Worker()
 
 export default {
   namespaced: true,
@@ -91,6 +92,10 @@ export default {
           case 'complete': {
             commit('update')
             commit('end')
+            if (state.status === Status.cancelling) {
+              commit('setStatus', { status: Status.cancelled })
+              return
+            }
             commit('setStatus', { status: Status.done })
             const sec = (getters.getScanTime() / 1000).toFixed(2)
             dispatch(
@@ -121,11 +126,8 @@ export default {
       worker.postMessage({ id: 'scan', data })
     },
     cancel({ commit }) {
-      commit('end')
-      commit('setStatus', { status: Status.cancelled })
-      if (worker) {
-        worker.terminate()
-      }
+      commit('setStatus', { status: Status.cancelling })
+      worker.postMessage({ id: 'cancel' })
     },
     browseDirectory({ dispatch }, { filepath }) {
       const result = shell.openItem(filepath)

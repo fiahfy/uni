@@ -15,17 +15,15 @@
       @click:prepend="onPrependClick"
     />
     <v-btn
-      v-if="progress"
-      :title="'Scanning'"
-      disabled
+      v-if="scanning"
+      :disabled="disabled"
       @click="cancel"
     >
-      Scanning
+      {{ title }}
       <v-icon right>find_in_page</v-icon>
     </v-btn>
     <v-btn
       v-else
-      :title="'Scan'"
       color="primary"
       @click="scan"
     >
@@ -49,8 +47,14 @@ export default {
         this.$store.commit('chart/setDirectoryInput', { directoryInput: value })
       }
     },
-    progress() {
-      return this.status === Status.progress
+    scanning() {
+      return [Status.progress, Status.cancelling].includes(this.status)
+    },
+    title() {
+      return this.status === Status.cancelling ? 'Cancelling' : 'Cancel'
+    },
+    disabled() {
+      return this.status === Status.cancelling
     },
     ...mapState('chart', ['status'])
   },

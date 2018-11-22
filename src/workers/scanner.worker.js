@@ -16,7 +16,7 @@ const exists = (filepath) => {
   }
 }
 
-onmessage = ({ data: { id, data } }) => {
+onmessage = async ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
       const { directory, refreshInterval, dataFilepath } = data
@@ -45,8 +45,11 @@ onmessage = ({ data: { id, data } }) => {
         Storage.write(dataFilepath, scanner.getNode())
         postMessage({ id: 'complete' })
       })
-      scanner.scan(directory)
+      await scanner.scan(directory)
       break
     }
+    case 'cancel':
+      scanner.cancel()
+      break
   }
 }
