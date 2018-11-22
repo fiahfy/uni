@@ -1,23 +1,12 @@
 <template>
-  <v-layout
-    class="chart-graph"
-    column
-  >
-    <v-flex
-      ref="sunburst"
-      class="scroll-y"
-    >
+  <v-layout class="chart-graph" column>
+    <v-flex ref="sunburst" class="scroll-y">
       <svg />
-      <div
-        v-if="loading"
-        class="mask"
-      />
+      <div v-if="loading" class="mask" />
     </v-flex>
 
     <v-card v-if="pathes.length">
-      <v-card-title>
-        Total size: {{ totalSize|readableSize }}
-      </v-card-title>
+      <v-card-title>Total size: {{ totalSize | readableSize }}</v-card-title>
       <v-card-actions>
         <div class="pa-1">
           <v-chip
@@ -38,25 +27,14 @@
       top
     >
       <p class="ma-0">
-        {{ tooltip.text }}<br>
-        <small>{{ size|readableSize }} ({{ percentage }} %)</small>
+        {{ tooltip.text }}<br />
+        <small>{{ size | readableSize }} ({{ percentage }} %)</small>
       </p>
     </v-tooltip>
 
-    <div
-      v-if="!totalSize"
-      class="message"
-    >
-      <v-card
-        class="fill-height"
-        flat
-        tile
-      >
-        <v-layout
-          align-center
-          justify-center
-          fill-height
-        >
+    <div v-if="!totalSize" class="message">
+      <v-card class="fill-height" flat tile>
+        <v-layout align-center justify-center fill-height>
           <v-flex class="text-xs-center caption">No data</v-flex>
         </v-layout>
       </v-card>
@@ -300,12 +278,10 @@ export default {
         .append('path')
         // .merge(path)
         .attr('d', this.arc)
-        .style(
-          'fill',
-          (d) =>
-            d.depth === 0
-              ? 'transparent'
-              : this.color((d.children ? d : d.parent).data.name)
+        .style('fill', (d) =>
+          d.depth === 0
+            ? 'transparent'
+            : this.color((d.children ? d : d.parent).data.name)
         )
         .style('fill-rule', 'evenodd')
         .style('cursor', (d) => (d.children ? 'pointer' : 'auto'))

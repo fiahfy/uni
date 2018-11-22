@@ -2,10 +2,7 @@
   <v-container class="settings">
     <v-subheader>General</v-subheader>
     <v-container>
-      <v-checkbox
-        v-model="darkTheme"
-        label="Use dark theme"
-      />
+      <v-checkbox v-model="darkTheme" label="Use dark theme" />
     </v-container>
 
     <v-subheader>Scan</v-subheader>

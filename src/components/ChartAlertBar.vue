@@ -1,12 +1,7 @@
 <template>
-  <v-alert
-    :value="true"
-    :type="type"
-    class="chart-alert-bar ma-0"
-  >
+  <v-alert :value="true" :type="type" class="chart-alert-bar ma-0">
     <v-layout row>
-      <span class="spacer ellipsis">{{ text }}</span>
-      <span>{{ subText }}</span>
+      <span class="spacer ellipsis">{{ text }}</span> <span>{{ subText }}</span>
     </v-layout>
   </v-alert>
 </template>

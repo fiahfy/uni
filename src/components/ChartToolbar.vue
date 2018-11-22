@@ -1,9 +1,5 @@
 <template>
-  <v-toolbar
-    class="chart-toolbar"
-    flat
-    dense
-  >
+  <v-toolbar class="chart-toolbar" flat dense>
     <v-text-field
       v-model="directoryInput"
       name="directory"
@@ -14,19 +10,11 @@
       hide-details
       @click:prepend="onPrependClick"
     />
-    <v-btn
-      v-if="scanning"
-      :disabled="disabled"
-      @click="cancel"
-    >
+    <v-btn v-if="scanning" :disabled="disabled" @click="cancel">
       {{ title }}
       <v-icon right>find_in_page</v-icon>
     </v-btn>
-    <v-btn
-      v-else
-      color="primary"
-      @click="scan"
-    >
+    <v-btn v-else color="primary" @click="scan">
       Scan
       <v-icon right>find_in_page</v-icon>
     </v-btn>
