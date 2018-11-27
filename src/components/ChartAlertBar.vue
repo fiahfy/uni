@@ -19,9 +19,6 @@ export default {
   computed: {
     type() {
       switch (this.status) {
-        case Status.notYet:
-        case Status.progress:
-          return 'info'
         case Status.done:
           return 'success'
         case Status.cancelling:
@@ -29,12 +26,14 @@ export default {
           return 'warning'
         case Status.error:
           return 'error'
+        case Status.notYet:
+        case Status.progress:
+        default:
+          return 'info'
       }
     },
     text() {
       switch (this.status) {
-        case Status.notYet:
-          return 'Select directory and scan'
         case Status.progress:
           return `Scanning... "${this.progressFilepath}"`
         case Status.done:
@@ -45,6 +44,9 @@ export default {
           return 'Cancelled'
         case Status.error:
           return `${this.error.message} "${this.directory}"`
+        case Status.notYet:
+        default:
+          return 'Select directory and scan'
       }
     },
     subText() {
