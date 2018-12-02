@@ -5,6 +5,11 @@ import Settings from '~/pages/Settings'
 
 Vue.use(Router)
 
+export const Name = {
+  chart: 'chart',
+  settings: 'settings'
+}
+
 export default new Router({
   routes: [
     {

@@ -3,12 +3,12 @@
     <v-list class="pt-0">
       <v-list-tile
         v-for="item in items"
-        :key="item.name"
+        :key="item.id"
         :title="item.title | accelerator(item.accelerator)"
         @click="(e) => onItemClick(e, item)"
       >
         <v-list-tile-action>
-          <v-icon :color="item.color">{{ item.icon }}</v-icon>
+          <v-icon :color="getColor(item)">{{ item.icon }}</v-icon>
         </v-list-tile-action>
       </v-list-tile>
     </v-list>
@@ -16,42 +16,38 @@
 </template>
 
 <script>
+import { Name } from '~/router'
+
 export default {
   data() {
     return {
       items: [
         {
-          name: 'chart',
+          id: 1,
           icon: 'pie_chart',
           title: 'Chart',
-          accelerator: 'CmdOrCtrl+Shift+C'
+          accelerator: 'CmdOrCtrl+Shift+C',
+          location: { name: Name.chart }
         },
         {
-          name: 'settings',
+          id: 2,
           icon: 'settings',
           title: 'Settings',
-          accelerator: 'CmdOrCtrl+,'
+          accelerator: 'CmdOrCtrl+,',
+          location: { name: Name.settings }
         }
       ]
     }
   },
-  watch: {
-    $route(to) {
-      this.updateItems(to.name)
-    }
-  },
-  mounted() {
-    this.updateItems(this.$route.name)
-  },
   methods: {
     onItemClick(e, item) {
-      this.$router.push({ name: item.name })
+      this.$router.push(item.location)
     },
-    updateItems(name) {
-      this.items = this.items.map((item) => ({
-        ...item,
-        color: item.name === name ? 'primary' : null
-      }))
+    getColor(item) {
+      return this.getActive(item) ? 'primary' : null
+    },
+    getActive(item) {
+      return item.location.name === this.$route.name
     }
   }
 }
