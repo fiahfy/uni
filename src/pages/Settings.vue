@@ -1,14 +1,14 @@
 <template>
   <v-container class="settings">
     <v-subheader class="pl-0">GENERAL</v-subheader>
-    <v-checkbox v-model="darkTheme" class="mt-0" label="Use dark theme" />
+    <v-checkbox v-model="darkTheme" class="mt-0" label="Use Dark Theme" />
 
-    <v-subheader class="pl-0">Scan</v-subheader>
+    <v-subheader class="pl-0">SCAN</v-subheader>
     <v-text-field
       v-model="refreshInterval"
       type="number"
       required
-      label="Refresh interval"
+      label="Refresh Interval"
       min="1000"
       step="1000"
       suffix="ms"
