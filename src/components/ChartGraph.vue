@@ -27,6 +27,7 @@
       top
     >
       <p class="ma-0">
+        <!-- eslint-disable-next-line vue/html-self-closing -->
         {{ tooltip.text }}<br />
         <small>{{ size | readableSize }} ({{ percentage }} %)</small>
       </p>
@@ -47,7 +48,6 @@ import path from 'path'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
 import { debounce } from 'debounce'
-import ContextMenu from '../utils/context-menu'
 
 export default {
   data() {
@@ -149,7 +149,7 @@ export default {
         ...ancestors.slice(this.names.length + 1).map((d) => d.data.name)
       ].join(path.sep)
 
-      ContextMenu.show([
+      this.$contextMenu.show([
         {
           label: 'Open',
           click: () => {
@@ -295,7 +295,7 @@ export default {
 
       this.loading = false
     },
-    ...mapActions('chart', ['browseDirectory', 'writeClipboard'])
+    ...mapActions('chart', ['browseDirectory', 'writeToClipboard'])
   }
 }
 </script>

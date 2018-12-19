@@ -16,8 +16,6 @@
 </template>
 
 <script>
-import { Name } from '~/router'
-
 export default {
   data() {
     return {
@@ -27,27 +25,27 @@ export default {
           icon: 'pie_chart',
           title: 'Chart',
           accelerator: 'CmdOrCtrl+Shift+C',
-          location: { name: Name.chart }
+          path: '/chart'
         },
         {
           id: 2,
           icon: 'settings',
           title: 'Settings',
           accelerator: 'CmdOrCtrl+,',
-          location: { name: Name.settings }
+          path: '/settings'
         }
       ]
     }
   },
   methods: {
     onItemClick(e, item) {
-      this.$router.push(item.location)
+      this.$router.push(item.path)
     },
     getColor(item) {
       return this.getActive(item) ? 'primary' : null
     },
     getActive(item) {
-      return item.location.name === this.$route.name
+      return item.path === this.$route.path
     }
   }
 }

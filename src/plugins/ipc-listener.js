@@ -1,7 +1,6 @@
 import { ipcRenderer } from 'electron'
-import { Name } from '~/router'
 
-export const addIpcRendererListeners = (store) => {
+export default ({ store }) => {
   ipcRenderer.on('openDirectory', () => {
     store.dispatch('chart/openDirectory')
   })
@@ -12,9 +11,9 @@ export const addIpcRendererListeners = (store) => {
     store.commit('setFullScreen', { fullScreen: false })
   })
   ipcRenderer.on('showChart', () => {
-    store.dispatch('changeRoute', { name: Name.chart })
+    store.$router.push('/chart')
   })
   ipcRenderer.on('showSettings', () => {
-    store.dispatch('changeRoute', { name: Name.settings })
+    store.$router.push('/settings')
   })
 }
