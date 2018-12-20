@@ -42,8 +42,8 @@ export default {
       const dirpath = files[0].path
       this.setDirectoryInput({ directoryInput: dirpath })
     },
-    ...mapMutations('chart', ['setDirectoryInput']),
-    ...mapActions('chart', ['initialize'])
+    ...mapMutations('local', ['setDirectoryInput']),
+    ...mapActions('local', ['initialize'])
   }
 }
 </script>

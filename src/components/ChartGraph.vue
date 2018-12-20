@@ -13,6 +13,7 @@
     </v-flex>
 
     <v-card>
+      <v-divider />
       <v-card-title class="py-2">
         <span>Total size: {{ totalSize | readableSize }}</span>
         <v-spacer />
@@ -27,7 +28,7 @@
         </v-btn>
       </v-card-title>
       <v-card-actions>
-        <div class="pa-2">
+        <div v-if="pathes.length" class="pa-2">
           <v-chip
             v-for="(p, index) of pathes"
             :key="index"
@@ -90,15 +91,15 @@ export default {
     ...mapState({
       directory: (state) => {
         // Remove trailing seperator
-        const directory = state.chart.directory
+        const directory = state.local.directory
         if (directory && directory.slice(-1) === path.sep) {
           return directory.slice(0, directory.length - 1)
         }
         return directory
       }
     }),
-    ...mapState('chart', ['updatedAt']),
-    ...mapGetters('chart', ['getNode'])
+    ...mapState('local', ['updatedAt']),
+    ...mapGetters('local', ['getNode'])
   },
   watch: {
     updatedAt() {
@@ -108,7 +109,7 @@ export default {
   mounted() {
     this.debounced = debounce(() => {
       this.setup()
-    }, 1000)
+    }, 500)
     window.addEventListener('resize', this.onResize)
     this.debounced()
   },
@@ -310,7 +311,7 @@ export default {
       this.loading = false
     },
     ...mapMutations(['showDialog']),
-    ...mapActions('chart', ['browseDirectory', 'writeToClipboard'])
+    ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
   }
 }
 </script>

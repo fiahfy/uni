@@ -43,6 +43,6 @@ export const mutations = {
 
 export const plugins = [
   createPersistedState({
-    paths: ['chart', 'settings']
+    paths: ['local', 'settings']
   })
 ]

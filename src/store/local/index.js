@@ -1,20 +1,12 @@
 import { remote, shell, clipboard } from 'electron'
+import status from '~/consts/status'
 import * as Storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
-
-export const Status = {
-  notYet: 'NOT_YET',
-  progress: 'PROGRESS',
-  done: 'DONE',
-  cancelling: 'CANCELLING',
-  cancelled: 'CANCELLED',
-  error: 'ERROR'
-}
 
 const worker = Worker()
 
 export const state = () => ({
-  status: Status.notYet,
+  status: status.NOT_YET,
   error: null,
   directory: null,
   directoryInput: remote.app.getPath('home'),
@@ -26,13 +18,13 @@ export const state = () => ({
 
 export const getters = {
   getNode: (state) => () => {
-    if (state.status === Status.notYet) {
+    if (state.status === status.NOT_YET) {
       return
     }
     return Storage.read(Storage.getFilepath())
   },
   getScanTime: (state, getters) => () => {
-    if (state.status === Status.progress) {
+    if (state.status === status.PROGRESS) {
       return getters.getElapsedTime()
     }
     return getters.totalTime
@@ -53,8 +45,8 @@ export const getters = {
 
 export const actions = {
   initialize({ commit, state }) {
-    if (state.status === Status.progress) {
-      commit('setStatus', { status: Status.cancelled })
+    if (state.status === status.PROGRESS) {
+      commit('setStatus', { status: status.CANCELLED })
     }
   },
   openDirectory({ commit }) {
@@ -77,7 +69,7 @@ export const actions = {
       return
     }
 
-    commit('setStatus', { status: Status.progress })
+    commit('setStatus', { status: status.PROGRESS })
     commit('setDirectory', { directory: state.directoryInput })
     commit('begin')
 
@@ -92,11 +84,11 @@ export const actions = {
         case 'complete': {
           commit('update')
           commit('end')
-          if (state.status === Status.cancelling) {
-            commit('setStatus', { status: Status.cancelled })
+          if (state.status === status.CANCELLING) {
+            commit('setStatus', { status: status.CANCELLED })
             return
           }
-          commit('setStatus', { status: Status.done })
+          commit('setStatus', { status: status.DONE })
           const sec = (getters.getScanTime() / 1000).toFixed(2)
           dispatch(
             'showNotification',
@@ -108,7 +100,7 @@ export const actions = {
         case 'error':
           commit('update')
           commit('end')
-          commit('setStatus', { status: Status.error })
+          commit('setStatus', { status: status.ERROR })
           commit('setError', { error: new Error(data) })
           dispatch('showNotification', { title: 'Scan failed' }, { root: true })
           break
@@ -122,7 +114,7 @@ export const actions = {
     worker.postMessage({ id: 'scan', data })
   },
   cancel({ commit }) {
-    commit('setStatus', { status: Status.cancelling })
+    commit('setStatus', { status: status.CANCELLING })
     worker.postMessage({ id: 'cancel' })
   },
   browseDirectory({ dispatch }, { filepath }) {

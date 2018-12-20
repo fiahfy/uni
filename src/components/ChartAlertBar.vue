@@ -8,7 +8,7 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import { Status } from '~/store/chart'
+import status from '~/consts/status'
 
 export default {
   data() {
@@ -19,47 +19,47 @@ export default {
   computed: {
     type() {
       switch (this.status) {
-        case Status.done:
+        case status.DONE:
           return 'success'
-        case Status.cancelling:
-        case Status.cancelled:
+        case status.CANCELLING:
+        case status.CANCELLED:
           return 'warning'
-        case Status.error:
+        case status.ERROR:
           return 'error'
-        case Status.notYet:
-        case Status.progress:
+        case status.NOT_YET:
+        case status.PROGRESS:
         default:
           return 'info'
       }
     },
     text() {
       switch (this.status) {
-        case Status.progress:
+        case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
-        case Status.done:
+        case status.DONE:
           return `Scaned directory "${this.directory}"`
-        case Status.cancelling:
+        case status.CANCELLING:
           return 'Cancelling...'
-        case Status.cancelled:
+        case status.CANCELLED:
           return 'Cancelled'
-        case Status.error:
+        case status.ERROR:
           return `${this.error.message} "${this.directory}"`
-        case Status.notYet:
+        case status.NOT_YET:
         default:
           return 'Select directory and scan'
       }
     },
     subText() {
       switch (this.status) {
-        case Status.progress:
-        case Status.done:
+        case status.PROGRESS:
+        case status.DONE:
           return `Total time: ${this.time} sec`
         default:
           return ''
       }
     },
-    ...mapState('chart', ['status', 'error', 'directory', 'progressFilepath']),
-    ...mapGetters('chart', ['getScanTime'])
+    ...mapState('local', ['status', 'error', 'directory', 'progressFilepath']),
+    ...mapGetters('local', ['getScanTime'])
   },
   mounted() {
     window.setInterval(() => {

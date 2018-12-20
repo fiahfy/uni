@@ -23,34 +23,36 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import { Status } from '~/store/chart'
+import status from '~/consts/status'
 
 export default {
   computed: {
     directoryInput: {
       get() {
-        return this.$store.state.chart.directoryInput
+        return this.$store.state.local.directoryInput
       },
       set(value) {
-        this.$store.commit('chart/setDirectoryInput', { directoryInput: value })
+        this.$store.commit('local/setDirectoryInput', {
+          directoryInput: value
+        })
       }
     },
     scanning() {
-      return [Status.progress, Status.cancelling].includes(this.status)
+      return [status.PROGRESS, status.CANCELLING].includes(this.status)
     },
     title() {
-      return this.status === Status.cancelling ? 'Cancelling' : 'Cancel'
+      return this.status === status.CANCELLING ? 'Cancelling' : 'Cancel'
     },
     disabled() {
-      return this.status === Status.cancelling
+      return this.status === status.CANCELLING
     },
-    ...mapState('chart', ['status'])
+    ...mapState('local', ['status'])
   },
   methods: {
     onPrependClick() {
       this.openDirectory()
     },
-    ...mapActions('chart', ['openDirectory', 'scan', 'cancel'])
+    ...mapActions('local', ['openDirectory', 'scan', 'cancel'])
   }
 }
 </script>
