@@ -1,6 +1,6 @@
 import fs from 'fs'
-import * as scanner from '~/utils/scanner'
-import * as Storage from '~/utils/storage'
+import scanner from '~/utils/scanner'
+import storage from '~/utils/storage'
 
 const increaseInterval = 0
 
@@ -21,7 +21,7 @@ onmessage = async ({ data: { id, data } }) => {
     case 'scan': {
       const { directory, refreshInterval, dataFilepath } = data
 
-      Storage.unlink(dataFilepath)
+      storage.unlink(dataFilepath)
       postMessage({ id: 'refresh' })
 
       if (!exists(directory)) {
@@ -35,14 +35,14 @@ onmessage = async ({ data: { id, data } }) => {
         postMessage({ id: 'progress', data: filepath })
         const now = new Date().getTime()
         if (now - time > Number(refreshInterval) + increaseInterval * times) {
-          Storage.write(dataFilepath, scanner.getNode())
+          storage.write(dataFilepath, scanner.getNode())
           postMessage({ id: 'refresh' })
           time = new Date().getTime()
           times++
         }
       })
       scanner.on('complete', () => {
-        Storage.write(dataFilepath, scanner.getNode())
+        storage.write(dataFilepath, scanner.getNode())
         postMessage({ id: 'complete' })
       })
       await scanner.scan(directory)

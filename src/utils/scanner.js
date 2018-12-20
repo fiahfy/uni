@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-const interval = 100
+const INTERVAL = 100
 
 let scanning = false
 let cancelling = false
@@ -30,7 +30,7 @@ const scanFile = async (filepath, depth, node) => {
   }
 
   const now = new Date().getTime()
-  if (now - lastProgressTime > interval) {
+  if (now - lastProgressTime > INTERVAL) {
     await delay() // wait for receiving cancel request
     lastProgressTime = now
     send('progress', filepath)
@@ -80,7 +80,7 @@ const reduce = (limit, node) => {
   node.children.forEach((child) => reduce(limit, child))
 }
 
-export const scan = async (filepath) => {
+const scan = async (filepath) => {
   if (scanning) {
     return
   }
@@ -95,18 +95,20 @@ export const scan = async (filepath) => {
   scanning = false
 }
 
-export const cancel = () => {
+const cancel = () => {
   cancelling = true
 }
 
-export const on = (event, callback) => {
+const on = (event, callback) => {
   callbacks[event] = callback
 }
 
-export const getNode = () => {
+const getNode = () => {
   const root = JSON.parse(JSON.stringify(node))
   sum(root)
   const limit = root.value * 0.001
   reduce(limit, root)
   return root
 }
+
+export default { scan, cancel, on, getNode }

@@ -1,6 +1,6 @@
 import { remote, shell, clipboard } from 'electron'
 import status from '~/consts/status'
-import * as Storage from '~/utils/storage'
+import storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
 
 const worker = Worker()
@@ -21,7 +21,7 @@ export const getters = {
     if (state.status === status.NOT_YET) {
       return
     }
-    return Storage.read(Storage.getFilepath())
+    return storage.read(storage.getFilepath())
   },
   getScanTime: (state, getters) => () => {
     if (state.status === status.PROGRESS) {
@@ -109,7 +109,7 @@ export const actions = {
     const data = {
       directory: state.directory,
       refreshInterval: rootState.settings.refreshInterval,
-      dataFilepath: Storage.getFilepath()
+      dataFilepath: storage.getFilepath()
     }
     worker.postMessage({ id: 'scan', data })
   },
