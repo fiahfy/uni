@@ -1,11 +1,5 @@
 <template>
-  <v-system-bar
-    v-if="titleBar"
-    class="title-bar"
-    height="22"
-    app
-    status
-  >
+  <v-system-bar v-if="titleBar" class="title-bar" height="22" app status>
     <v-spacer />
     <span>{{ title }}</span>
     <v-spacer />
@@ -17,12 +11,8 @@ import { mapGetters, mapState } from 'vuex'
 
 export default {
   computed: {
-    ...mapState({
-      title: (state) => state.title
-    }),
-    ...mapGetters({
-      titleBar: 'titleBar'
-    })
+    ...mapState(['title']),
+    ...mapGetters(['titleBar'])
   }
 }
 </script>

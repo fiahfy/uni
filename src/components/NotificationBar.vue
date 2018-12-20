@@ -1,15 +1,7 @@
 <template>
-  <v-snackbar
-    v-model="snackbar"
-    :color="color"
-    class="notification-bar"
-  >
+  <v-snackbar v-model="snackbar" :color="color" class="notification-bar">
     {{ text }}
-    <v-btn
-      class="ml-3"
-      flat
-      @click.native="onCloseClick"
-    >Close</v-btn>
+    <v-btn class="ml-3" flat @click.native="onCloseClick">Close</v-btn>
   </v-snackbar>
 </template>
 
@@ -26,9 +18,7 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      message: (state) => state.message
-    })
+    ...mapState(['message'])
   },
   watch: {
     snackbar(value) {
@@ -64,9 +54,7 @@ export default {
       this.color = message.color
       this.text = message.text
     },
-    ...mapMutations({
-      setMessage: 'setMessage'
-    })
+    ...mapMutations(['setMessage'])
   }
 }
 </script>

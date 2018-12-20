@@ -1,15 +1,13 @@
-export default {
-  namespaced: true,
-  state: {
-    darkTheme: false,
-    refreshInterval: 1000
+export const state = () => ({
+  darkTheme: false,
+  refreshInterval: 5000
+})
+
+export const mutations = {
+  setDarkTheme(state, { darkTheme }) {
+    state.darkTheme = darkTheme
   },
-  mutations: {
-    setDarkTheme(state, { darkTheme }) {
-      state.darkTheme = darkTheme
-    },
-    setRefreshInterval(state, { refreshInterval }) {
-      state.refreshInterval = refreshInterval
-    }
+  setRefreshInterval(state, { refreshInterval }) {
+    state.refreshInterval = refreshInterval
   }
 }

@@ -1,20 +1,14 @@
 <template>
-  <v-alert
-    v-if="type"
-    :value="alert"
-    :type="type"
-    class="chart-alert-bar ma-0"
-  >
+  <v-alert :value="true" :type="type" class="chart-alert-bar ma-0">
     <v-layout row>
-      <span class="spacer ellipsis">{{ text }}</span>
-      <span>{{ subText }}</span>
+      <span class="spacer ellipsis">{{ text }}</span> <span>{{ subText }}</span>
     </v-layout>
   </v-alert>
 </template>
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import { Status } from '~/store/chart'
+import status from '~/consts/status'
 
 export default {
   data() {
@@ -23,55 +17,49 @@ export default {
     }
   },
   computed: {
-    alert() {
-      return true
-    },
     type() {
       switch (this.status) {
-        case Status.notYet:
-        case Status.progress:
-          return 'info'
-        case Status.done:
+        case status.DONE:
           return 'success'
-        case Status.cancelled:
+        case status.CANCELLING:
+        case status.CANCELLED:
           return 'warning'
-        case Status.error:
+        case status.ERROR:
           return 'error'
+        case status.NOT_YET:
+        case status.PROGRESS:
+        default:
+          return 'info'
       }
-      return ''
     },
     text() {
       switch (this.status) {
-        case Status.notYet:
-          return 'Select directory and scan'
-        case Status.progress:
+        case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
-        case Status.done:
+        case status.DONE:
           return `Scaned directory "${this.directory}"`
-        case Status.cancelled:
+        case status.CANCELLING:
+          return 'Cancelling...'
+        case status.CANCELLED:
           return 'Cancelled'
-        case Status.error:
+        case status.ERROR:
           return `${this.error.message} "${this.directory}"`
+        case status.NOT_YET:
+        default:
+          return 'Select directory and scan'
       }
     },
     subText() {
       switch (this.status) {
-        case Status.progress:
-        case Status.done:
+        case status.PROGRESS:
+        case status.DONE:
           return `Total time: ${this.time} sec`
         default:
           return ''
       }
     },
-    ...mapState({
-      status: (state) => state.chart.status,
-      error: (state) => state.chart.error,
-      directory: (state) => state.chart.directory,
-      progressFilepath: (state) => state.chart.progressFilepath
-    }),
-    ...mapGetters({
-      getScanTime: 'chart/getScanTime'
-    })
+    ...mapState('local', ['status', 'error', 'directory', 'progressFilepath']),
+    ...mapGetters('local', ['getScanTime'])
   },
   mounted() {
     window.setInterval(() => {
