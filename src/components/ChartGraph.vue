@@ -2,13 +2,32 @@
   <v-layout class="chart-graph" column>
     <v-flex ref="sunburst" class="scroll-y">
       <svg />
-      <div v-if="loading" class="mask" />
+      <div v-if="loading" class="loading" />
+      <div v-if="!totalSize" class="message">
+        <v-card class="fill-height" flat tile>
+          <v-layout align-center justify-center fill-height>
+            <v-flex class="text-xs-center caption">No data</v-flex>
+          </v-layout>
+        </v-card>
+      </div>
     </v-flex>
 
-    <v-card v-if="pathes.length">
-      <v-card-title>Total size: {{ totalSize | readableSize }}</v-card-title>
+    <v-card>
+      <v-card-title class="py-2">
+        <span>Total size: {{ totalSize | readableSize }}</span>
+        <v-spacer />
+        <v-btn
+          class="ma-0"
+          :title="'Settings' | accelerator('CmdOrCtrl+,')"
+          flat
+          icon
+          @click="onSettingsClick"
+        >
+          <v-icon>settings</v-icon>
+        </v-btn>
+      </v-card-title>
       <v-card-actions>
-        <div class="pa-1">
+        <div class="pa-2">
           <v-chip
             v-for="(p, index) of pathes"
             :key="index"
@@ -32,20 +51,12 @@
         <small>{{ size | readableSize }} ({{ percentage }} %)</small>
       </p>
     </v-tooltip>
-
-    <div v-if="!totalSize" class="message">
-      <v-card class="fill-height" flat tile>
-        <v-layout align-center justify-center fill-height>
-          <v-flex class="text-xs-center caption">No data</v-flex>
-        </v-layout>
-      </v-card>
-    </div>
   </v-layout>
 </template>
 
 <script>
 import path from 'path'
-import { mapActions, mapGetters, mapState } from 'vuex'
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 import * as d3 from 'd3'
 import { debounce } from 'debounce'
 
@@ -105,6 +116,9 @@ export default {
     window.removeEventListener('resize', this.onResize)
   },
   methods: {
+    onSettingsClick() {
+      this.showDialog()
+    },
     onResize() {
       this.debounced()
     },
@@ -295,6 +309,7 @@ export default {
 
       this.loading = false
     },
+    ...mapMutations(['showDialog']),
     ...mapActions('chart', ['browseDirectory', 'writeToClipboard'])
   }
 }
@@ -314,14 +329,19 @@ svg path {
   position: relative;
   .flex {
     position: relative;
-    .mask {
+    > div {
       background-color: white;
       bottom: 0;
       left: 0;
-      opacity: 0.6;
       position: absolute;
       right: 0;
       top: 0;
+      &.loading {
+        opacity: 0.6;
+      }
+      &.message {
+        z-index: 1;
+      }
     }
   }
   .v-card__actions {
@@ -330,15 +350,6 @@ svg path {
     > div {
       white-space: nowrap;
     }
-  }
-  .message {
-    background-color: white;
-    bottom: 0;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 1;
   }
 }
 </style>

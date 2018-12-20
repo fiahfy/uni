@@ -6,22 +6,22 @@
     @dragover.native.prevent
   >
     <title-bar />
-    <activity-bar />
     <v-content class="fill-height"><nuxt /></v-content>
     <notification-bar />
+    <settings-dialog />
   </v-app>
 </template>
 
 <script>
 import { mapActions, mapMutations, mapState } from 'vuex'
-import ActivityBar from '~/components/ActivityBar'
 import NotificationBar from '~/components/NotificationBar'
+import SettingsDialog from '~/components/SettingsDialog'
 import TitleBar from '~/components/TitleBar'
 
 export default {
   components: {
-    ActivityBar,
     NotificationBar,
+    SettingsDialog,
     TitleBar
   },
   computed: {

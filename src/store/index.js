@@ -4,7 +4,8 @@ import Package from '~~/package.json'
 export const state = () => ({
   title: Package.productName,
   message: null,
-  fullScreen: false
+  fullScreen: false,
+  dialog: false
 })
 
 export const getters = {
@@ -31,6 +32,12 @@ export const mutations = {
   },
   setFullScreen(state, { fullScreen }) {
     state.fullScreen = fullScreen
+  },
+  showDialog(state) {
+    state.dialog = true
+  },
+  dismissDialog(state) {
+    state.dialog = false
   }
 }
 

@@ -10,10 +10,7 @@ export default ({ store }) => {
   ipcRenderer.on('leaveFullScreen', () => {
     store.commit('setFullScreen', { fullScreen: false })
   })
-  ipcRenderer.on('showChart', () => {
-    store.$router.push('/chart')
-  })
   ipcRenderer.on('showSettings', () => {
-    store.$router.push('/settings')
+    store.commit('showDialog')
   })
 }
