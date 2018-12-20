@@ -1,5 +1,5 @@
 <template>
-  <v-container class="chart" fill-height fluid pa-0>
+  <v-container class="index" fill-height fluid pa-0>
     <v-layout column>
       <chart-alert-bar />
       <chart-toolbar />

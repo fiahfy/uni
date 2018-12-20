@@ -6,23 +6,22 @@
     @dragover.native.prevent
   >
     <title-bar />
-    <activity-bar />
-    <v-content class="fill-height"><router-view /></v-content>
+    <v-content class="fill-height"><nuxt /></v-content>
     <notification-bar />
+    <settings-dialog />
   </v-app>
 </template>
 
 <script>
 import { mapActions, mapMutations, mapState } from 'vuex'
-import ActivityBar from './components/ActivityBar'
-import NotificationBar from './components/NotificationBar'
-import TitleBar from './components/TitleBar'
-import ContextMenu from './utils/context-menu'
+import NotificationBar from '~/components/NotificationBar'
+import SettingsDialog from '~/components/SettingsDialog'
+import TitleBar from '~/components/TitleBar'
 
 export default {
   components: {
-    ActivityBar,
     NotificationBar,
+    SettingsDialog,
     TitleBar
   },
   computed: {
@@ -33,7 +32,7 @@ export default {
   },
   methods: {
     onContextMenu() {
-      ContextMenu.show()
+      this.$contextMenu.show()
     },
     onDrop(e) {
       const files = Array.from(e.dataTransfer.files)
@@ -43,18 +42,15 @@ export default {
       const dirpath = files[0].path
       this.setDirectoryInput({ directoryInput: dirpath })
     },
-    ...mapMutations('chart', ['setDirectoryInput']),
-    ...mapActions('chart', ['initialize'])
+    ...mapMutations('local', ['setDirectoryInput']),
+    ...mapActions('local', ['initialize'])
   }
 }
 </script>
 
-<style lang="scss">
-@import '~typeface-roboto/index.css';
-@import '~material-design-icons-iconfont/dist/material-design-icons.css';
-@import '~vuetify/dist/vuetify.min.css';
-
-html {
-  overflow-y: hidden;
+<style scoped lang="scss">
+#app .v-content .container:nth-child(2) {
+  /* prevent flash if page is changed */
+  display: none;
 }
 </style>

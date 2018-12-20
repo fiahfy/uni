@@ -2,15 +2,15 @@ import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
 
-const filename = 'data.json.gz'
+const FILENAME = 'data.json.gz'
 
-export const getFilepath = () => {
+const getFilepath = () => {
   const { remote } = require('electron')
-  const dataFilepath = path.join(remote.app.getPath('userData'), filename)
+  const dataFilepath = path.join(remote.app.getPath('userData'), FILENAME)
   return dataFilepath
 }
 
-export const read = (filepath) => {
+const read = (filepath) => {
   try {
     const buffer = fs.readFileSync(filepath)
     const json = zlib.gunzipSync(buffer)
@@ -21,7 +21,7 @@ export const read = (filepath) => {
   }
 }
 
-export const write = (filepath, data) => {
+const write = (filepath, data) => {
   try {
     const json = JSON.stringify(data)
     const buffer = zlib.gzipSync(json)
@@ -31,10 +31,12 @@ export const write = (filepath, data) => {
   }
 }
 
-export const unlink = (filepath) => {
+const unlink = (filepath) => {
   try {
     fs.unlinkSync(filepath)
   } catch (e) {
     //
   }
 }
+
+export default { getFilepath, read, write, unlink }
