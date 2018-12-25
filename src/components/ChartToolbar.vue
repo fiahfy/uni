@@ -2,9 +2,9 @@
   <v-toolbar class="chart-toolbar" color="transparent" flat dense>
     <v-btn
       v-if="scanning"
-      :disabled="disabled"
       class="pr-5"
       color="primary"
+      :disabled="disabled"
       outline
       round
       @click="onCancelClick"
@@ -16,6 +16,7 @@
       v-else
       class="pr-5"
       color="primary"
+      :title="'Scan' | accelerator('CmdOrCtrl+O')"
       depressed
       round
       @click="onScanClick"
