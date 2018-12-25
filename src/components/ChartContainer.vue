@@ -1,12 +1,11 @@
 <template>
   <v-layout class="chart-container" column>
-    <v-flex ref="wrapper">
+    <v-flex ref="wrapper" class="ma-3">
       <svg ref="sunburst" />
       <div v-if="loading" class="loading" />
     </v-flex>
 
     <v-card tile flat :style="{ visibility: totalSize ? 'visible' : 'hidden' }">
-      <v-divider />
       <v-card-title class="py-2">
         <span>Total size: {{ totalSize | readableSize }}</span>
       </v-card-title>
@@ -96,7 +95,7 @@ export default {
   },
   watch: {
     updatedAt() {
-      this.update()
+      this.setup()
     }
   },
   mounted() {
