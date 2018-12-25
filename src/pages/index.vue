@@ -1,24 +1,24 @@
 <template>
   <v-container class="index" fill-height fluid pa-0>
     <v-layout column>
-      <chart-alert-bar />
+      <alert-bar />
       <chart-toolbar />
       <v-container fluid pa-0 overflow-hidden>
-        <chart-graph class="fill-height" />
+        <chart-container class="fill-height" />
       </v-container>
     </v-layout>
   </v-container>
 </template>
 
 <script>
-import ChartAlertBar from '~/components/ChartAlertBar'
-import ChartGraph from '~/components/ChartGraph'
+import AlertBar from '~/components/AlertBar'
+import ChartContainer from '~/components/ChartContainer'
 import ChartToolbar from '~/components/ChartToolbar'
 
 export default {
   components: {
-    ChartAlertBar,
-    ChartGraph,
+    AlertBar,
+    ChartContainer,
     ChartToolbar
   }
 }

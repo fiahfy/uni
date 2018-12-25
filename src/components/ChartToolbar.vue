@@ -1,42 +1,48 @@
 <template>
-  <v-toolbar class="chart-toolbar" flat dense>
-    <v-text-field
-      v-model="directoryInput"
-      name="directory"
-      class="pt-0"
-      label="Path"
-      prepend-icon="folder"
-      single-line
-      hide-details
-      @click:prepend="onPrependClick"
-    />
-    <v-btn v-if="scanning" :disabled="disabled" @click="cancel">
+  <v-toolbar class="chart-toolbar" color="transparent" flat dense>
+    <v-btn
+      v-if="scanning"
+      class="pr-5"
+      color="primary"
+      :disabled="disabled"
+      outline
+      round
+      @click="onCancelClick"
+    >
+      <v-icon left>find_in_page</v-icon>
       {{ title }}
-      <v-icon right>find_in_page</v-icon>
     </v-btn>
-    <v-btn v-else color="primary" @click="scan">
+    <v-btn
+      v-else
+      class="pr-5"
+      color="primary"
+      :title="'Scan' | accelerator('CmdOrCtrl+O')"
+      depressed
+      round
+      @click="onScanClick"
+    >
+      <v-icon left>find_in_page</v-icon>
       Scan
-      <v-icon right>find_in_page</v-icon>
+    </v-btn>
+    <v-spacer />
+    <v-btn
+      class="ma-0"
+      :title="'Settings' | accelerator('CmdOrCtrl+,')"
+      flat
+      icon
+      @click="onSettingsClick"
+    >
+      <v-icon>settings</v-icon>
     </v-btn>
   </v-toolbar>
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapMutations, mapState } from 'vuex'
 import status from '~/consts/status'
 
 export default {
   computed: {
-    directoryInput: {
-      get() {
-        return this.$store.state.local.directoryInput
-      },
-      set(value) {
-        this.$store.commit('local/setDirectoryInput', {
-          directoryInput: value
-        })
-      }
-    },
     scanning() {
       return [status.PROGRESS, status.CANCELLING].includes(this.status)
     },
@@ -49,10 +55,17 @@ export default {
     ...mapState('local', ['status'])
   },
   methods: {
-    onPrependClick() {
-      this.openDirectory()
+    onScanClick() {
+      this.scan()
     },
-    ...mapActions('local', ['openDirectory', 'scan', 'cancel'])
+    onCancelClick() {
+      this.cancel()
+    },
+    onSettingsClick() {
+      this.showDialog()
+    },
+    ...mapMutations(['showDialog']),
+    ...mapActions('local', ['scan', 'cancel'])
   }
 }
 </script>

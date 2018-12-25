@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron'
 
 export default ({ store }) => {
-  ipcRenderer.on('openDirectory', () => {
-    store.dispatch('local/openDirectory')
+  ipcRenderer.on('scan', () => {
+    store.dispatch('local/scan')
   })
   ipcRenderer.on('enterFullScreen', () => {
     store.commit('setFullScreen', { fullScreen: true })
