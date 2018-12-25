@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import NotificationBar from '~/components/NotificationBar'
 import SettingsDialog from '~/components/SettingsDialog'
 import TitleBar from '~/components/TitleBar'
@@ -34,15 +34,6 @@ export default {
     onContextMenu() {
       this.$contextMenu.show()
     },
-    onDrop(e) {
-      const files = Array.from(e.dataTransfer.files)
-      if (!files.length) {
-        return
-      }
-      const dirpath = files[0].path
-      this.setDirectoryInput({ directoryInput: dirpath })
-    },
-    ...mapMutations('local', ['setDirectoryInput']),
     ...mapActions('local', ['initialize'])
   }
 }

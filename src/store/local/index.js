@@ -9,7 +9,6 @@ export const state = () => ({
   status: status.NOT_YET,
   error: null,
   directory: null,
-  directoryInput: remote.app.getPath('home'),
   progressFilepath: null,
   begunAt: null,
   endedAt: null,
@@ -49,28 +48,17 @@ export const actions = {
       commit('setStatus', { status: status.CANCELLED })
     }
   },
-  openDirectory({ commit }) {
+  scan({ commit, dispatch, getters, rootState, state }) {
     const filepathes = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
     if (!filepathes || !filepathes.length) {
       return
     }
-    const filepath = filepathes[0]
-    commit('setDirectoryInput', { directoryInput: filepath })
-  },
-  scan({ commit, dispatch, getters, rootState, state }) {
-    if (!state.directoryInput) {
-      dispatch(
-        'showMessage',
-        { color: 'error', text: 'Directory is not specified' },
-        { root: true }
-      )
-      return
-    }
+    const directory = filepathes[0]
 
     commit('setStatus', { status: status.PROGRESS })
-    commit('setDirectory', { directory: state.directoryInput })
+    commit('setDirectory', { directory })
     commit('begin')
 
     worker.onmessage = ({ data: { id, data } }) => {
@@ -122,7 +110,7 @@ export const actions = {
     if (!result) {
       dispatch(
         'showMessage',
-        { color: 'error', text: 'Invalid directory' },
+        { color: 'error', text: 'Directory not found' },
         { root: true }
       )
     }
@@ -141,9 +129,6 @@ export const mutations = {
   },
   setDirectory(state, { directory }) {
     state.directory = directory
-  },
-  setDirectoryInput(state, { directoryInput }) {
-    state.directoryInput = directoryInput
   },
   setProgressFilepath(state, { progressFilepath }) {
     state.progressFilepath = progressFilepath

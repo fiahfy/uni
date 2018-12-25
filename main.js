@@ -17,10 +17,10 @@ const createTemplate = () => {
       label: 'File',
       submenu: [
         {
-          label: 'Open...',
+          label: 'Scan...',
           accelerator: 'CmdOrCtrl+O',
           click: () => {
-            send('openDirectory')
+            send('scan')
           }
         }
       ]

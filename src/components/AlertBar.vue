@@ -1,5 +1,5 @@
 <template>
-  <v-alert :value="true" :type="type" class="chart-alert-bar ma-0">
+  <v-alert :value="true" :type="type" class="alert-bar ma-0">
     <v-layout row>
       <span class="spacer ellipsis">{{ text }}</span> <span>{{ subText }}</span>
     </v-layout>
@@ -37,7 +37,7 @@ export default {
         case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
         case status.DONE:
-          return `Scaned directory "${this.directory}"`
+          return `Scanned directory "${this.directory}"`
         case status.CANCELLING:
           return 'Cancelling...'
         case status.CANCELLED:

@@ -1,34 +1,17 @@
 <template>
-  <v-layout class="chart-graph" column>
-    <v-flex ref="sunburst" class="scroll-y">
-      <svg />
+  <v-layout class="chart-container" column>
+    <v-flex ref="wrapper">
+      <svg ref="sunburst" />
       <div v-if="loading" class="loading" />
-      <div v-if="!totalSize" class="message">
-        <v-card class="fill-height" flat tile>
-          <v-layout align-center justify-center fill-height>
-            <v-flex class="text-xs-center caption">No data</v-flex>
-          </v-layout>
-        </v-card>
-      </div>
     </v-flex>
 
-    <v-card>
+    <v-card tile flat :style="{ visibility: totalSize ? 'visible' : 'hidden' }">
       <v-divider />
       <v-card-title class="py-2">
         <span>Total size: {{ totalSize | readableSize }}</span>
-        <v-spacer />
-        <v-btn
-          class="ma-0"
-          :title="'Settings' | accelerator('CmdOrCtrl+,')"
-          flat
-          icon
-          @click="onSettingsClick"
-        >
-          <v-icon>settings</v-icon>
-        </v-btn>
       </v-card-title>
       <v-card-actions>
-        <div v-if="pathes.length" class="pa-2">
+        <div class="pa-2">
           <v-chip
             v-for="(p, index) of pathes"
             :key="index"
@@ -39,6 +22,12 @@
         </div>
       </v-card-actions>
     </v-card>
+
+    <div v-if="!totalSize" class="overlay">
+      <v-layout align-center justify-center fill-height>
+        <v-flex class="text-xs-center caption">{{ noDataText }}</v-flex>
+      </v-layout>
+    </div>
 
     <v-tooltip
       v-model="tooltip.show"
@@ -57,9 +46,10 @@
 
 <script>
 import path from 'path'
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
 import { debounce } from 'debounce'
+import status from '~/consts/status'
 
 export default {
   data() {
@@ -88,6 +78,9 @@ export default {
     percentage() {
       return ((this.size / this.totalSize) * 100).toFixed(2)
     },
+    noDataText() {
+      return this.status === status.PROGRESS ? 'Scanning...' : 'No data'
+    },
     ...mapState({
       directory: (state) => {
         // Remove trailing seperator
@@ -98,7 +91,7 @@ export default {
         return directory
       }
     }),
-    ...mapState('local', ['updatedAt']),
+    ...mapState('local', ['status', 'updatedAt']),
     ...mapGetters('local', ['getNode'])
   },
   watch: {
@@ -117,9 +110,6 @@ export default {
     window.removeEventListener('resize', this.onResize)
   },
   methods: {
-    onSettingsClick() {
-      this.showDialog()
-    },
     onResize() {
       this.debounced()
     },
@@ -226,8 +216,11 @@ export default {
         this.$el.querySelector('g').remove()
       }
 
-      this.width = this.$refs.sunburst.offsetWidth
-      this.height = this.$refs.sunburst.offsetHeight - 10
+      this.$refs.sunburst.setAttribute('width', 0)
+      this.$refs.sunburst.setAttribute('height', 0)
+
+      this.width = this.$refs.wrapper.offsetWidth
+      this.height = this.$refs.wrapper.offsetHeight
       this.radius = Math.min(this.width, this.height) / 2
       this.color = d3.scaleOrdinal(d3.schemePaired)
 
@@ -310,7 +303,6 @@ export default {
 
       this.loading = false
     },
-    ...mapMutations(['showDialog']),
     ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
   }
 }
@@ -326,31 +318,39 @@ svg path {
 </style>
 
 <style scoped lang="scss">
-.chart-graph {
+.chart-container {
   position: relative;
   .flex {
     position: relative;
+    > svg {
+      vertical-align: bottom;
+    }
     > div {
-      background-color: white;
-      bottom: 0;
-      left: 0;
-      position: absolute;
-      right: 0;
-      top: 0;
       &.loading {
+        background-color: white;
+        bottom: 0;
+        left: 0;
         opacity: 0.6;
-      }
-      &.message {
-        z-index: 1;
+        position: absolute;
+        right: 0;
+        top: 0;
       }
     }
   }
-  .v-card__actions {
+  .v-card > .v-card__actions {
     overflow: auto;
     padding: 0;
     > div {
       white-space: nowrap;
     }
+  }
+  > .overlay {
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
   }
 }
 </style>
