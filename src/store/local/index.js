@@ -43,11 +43,6 @@ export const getters = {
 }
 
 export const actions = {
-  initialize({ commit, state }) {
-    if (state.status === status.PROGRESS) {
-      commit('setStatus', { status: status.CANCELLED })
-    }
-  },
   scan({ commit, dispatch, getters, rootState, state }) {
     const filepathes = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
