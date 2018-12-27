@@ -104,6 +104,7 @@ const on = (event, callback) => {
 }
 
 const getNode = () => {
+  // TODO: memory leak occurred
   const root = JSON.parse(JSON.stringify(node))
   sum(root)
   const limit = root.value * 0.001
