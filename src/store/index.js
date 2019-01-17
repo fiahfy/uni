@@ -16,9 +16,9 @@ export const getters = {
 }
 
 export const actions = {
-  initialize({ commit, state }) {
-    if ([status.PROGRESS, status.CANCELLING].includes(state.status)) {
-      commit('setStatus', { status: status.CANCELLED })
+  initialize({ commit, rootState }) {
+    if ([status.PROGRESS, status.CANCELLING].includes(rootState.local.status)) {
+      commit('local/setStatus', { status: status.CANCELLED })
     }
   },
   showMessage({ commit }, message) {
