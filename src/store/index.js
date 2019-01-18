@@ -1,4 +1,5 @@
 import createPersistedState from 'vuex-persistedstate'
+import status from '~/consts/status'
 import Package from '~~/package.json'
 
 export const state = () => ({
@@ -15,6 +16,11 @@ export const getters = {
 }
 
 export const actions = {
+  initialize({ commit, rootState }) {
+    if ([status.PROGRESS, status.CANCELLING].includes(rootState.local.status)) {
+      commit('local/setStatus', { status: status.CANCELLED })
+    }
+  },
   showMessage({ commit }, message) {
     commit('setMessage', { message })
   },

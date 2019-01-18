@@ -57,6 +57,7 @@ export default {
       names: [],
       childNames: [],
       loading: false,
+      needUpdate: false,
       size: 0,
       totalSize: 0,
       tooltip: {
@@ -95,7 +96,11 @@ export default {
   },
   watch: {
     updatedAt() {
-      this.setup()
+      if (document.hidden) {
+        this.needUpdate = true
+      } else {
+        this.update()
+      }
     }
   },
   mounted() {
@@ -103,14 +108,21 @@ export default {
       this.setup()
     }, 500)
     window.addEventListener('resize', this.onResize)
+    window.addEventListener('visibilitychange', this.onVisibilitychange)
     this.debounced()
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize)
+    window.removeEventListener('visibilitychange', this.onVisibilitychange)
   },
   methods: {
     onResize() {
       this.debounced()
+    },
+    onVisibilitychange() {
+      if (!document.hidden && this.needUpdate) {
+        this.update()
+      }
     },
     onMouseOver(d) {
       if (d.depth === 0) {
@@ -301,6 +313,7 @@ export default {
       this.onClick(root)
 
       this.loading = false
+      this.needUpdate = false
     },
     ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
   }

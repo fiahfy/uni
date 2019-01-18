@@ -34,7 +34,7 @@ export default {
     onContextMenu() {
       this.$contextMenu.show()
     },
-    ...mapActions('local', ['initialize'])
+    ...mapActions(['initialize'])
   }
 }
 </script>
