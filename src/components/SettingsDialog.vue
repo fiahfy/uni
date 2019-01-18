@@ -24,7 +24,7 @@
                   <v-checkbox
                     v-model="darkTheme"
                     class="mt-0"
-                    label="Use Dark Theme"
+                    label="Dark Theme"
                   />
 
                   <v-subheader class="pl-0">SCAN</v-subheader>
