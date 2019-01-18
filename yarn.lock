@@ -714,6 +714,11 @@
   dependencies:
     jimp "^0.5.0"
 
+"@fiahfy/simple-clone@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@fiahfy/simple-clone/-/simple-clone-0.0.2.tgz#5c32483181026238f26c51bfeec5157f6234163b"
+  integrity sha512-HF1j0uce5y3cWS6hZUT2XEKn/3CEN9hA1veoJHMN3XwSNN5g+Xh01lFGB5h2FLlM4s/wUnSh0DSNW8FBc0p+2w==
+
 "@jimp/bmp@^0.5.4":
   version "0.5.4"
   resolved "https://registry.yarnpkg.com/@jimp/bmp/-/bmp-0.5.4.tgz#b7b375aa774f26154912569864d5466e71333ef1"
@@ -1429,12 +1434,12 @@
     consola "^2.3.0"
     node-fetch "^2.3.0"
 
-"@nuxtjs/vuetify@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@nuxtjs/vuetify/-/vuetify-0.4.3.tgz#12427ad564be5ab652a0f10ff61bf48bdc0a9d06"
-  integrity sha512-al/bQz2dPQMszdvVBP8GpMhXpPzLhYnsqKt5Y6qlrLVSUOWvnnXEZY7xu1u1u2PEcq84COVlAqz34r1tLVHr8g==
+"@nuxtjs/vuetify@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/vuetify/-/vuetify-0.5.1.tgz#b0e233c417809397aad316542fcdecaacb72f07b"
+  integrity sha512-Y3JbQRSH3Z25Ni16aC+866FqSuOgK6NPHC43CJXp9xvnNXHT0pX2Ao86S537KlLADpsBeGbyOohHh97ktw17vg==
   dependencies:
-    vuetify "^1.2.5"
+    vuetify "^1.4.1"
 
 "@nuxtjs/youch@^4.2.3":
   version "4.2.3"
@@ -9340,7 +9345,14 @@ vue@^2.5.17:
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.5.22.tgz#3bf88041af08b8539c37b268b70ca79245e9cc30"
   integrity sha512-pxY3ZHlXNJMFQbkjEgGVMaMMkSV1ONpz+4qB55kZuJzyJOhn6MSy/YZdzhdnumegNzVTL/Dn3Pp4UrVBYt1j/g==
 
-vuetify@^1.2.5:
+vuetify-loader@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/vuetify-loader/-/vuetify-loader-1.1.1.tgz#3e3a553c9be038d642092cd87715b5bc10602c6d"
+  integrity sha512-ham+JNmVY7L+nSJSY8DeMLhLZq4ognl4db6sm8j5aKVbeaZTDPNmmoeFxogSfSpRQ5Ly50rWwO6gPbSOvCoodg==
+  dependencies:
+    loader-utils "^1.1.0"
+
+vuetify@^1.4.1:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.4.2.tgz#3e136397463d1e980e8ccdd78e4dcfcdfa4c538c"
   integrity sha512-HnMBBtO5FqTPzr6FXVlxnYulGMrHVlcmBL7SSLE/AQnNbdUpT6Jw9D/Kdw9fbK5mdn7JSWMcfWpPJUrqYTtK1w==

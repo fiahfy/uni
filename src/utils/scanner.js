@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import clone from '@fiahfy/simple-clone'
 
 const INTERVAL = 100
 
@@ -104,8 +105,7 @@ const on = (event, callback) => {
 }
 
 const getNode = () => {
-  // TODO: memory leak occurred
-  const root = JSON.parse(JSON.stringify(node))
+  const root = clone(node)
   sum(root)
   const limit = root.value * 0.001
   reduce(limit, root)
