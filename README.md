@@ -1,5 +1,5 @@
 # Uni
-[![Build Status](https://travis-ci.org/fiahfy/uni.svg?branch=master)](https://travis-ci.org/fiahfy/uni)
+[![Build Status](https://travis-ci.com/fiahfy/uni.svg?branch=master)](https://travis-ci.com/fiahfy/uni)
 
 > Simple Disk Usage Analyzer based on Electron.  
 > Inspired from [Space Radar Electron](https://github.com/zz85/space-radar)
