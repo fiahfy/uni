@@ -35,7 +35,6 @@
       top
     >
       <p class="ma-0">
-        <!-- eslint-disable-next-line vue/html-self-closing -->
         {{ tooltip.text }}<br />
         <small>{{ size | readableSize }} ({{ percentage }} %)</small>
       </p>
