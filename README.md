@@ -10,7 +10,7 @@
 * Change theme (Light/Dark)
 
 
-## Screenshot
+## Screenshots
 ![screenshot](./build/screenshots/screenshot.png?raw=true)
 
 
