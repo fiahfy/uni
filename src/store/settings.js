@@ -10,5 +10,15 @@ export const mutations = {
   },
   setRefreshInterval(state, { refreshInterval }) {
     state.refreshInterval = refreshInterval
+  },
+  addIgnorePath(state, { ignorePath }) {
+    if (!state.ignorePathes.includes(ignorePath)) {
+      state.ignorePathes = [...state.ignorePathes, ignorePath]
+    }
+  },
+  removeIgnorePath(state, { ignorePath }) {
+    state.ignorePathes = state.ignorePathes.filter(
+      (path) => path !== ignorePath
+    )
   }
 }

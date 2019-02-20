@@ -112,6 +112,16 @@ export const actions = {
   },
   writeToClipboard(_, { filepath }) {
     clipboard.writeText(filepath)
+  },
+  selectIgnoreDirectory({ commit }) {
+    const filepathes = remote.dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (!filepathes || !filepathes.length) {
+      return
+    }
+    const ignorePath = filepathes[0]
+    commit('settings/addIgnorePath', { ignorePath }, { root: true })
   }
 }
 
