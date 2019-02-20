@@ -91,8 +91,9 @@ export const actions = {
     }
     const data = {
       directory: state.directory,
+      dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
-      dataFilepath: storage.getFilepath()
+      ignorePathes: rootState.settings.ignorePathes
     }
     worker.postMessage({ id: 'scan', data })
   },

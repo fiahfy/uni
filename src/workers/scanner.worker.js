@@ -19,7 +19,7 @@ const exists = (filepath) => {
 onmessage = async ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, refreshInterval, dataFilepath } = data
+      const { directory, dataFilepath, refreshInterval, ignorePathes } = data
 
       storage.unlink(dataFilepath)
       postMessage({ id: 'refresh' })
