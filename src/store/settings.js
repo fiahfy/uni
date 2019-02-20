@@ -1,6 +1,7 @@
 export const state = () => ({
   darkTheme: false,
-  refreshInterval: 5000
+  refreshInterval: 5000,
+  ignorePathes: []
 })
 
 export const mutations = {

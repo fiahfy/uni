@@ -37,6 +37,19 @@
                     step="1000"
                     suffix="ms"
                   />
+
+                  <v-list subheader dense>
+                    <v-subheader>Ignore path</v-subheader>
+                    <v-list-tile>
+                      <v-list-tile-content>
+                        <v-list-tile-title>test</v-list-tile-title>
+                      </v-list-tile-content>
+
+                      <v-list-tile-action>
+                        <v-icon>chat_bubble</v-icon>
+                      </v-list-tile-action>
+                    </v-list-tile>
+                  </v-list>
                 </v-container>
               </v-layout>
             </v-container>

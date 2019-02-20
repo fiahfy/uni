@@ -70,7 +70,7 @@ export default {
   computed: {
     pathes() {
       if (this.directory === null) {
-        return []
+        return [''] // set dummy value for ensuring height
       }
       return [this.directory, ...this.names, ...this.childNames]
     },
