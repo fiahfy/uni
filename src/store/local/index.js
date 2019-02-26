@@ -1,4 +1,4 @@
-import { remote, shell, clipboard } from 'electron'
+import { clipboard, remote, shell } from 'electron'
 import status from '~/consts/status'
 import storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
@@ -43,7 +43,7 @@ export const getters = {
 }
 
 export const actions = {
-  scan({ commit, dispatch, getters, rootState, state }) {
+  selectDirectory({ dispatch }) {
     const filepathes = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
@@ -51,6 +51,12 @@ export const actions = {
       return
     }
     const directory = filepathes[0]
+    dispatch('scan', { directory })
+  },
+  scan({ commit, dispatch, getters, rootState, state }, { directory }) {
+    if ([status.PROGRESS, status.CANCELLING].includes(state.status)) {
+      return
+    }
 
     commit('setStatus', { status: status.PROGRESS })
     commit('setDirectory', { directory })
@@ -85,7 +91,6 @@ export const actions = {
           commit('end')
           commit('setStatus', { status: status.ERROR })
           commit('setError', { error: new Error(data) })
-          dispatch('showNotification', { title: 'Scan failed' }, { root: true })
           break
       }
     }

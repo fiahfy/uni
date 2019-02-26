@@ -34,7 +34,16 @@ export default {
     onContextMenu() {
       this.$contextMenu.show()
     },
-    ...mapActions(['initialize'])
+    onDrop(e) {
+      const files = Array.from(e.dataTransfer.files)
+      if (!files.length) {
+        return
+      }
+      const directory = files[0].path
+      this.scan({ directory })
+    },
+    ...mapActions(['initialize']),
+    ...mapActions('local', ['scan'])
   }
 }
 </script>
