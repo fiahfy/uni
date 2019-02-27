@@ -39,9 +39,9 @@
                   />
 
                   <v-list subheader dense>
-                    <v-subheader class="pl-0">Ignore Directories</v-subheader>
-                    <template v-if="ignorePaths.length">
-                      <v-list-tile v-for="path of ignorePaths" :key="path">
+                    <v-subheader class="pl-0">Ignored Directories</v-subheader>
+                    <template v-if="ignoredPaths.length">
+                      <v-list-tile v-for="path of ignoredPaths" :key="path">
                         <v-list-tile-content>
                           <v-list-tile-title :title="path" v-text="path" />
                         </v-list-tile-content>
@@ -61,7 +61,7 @@
                     </v-list-tile>
                   </v-list>
                   <v-btn color="primary" flat @click="onAddClick">
-                    Add Ignore Directory
+                    Ignore Directory
                   </v-btn>
                 </v-container>
               </v-layout>
@@ -104,21 +104,21 @@ export default {
       }
     },
     ...mapState(['dialog']),
-    ...mapState('settings', ['ignorePaths'])
+    ...mapState('settings', ['ignoredPaths'])
   },
   methods: {
     onCloseClick() {
       this.dismissDialog()
     },
     onAddClick() {
-      this.selectIgnoreDirectory()
+      this.selectIgnoredDirectory()
     },
     onListTileClick(e, path) {
-      this.removeIgnorePath({ ignorePath: path })
+      this.removeIgnoredPath({ ignoredPath: path })
     },
     ...mapMutations(['dismissDialog']),
-    ...mapMutations('settings', ['removeIgnorePath']),
-    ...mapActions('local', ['selectIgnoreDirectory'])
+    ...mapMutations('settings', ['removeIgnoredPath']),
+    ...mapActions('local', ['selectIgnoredDirectory'])
   }
 }
 </script>

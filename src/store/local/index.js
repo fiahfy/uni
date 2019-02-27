@@ -98,7 +98,7 @@ export const actions = {
       directory: state.directory,
       dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
-      ignorePaths: rootState.settings.ignorePaths
+      ignoredPaths: rootState.settings.ignoredPaths
     }
     worker.postMessage({ id: 'scan', data })
   },
@@ -119,15 +119,15 @@ export const actions = {
   writeToClipboard(_, { filepath }) {
     clipboard.writeText(filepath)
   },
-  selectIgnoreDirectory({ commit }) {
+  selectIgnoredDirectory({ commit }) {
     const filepaths = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
     if (!filepaths || !filepaths.length) {
       return
     }
-    const ignorePath = filepaths[0]
-    commit('settings/addIgnorePath', { ignorePath }, { root: true })
+    const ignoredPath = filepaths[0]
+    commit('settings/addIgnoredPath', { ignoredPath }, { root: true })
   }
 }
 
