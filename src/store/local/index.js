@@ -44,13 +44,13 @@ export const getters = {
 
 export const actions = {
   selectDirectory({ dispatch }) {
-    const filepathes = remote.dialog.showOpenDialog({
+    const filepaths = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
-    if (!filepathes || !filepathes.length) {
+    if (!filepaths || !filepaths.length) {
       return
     }
-    const directory = filepathes[0]
+    const directory = filepaths[0]
     dispatch('scan', { directory })
   },
   scan({ commit, dispatch, getters, rootState, state }, { directory }) {
@@ -98,7 +98,7 @@ export const actions = {
       directory: state.directory,
       dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
-      ignorePathes: rootState.settings.ignorePathes
+      ignorePaths: rootState.settings.ignorePaths
     }
     worker.postMessage({ id: 'scan', data })
   },
@@ -120,13 +120,13 @@ export const actions = {
     clipboard.writeText(filepath)
   },
   selectIgnoreDirectory({ commit }) {
-    const filepathes = remote.dialog.showOpenDialog({
+    const filepaths = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
-    if (!filepathes || !filepathes.length) {
+    if (!filepaths || !filepaths.length) {
       return
     }
-    const ignorePath = filepathes[0]
+    const ignorePath = filepaths[0]
     commit('settings/addIgnorePath', { ignorePath }, { root: true })
   }
 }

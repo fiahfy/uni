@@ -8,6 +8,7 @@ let scanning = false
 let cancelling = false
 let lastProgressTime = 0
 let callbacks = {}
+let ignorePaths = []
 let node = {}
 
 const delay = (millis = 0) => {
@@ -26,6 +27,9 @@ const send = (event, args) => {
 }
 
 const scanFile = async (filepath, depth, node) => {
+  if (ignorePaths.includes(filepath)) {
+    return
+  }
   if (cancelling) {
     return
   }
@@ -104,6 +108,10 @@ const on = (event, callback) => {
   callbacks[event] = callback
 }
 
+const setConfig = (config) => {
+  ignorePaths = config.ignorePaths || []
+}
+
 const getNode = () => {
   const root = clone(node)
   sum(root)
@@ -112,4 +120,4 @@ const getNode = () => {
   return root
 }
 
-export default { scan, cancel, on, getNode }
+export default { scan, cancel, on, setConfig, getNode }

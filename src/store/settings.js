@@ -1,7 +1,7 @@
 export const state = () => ({
   darkTheme: false,
   refreshInterval: 5000,
-  ignorePathes: []
+  ignorePaths: []
 })
 
 export const mutations = {
@@ -12,13 +12,11 @@ export const mutations = {
     state.refreshInterval = refreshInterval
   },
   addIgnorePath(state, { ignorePath }) {
-    if (!state.ignorePathes.includes(ignorePath)) {
-      state.ignorePathes = [...state.ignorePathes, ignorePath]
+    if (!state.ignorePaths.includes(ignorePath)) {
+      state.ignorePaths = [...state.ignorePaths, ignorePath]
     }
   },
   removeIgnorePath(state, { ignorePath }) {
-    state.ignorePathes = state.ignorePathes.filter(
-      (path) => path !== ignorePath
-    )
+    state.ignorePaths = state.ignorePaths.filter((path) => path !== ignorePath)
   }
 }

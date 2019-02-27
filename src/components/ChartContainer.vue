@@ -12,7 +12,7 @@
       <v-card-actions>
         <div class="pa-2">
           <v-chip
-            v-for="(p, index) of pathes"
+            v-for="(p, index) of paths"
             :key="index"
             @click="(e) => onChipClick(e, index)"
           >
@@ -68,7 +68,7 @@ export default {
     }
   },
   computed: {
-    pathes() {
+    paths() {
       if (this.directory === null) {
         return [''] // set dummy value for ensuring height
       }
@@ -208,7 +208,7 @@ export default {
         .attrTween('d', (d) => () => this.arc(d))
     },
     onChipClick(e, index) {
-      const node = this.pathes.slice(1, index + 1).reduce((carry, name) => {
+      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
         if (!carry) {
           return carry
         }

@@ -32,7 +32,7 @@ const wait = (millis) => {
 onmessage = async ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, dataFilepath, refreshInterval, ignorePathes } = data
+      const { directory, dataFilepath, refreshInterval, ignorePaths } = data
 
       storage.unlink(dataFilepath)
       postMessage({ id: 'refresh' })
@@ -67,6 +67,7 @@ onmessage = async ({ data: { id, data } }) => {
         storage.write(dataFilepath, scanner.getNode())
         postMessage({ id: 'complete' })
       })
+      scanner.setConfig({ ignorePaths })
       await scanner.scan(directory)
       break
     }

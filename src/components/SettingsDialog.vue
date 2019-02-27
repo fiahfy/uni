@@ -40,8 +40,8 @@
 
                   <v-list subheader dense>
                     <v-subheader class="pl-0">Ignore Directories</v-subheader>
-                    <template v-if="ignorePathes.length">
-                      <v-list-tile v-for="path of ignorePathes" :key="path">
+                    <template v-if="ignorePaths.length">
+                      <v-list-tile v-for="path of ignorePaths" :key="path">
                         <v-list-tile-content>
                           <v-list-tile-title :title="path" v-text="path" />
                         </v-list-tile-content>
@@ -104,7 +104,7 @@ export default {
       }
     },
     ...mapState(['dialog']),
-    ...mapState('settings', ['ignorePathes'])
+    ...mapState('settings', ['ignorePaths'])
   },
   methods: {
     onCloseClick() {
