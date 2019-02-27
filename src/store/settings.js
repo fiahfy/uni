@@ -17,6 +17,8 @@ export const mutations = {
     }
   },
   removeIgnoredPath(state, { ignoredPath }) {
-    state.ignoredPaths = state.ignoredPaths.filter((path) => path !== ignoredPath)
+    state.ignoredPaths = state.ignoredPaths.filter(
+      (path) => path !== ignoredPath
+    )
   }
 }
