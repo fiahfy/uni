@@ -1,4 +1,4 @@
-import { remote, shell, clipboard } from 'electron'
+import { clipboard, remote, shell } from 'electron'
 import status from '~/consts/status'
 import storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
@@ -43,14 +43,20 @@ export const getters = {
 }
 
 export const actions = {
-  scan({ commit, dispatch, getters, rootState, state }) {
-    const filepathes = remote.dialog.showOpenDialog({
+  selectDirectory({ dispatch }) {
+    const filepaths = remote.dialog.showOpenDialog({
       properties: ['openDirectory']
     })
-    if (!filepathes || !filepathes.length) {
+    if (!filepaths || !filepaths.length) {
       return
     }
-    const directory = filepathes[0]
+    const directory = filepaths[0]
+    dispatch('scan', { directory })
+  },
+  scan({ commit, dispatch, getters, rootState, state }, { directory }) {
+    if ([status.PROGRESS, status.CANCELLING].includes(state.status)) {
+      return
+    }
 
     commit('setStatus', { status: status.PROGRESS })
     commit('setDirectory', { directory })
@@ -85,14 +91,14 @@ export const actions = {
           commit('end')
           commit('setStatus', { status: status.ERROR })
           commit('setError', { error: new Error(data) })
-          dispatch('showNotification', { title: 'Scan failed' }, { root: true })
           break
       }
     }
     const data = {
       directory: state.directory,
+      dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
-      dataFilepath: storage.getFilepath()
+      ignoredPaths: rootState.settings.ignoredPaths
     }
     worker.postMessage({ id: 'scan', data })
   },
@@ -112,6 +118,16 @@ export const actions = {
   },
   writeToClipboard(_, { filepath }) {
     clipboard.writeText(filepath)
+  },
+  selectIgnoredDirectory({ commit }) {
+    const filepaths = remote.dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (!filepaths || !filepaths.length) {
+      return
+    }
+    const ignoredPath = filepaths[0]
+    commit('settings/addIgnoredPath', { ignoredPath }, { root: true })
   }
 }
 

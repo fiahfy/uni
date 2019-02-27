@@ -56,7 +56,7 @@ export default {
   },
   methods: {
     onScanClick() {
-      this.scan()
+      this.selectDirectory()
     },
     onCancelClick() {
       this.cancel()
@@ -65,7 +65,7 @@ export default {
       this.showDialog()
     },
     ...mapMutations(['showDialog']),
-    ...mapActions('local', ['scan', 'cancel'])
+    ...mapActions('local', ['selectDirectory', 'cancel'])
   }
 }
 </script>

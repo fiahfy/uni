@@ -12,7 +12,7 @@
       <v-card-actions>
         <div class="pa-2">
           <v-chip
-            v-for="(p, index) of pathes"
+            v-for="(p, index) of paths"
             :key="index"
             @click="(e) => onChipClick(e, index)"
           >
@@ -35,7 +35,6 @@
       top
     >
       <p class="ma-0">
-        <!-- eslint-disable-next-line vue/html-self-closing -->
         {{ tooltip.text }}<br />
         <small>{{ size | readableSize }} ({{ percentage }} %)</small>
       </p>
@@ -69,9 +68,9 @@ export default {
     }
   },
   computed: {
-    pathes() {
+    paths() {
       if (this.directory === null) {
-        return []
+        return [''] // set dummy value for ensuring height
       }
       return [this.directory, ...this.names, ...this.childNames]
     },
@@ -209,7 +208,7 @@ export default {
         .attrTween('d', (d) => () => this.arc(d))
     },
     onChipClick(e, index) {
-      const node = this.pathes.slice(1, index + 1).reduce((carry, name) => {
+      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
         if (!carry) {
           return carry
         }

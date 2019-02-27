@@ -24,7 +24,7 @@
                   <v-checkbox
                     v-model="darkTheme"
                     class="mt-0"
-                    label="Use Dark Theme"
+                    label="Dark Theme"
                   />
 
                   <v-subheader class="pl-0">SCAN</v-subheader>
@@ -37,6 +37,32 @@
                     step="1000"
                     suffix="ms"
                   />
+
+                  <v-list subheader dense>
+                    <v-subheader class="pl-0">Ignored Directories</v-subheader>
+                    <template v-if="ignoredPaths.length">
+                      <v-list-tile v-for="path of ignoredPaths" :key="path">
+                        <v-list-tile-content>
+                          <v-list-tile-title :title="path" v-text="path" />
+                        </v-list-tile-content>
+                        <v-list-tile-action>
+                          <v-btn icon @click="(e) => onListTileClick(e, path)">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </v-list-tile-action>
+                      </v-list-tile>
+                    </template>
+                    <v-list-tile v-else>
+                      <v-list-tile-content>
+                        <v-list-tile-title class="caption">
+                          No directories
+                        </v-list-tile-title>
+                      </v-list-tile-content>
+                    </v-list-tile>
+                  </v-list>
+                  <v-btn color="primary" flat @click="onAddClick">
+                    Ignore Directory
+                  </v-btn>
                 </v-container>
               </v-layout>
             </v-container>
@@ -48,7 +74,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapActions, mapMutations, mapState } from 'vuex'
 import TitleBar from '~/components/TitleBar'
 
 export default {
@@ -77,13 +103,22 @@ export default {
         })
       }
     },
-    ...mapState(['dialog'])
+    ...mapState(['dialog']),
+    ...mapState('settings', ['ignoredPaths'])
   },
   methods: {
     onCloseClick() {
       this.dismissDialog()
     },
-    ...mapMutations(['dismissDialog'])
+    onAddClick() {
+      this.selectIgnoredDirectory()
+    },
+    onListTileClick(e, path) {
+      this.removeIgnoredPath({ ignoredPath: path })
+    },
+    ...mapMutations(['dismissDialog']),
+    ...mapMutations('settings', ['removeIgnoredPath']),
+    ...mapActions('local', ['selectIgnoredDirectory'])
   }
 }
 </script>
@@ -91,5 +126,8 @@ export default {
 <style scoped lang="scss">
 .v-card {
   height: 100% !important;
+}
+.v-list /deep/ .v-list__tile {
+  padding: 0;
 }
 </style>
