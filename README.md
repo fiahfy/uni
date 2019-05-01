@@ -2,7 +2,8 @@
 [![Build Status](https://travis-ci.com/fiahfy/uni.svg?branch=master)](https://travis-ci.com/fiahfy/uni)
 
 > Simple Disk Usage Analyzer based on Electron.  
-> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar)
+> "Uni" means sea urchin in Japanese.  
+> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar).
 
 
 ## Features
