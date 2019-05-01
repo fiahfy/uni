@@ -117,6 +117,7 @@ export default {
     display: inline-block;
     height: 12px;
     width: 12px;
+    min-width: 12px;
   }
 }
 </style>
