@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar class="chart-toolbar" color="transparent" flat dense>
+  <v-toolbar class="chart-toolbar" flat dense>
     <v-btn
       v-if="scanning"
       class="pr-5"
@@ -24,7 +24,9 @@
       <v-icon left>find_in_page</v-icon>
       Scan
     </v-btn>
+
     <v-spacer />
+
     <v-btn
       class="ma-0"
       :title="'Settings' | accelerator('CmdOrCtrl+,')"

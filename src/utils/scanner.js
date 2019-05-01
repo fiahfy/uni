@@ -112,7 +112,7 @@ const setConfig = (config) => {
   ignoredPaths = config.ignoredPaths || []
 }
 
-const getNode = () => {
+const getCalculatedNode = () => {
   const root = clone(node)
   sum(root)
   const limit = root.value * 0.001
@@ -120,4 +120,4 @@ const getNode = () => {
   return root
 }
 
-export default { scan, cancel, on, setConfig, getNode }
+export default { scan, cancel, on, setConfig, getCalculatedNode }
