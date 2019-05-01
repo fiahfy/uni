@@ -62,16 +62,17 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener('resize', this.onResize)
     window.addEventListener('visibilitychange', this.onVisibilitychange)
+    this.resizeObserver = new ResizeObserver(this.onResize)
+    this.resizeObserver.observe(this.$refs.wrapper)
     this.debounced = debounce(() => {
       this.setup()
     }, 500)
     this.debounced()
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.onResize)
     window.removeEventListener('visibilitychange', this.onVisibilitychange)
+    this.resizeObserver.disconnect()
   },
   methods: {
     onResize() {
