@@ -46,7 +46,11 @@ export default {
       return ((this.targetSize / this.totalSize) * 100).toFixed(2)
     },
     ...mapState('local', ['selectedNames', 'hoveredNames', 'node']),
-    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
+    ...mapGetters('local', [
+      'totalSize',
+      'rootPathHasNoTrailingSlash',
+      'getPaths'
+    ])
   },
   watch: {
     node() {
@@ -265,40 +269,26 @@ export default {
       this.needsUpdate = false
     },
     moveTo(item) {
-      let paths = []
-      if (item.system) {
-        if (item.name === '<parent>') {
-          paths = this.selectedNames
-        }
-      } else {
-        paths = [...this.selectedNames, item.name]
-      }
-
-      const node = paths.reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.data.name === name)
-      }, this.root)
+      const node = this.getPaths(item)
+        .slice(1)
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.data.name === name)
+        }, this.root)
 
       this.onClick(node)
     },
     hover(item) {
-      let paths = []
-      if (item.system) {
-        if (item.name === '<parent>') {
-          paths = this.selectedNames
-        }
-      } else {
-        paths = [...this.selectedNames, item.name]
-      }
-
-      const node = paths.reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.data.name === name)
-      }, this.root)
+      const node = this.getPaths(item)
+        .slice(1)
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.data.name === name)
+        }, this.root)
 
       this.onMouseOver(node)
     },

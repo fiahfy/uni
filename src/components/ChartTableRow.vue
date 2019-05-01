@@ -38,10 +38,14 @@ export default {
     }
   },
   computed: {
+    clickable() {
+      return (
+        this.item.system || (this.item.children && this.item.children.length)
+      )
+    },
     classes() {
       return {
-        clickable:
-          this.item.system || (this.item.children && this.item.children.length)
+        clickable: this.clickable
       }
     },
     color() {
@@ -62,11 +66,17 @@ export default {
       return ((this.item.value / this.totalSize) * 100).toFixed(2)
     },
     ...mapState('local', ['selectedNames', 'node', 'colorTable']),
-    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
+    ...mapGetters('local', [
+      'totalSize',
+      'rootPathHasNoTrailingSlash',
+      'getPaths'
+    ])
   },
   methods: {
     onClick() {
-      this.$emit('click', this.item)
+      if (this.clickable) {
+        this.$emit('click', this.item)
+      }
     },
     onMouseOver() {
       this.$emit('mouseover', this.item)
@@ -75,21 +85,7 @@ export default {
       this.$emit('mouseleave', this.item)
     },
     onContextMenu() {
-      let paths = []
-      if (this.item.system) {
-        if (this.item.name === '<parent>') {
-          paths = [this.rootPathHasNoTrailingSlash, ...this.selectedNames]
-        } else {
-          paths = [this.rootPathHasNoTrailingSlash]
-        }
-      } else {
-        paths = [
-          this.rootPathHasNoTrailingSlash,
-          ...this.selectedNames,
-          this.item.name
-        ]
-      }
-      const filepath = paths.join(path.sep)
+      const filepath = this.getPaths(this.item).join(path.sep)
 
       this.$contextMenu.show([
         {

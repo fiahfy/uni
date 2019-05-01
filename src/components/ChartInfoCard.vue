@@ -28,8 +28,15 @@ export default {
     }
   },
   computed: {
-    ...mapState('local', ['node']),
-    ...mapGetters('local', ['totalSize', 'paths'])
+    paths() {
+      return [
+        this.rootPathHasNoTrailingSlash,
+        ...this.selectedNames,
+        ...this.hoveredNames
+      ]
+    },
+    ...mapState('local', ['selectedNames', 'hoveredNames', 'node']),
+    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
   },
   methods: {
     onChipClick(e, index) {

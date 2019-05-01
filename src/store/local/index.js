@@ -28,18 +28,6 @@ export const state = () => ({
 })
 
 export const getters = {
-  getScanTime: (state, getters) => () => {
-    if (state.status === status.PROGRESS) {
-      return getters.getElapsedTime()
-    }
-    return getters.totalTime
-  },
-  getElapsedTime: (state) => () => {
-    if (!state.begunAt) {
-      return null
-    }
-    return new Date().getTime() - state.begunAt
-  },
   totalTime(state) {
     if (!state.begunAt || !state.endedAt) {
       return null
@@ -56,13 +44,6 @@ export const getters = {
       return rootPath.slice(0, rootPath.length - 1)
     }
     return rootPath
-  },
-  paths(state, getters) {
-    return [
-      getters.rootPathHasNoTrailingSlash,
-      ...state.selectedNames,
-      ...state.hoveredNames
-    ]
   },
   items(state) {
     const { by, descending } = state.order
@@ -95,6 +76,29 @@ export const getters = {
           return descending ? -1 * result : result
         })
     ]
+  },
+  getScanTime: (state, getters) => () => {
+    if (state.status === status.PROGRESS) {
+      return getters.getElapsedTime()
+    }
+    return getters.totalTime
+  },
+  getElapsedTime: (state) => () => {
+    if (!state.begunAt) {
+      return null
+    }
+    return new Date().getTime() - state.begunAt
+  },
+  getPaths: (state, getters) => (item) => {
+    let paths = [getters.rootPathHasNoTrailingSlash]
+    if (item.system) {
+      if (item.name === '<parent>') {
+        paths = [...paths, ...state.selectedNames]
+      }
+    } else {
+      paths = [...paths, ...state.selectedNames, item.name]
+    }
+    return paths
   }
 }
 
