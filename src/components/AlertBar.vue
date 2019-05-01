@@ -1,7 +1,8 @@
 <template>
   <v-alert :value="true" :type="type" class="alert-bar ma-0">
     <v-layout row>
-      <span class="spacer ellipsis">{{ text }}</span> <span>{{ subText }}</span>
+      <span class="spacer ellipsis" :title="text">{{ text }}</span>
+      <span>{{ subText }}</span>
     </v-layout>
   </v-alert>
 </template>
@@ -37,16 +38,16 @@ export default {
         case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
         case status.DONE:
-          return `Scanned directory "${this.directory}"`
+          return `Scan finished "${this.rootPath}"`
         case status.CANCELLING:
           return 'Cancelling...'
         case status.CANCELLED:
           return 'Cancelled'
         case status.ERROR:
-          return `${this.error.message} "${this.directory}"`
+          return `${this.error.message} "${this.rootPath}"`
         case status.NOT_YET:
         default:
-          return 'Select directory and scan'
+          return 'Click "SCAN" to get started'
       }
     },
     subText() {
@@ -58,7 +59,7 @@ export default {
           return ''
       }
     },
-    ...mapState('local', ['status', 'error', 'directory', 'progressFilepath']),
+    ...mapState('local', ['status', 'error', 'rootPath', 'progressFilepath']),
     ...mapGetters('local', ['getScanTime'])
   },
   mounted() {
@@ -70,9 +71,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.v-alert /deep/ div {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.v-alert {
+  border: 0;
+  /deep/ div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 </style>

@@ -1,6 +1,5 @@
 import fs from 'fs'
 import scanner from '~/utils/scanner'
-import storage from '~/utils/storage'
 
 const increaseInterval = 0
 const mininumRefreshInterval = 1000
@@ -32,16 +31,15 @@ const wait = (millis) => {
 onmessage = async ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, dataFilepath, refreshInterval, ignoredPaths } = data
+      const { dirPath, refreshInterval, ignoredPaths } = data
 
-      storage.unlink(dataFilepath)
-      postMessage({ id: 'refresh' })
+      postMessage({ id: 'refresh', data: {} })
 
-      if (!exists(directory)) {
+      if (!exists(dirPath)) {
         postMessage({ id: 'error', data: 'Directory not found' })
         return
       }
-      if (!isDir(directory)) {
+      if (!isDir(dirPath)) {
         postMessage({ id: 'error', data: 'Not directory' })
         return
       }
@@ -53,8 +51,7 @@ onmessage = async ({ data: { id, data } }) => {
         const now = new Date().getTime()
         const interval = Math.max(mininumRefreshInterval, refreshInterval)
         if (now - time > Number(interval) + increaseInterval * times) {
-          storage.write(dataFilepath, scanner.getNode())
-          postMessage({ id: 'refresh' })
+          postMessage({ id: 'refresh', data: scanner.getCalculatedNode() })
           time = new Date().getTime()
           times++
         }
@@ -64,11 +61,10 @@ onmessage = async ({ data: { id, data } }) => {
         if (now - time < mininumRefreshInterval) {
           await wait(mininumRefreshInterval)
         }
-        storage.write(dataFilepath, scanner.getNode())
-        postMessage({ id: 'complete' })
+        postMessage({ id: 'complete', data: scanner.getCalculatedNode() })
       })
       scanner.setConfig({ ignoredPaths })
-      await scanner.scan(directory)
+      await scanner.scan(dirPath)
       break
     }
     case 'cancel':

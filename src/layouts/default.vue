@@ -39,8 +39,8 @@ export default {
       if (!files.length) {
         return
       }
-      const directory = files[0].path
-      this.scan({ directory })
+      const dirPath = files[0].path
+      this.scan({ dirPath })
     },
     ...mapActions(['initialize']),
     ...mapActions('local', ['scan'])
