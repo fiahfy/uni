@@ -1,7 +1,8 @@
 <template>
   <v-alert :value="true" :type="type" class="alert-bar ma-0">
     <v-layout row>
-      <span class="spacer ellipsis">{{ text }}</span> <span>{{ subText }}</span>
+      <span class="spacer ellipsis" :title="text">{{ text }}</span>
+      <span>{{ subText }}</span>
     </v-layout>
   </v-alert>
 </template>
@@ -37,13 +38,13 @@ export default {
         case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
         case status.DONE:
-          return `Scanned directory "${this.directory}"`
+          return `Scanned directory "${this.rootPath}"`
         case status.CANCELLING:
           return 'Cancelling...'
         case status.CANCELLED:
           return 'Cancelled'
         case status.ERROR:
-          return `${this.error.message} "${this.directory}"`
+          return `${this.error.message} "${this.rootPath}"`
         case status.NOT_YET:
         default:
           return 'Select directory and scan'
@@ -58,7 +59,7 @@ export default {
           return ''
       }
     },
-    ...mapState('local', ['status', 'error', 'directory', 'progressFilepath']),
+    ...mapState('local', ['status', 'error', 'rootPath', 'progressFilepath']),
     ...mapGetters('local', ['getScanTime'])
   },
   mounted() {

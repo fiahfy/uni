@@ -32,16 +32,16 @@ const wait = (millis) => {
 onmessage = async ({ data: { id, data } }) => {
   switch (id) {
     case 'scan': {
-      const { directory, dataFilepath, refreshInterval, ignoredPaths } = data
+      const { dirPath, dataFilepath, refreshInterval, ignoredPaths } = data
 
       storage.unlink(dataFilepath)
       postMessage({ id: 'refresh' })
 
-      if (!exists(directory)) {
+      if (!exists(dirPath)) {
         postMessage({ id: 'error', data: 'Directory not found' })
         return
       }
-      if (!isDir(directory)) {
+      if (!isDir(dirPath)) {
         postMessage({ id: 'error', data: 'Not directory' })
         return
       }
@@ -68,7 +68,7 @@ onmessage = async ({ data: { id, data } }) => {
         postMessage({ id: 'complete' })
       })
       scanner.setConfig({ ignoredPaths })
-      await scanner.scan(directory)
+      await scanner.scan(dirPath)
       break
     }
     case 'cancel':

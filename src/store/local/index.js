@@ -8,11 +8,14 @@ const worker = Worker()
 export const state = () => ({
   status: status.NOT_YET,
   error: null,
-  directory: null,
+  rootPath: null,
   progressFilepath: null,
   begunAt: null,
   endedAt: null,
-  updatedAt: null
+  updatedAt: null,
+  selectedPaths: [],
+  focusedPaths: [],
+  totalSize: 0
 })
 
 export const getters = {
@@ -50,16 +53,16 @@ export const actions = {
     if (!filepaths || !filepaths.length) {
       return
     }
-    const directory = filepaths[0]
-    dispatch('scan', { directory })
+    const dirPath = filepaths[0]
+    dispatch('scan', { dirPath })
   },
-  scan({ commit, dispatch, getters, rootState, state }, { directory }) {
+  scan({ commit, dispatch, getters, rootState, state }, { dirPath }) {
     if ([status.PROGRESS, status.CANCELLING].includes(state.status)) {
       return
     }
 
     commit('setStatus', { status: status.PROGRESS })
-    commit('setDirectory', { directory })
+    commit('setRootPath', { rootPath: dirPath })
     commit('begin')
 
     worker.onmessage = ({ data: { id, data } }) => {
@@ -95,7 +98,7 @@ export const actions = {
       }
     }
     const data = {
-      directory: state.directory,
+      dirPath: state.rootPath,
       dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
       ignoredPaths: rootState.settings.ignoredPaths
@@ -138,8 +141,8 @@ export const mutations = {
   setError(state, { error }) {
     state.error = error
   },
-  setDirectory(state, { directory }) {
-    state.directory = directory
+  setRootPath(state, { rootPath }) {
+    state.rootPath = rootPath
   },
   setProgressFilepath(state, { progressFilepath }) {
     state.progressFilepath = progressFilepath
@@ -152,5 +155,14 @@ export const mutations = {
   },
   update(state) {
     state.updatedAt = new Date().getTime()
+  },
+  setSelectedPaths(state, { selectedPaths }) {
+    state.selectedPaths = selectedPaths
+  },
+  setFocusedPaths(state, { focusedPaths }) {
+    state.focusedPaths = focusedPaths
+  },
+  setTotalSize(state, { totalSize }) {
+    state.totalSize = totalSize
   }
 }
