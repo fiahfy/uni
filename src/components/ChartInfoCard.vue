@@ -19,7 +19,7 @@
 
 <script>
 import path from 'path'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
   data() {
@@ -28,38 +28,12 @@ export default {
     }
   },
   computed: {
-    paths() {
-      if (this.rootPath === null) {
-        return [''] // set dummy value for ensuring height
-      }
-      return [this.rootPath, ...this.selectedPaths, ...this.focusedPaths]
-    },
-    ...mapState({
-      rootPath: (state) => {
-        // Remove trailing seperator
-        const rootPath = state.local.rootPath
-        if (rootPath && rootPath.slice(-1) === path.sep) {
-          return rootPath.slice(0, rootPath.length - 1)
-        }
-        return rootPath
-      }
-    }),
-    ...mapState('local', ['selectedPaths', 'focusedPaths', 'totalSize'])
+    ...mapState('local', ['node']),
+    ...mapGetters('local', ['totalSize', 'paths'])
   },
   methods: {
     onChipClick(e, index) {
-      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.data.name === name)
-      }, this.root)
-
-      if (this.depth === node.depth) {
-        return
-      }
-
-      this.onClick(node)
+      this.$emit('click:chip', index)
     }
   }
 }

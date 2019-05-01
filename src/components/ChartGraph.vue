@@ -3,6 +3,7 @@
     <div ref="wrapper" class="wrapper fill-height">
       <svg ref="sunburst" />
     </div>
+
     <div v-if="loading" class="overlay" />
 
     <v-tooltip
@@ -44,26 +45,11 @@ export default {
     percentage() {
       return ((this.focusedSize / this.totalSize) * 100).toFixed(2)
     },
-    ...mapState({
-      rootPath: (state) => {
-        // Remove trailing seperator
-        const rootPath = state.local.rootPath
-        if (rootPath && rootPath.slice(-1) === path.sep) {
-          return rootPath.slice(0, rootPath.length - 1)
-        }
-        return rootPath
-      }
-    }),
-    ...mapState('local', [
-      'updatedAt',
-      'totalSize',
-      'selectedPaths',
-      'focusedPaths'
-    ]),
-    ...mapGetters('local', ['getNode'])
+    ...mapState('local', ['selectedPaths', 'focusedPaths', 'node']),
+    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash', 'paths'])
   },
   watch: {
-    updatedAt() {
+    node() {
       if (document.hidden) {
         this.needsUpdate = true
       } else {
@@ -130,7 +116,7 @@ export default {
       }
       const ancestors = d.ancestors().reverse()
       const filepath = [
-        this.rootPath,
+        this.rootPathHasNoTrailingSlash,
         ...this.selectedPaths,
         ...ancestors
           .slice(this.selectedPaths.length + 1)
@@ -181,20 +167,6 @@ export default {
         .selectAll('path')
         .attrTween('d', (d) => () => this.arc(d))
     },
-    onChipClick(e, index) {
-      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.data.name === name)
-      }, this.root)
-
-      if (this.depth === node.depth) {
-        return
-      }
-
-      this.onClick(node)
-    },
     setup() {
       if (this.$el.querySelector('svg g')) {
         this.$el.querySelector('svg g').remove()
@@ -207,6 +179,8 @@ export default {
       this.height = this.$refs.wrapper.offsetHeight
       this.radius = Math.min(this.width, this.height) / 2
       this.color = d3.scaleOrdinal(d3.schemePaired)
+      this.setColorTable({ colorTable: this.color })
+      console.log('setColorTable')
 
       this.x = d3.scaleLinear().range([0, 2 * Math.PI])
       this.y = d3.scaleSqrt().range([0, this.radius])
@@ -234,12 +208,10 @@ export default {
       this.focusedSize = 0
       this.setFocusedPaths({ focusedPaths: [] })
       this.setSelectedPaths({ selectedPaths: [] })
-      this.setTotalSize({ totalSize: 0 })
 
       this.loading = true
 
-      const node = this.getNode()
-      if (!node) {
+      if (!this.node) {
         Array.from(this.$el.querySelectorAll('svg path')).forEach((el) =>
           el.remove()
         )
@@ -247,12 +219,11 @@ export default {
         return
       }
 
-      const root = d3.hierarchy(node)
+      const root = d3.hierarchy(this.node)
 
       this.root = root
       this.depth = 0
       this.focusedSize = root.value
-      this.setTotalSize({ totalSize: root.value })
 
       const path = this.svg
         .selectAll('path')
@@ -290,11 +261,21 @@ export default {
       this.loading = false
       this.needsUpdate = false
     },
-    ...mapMutations('local', [
-      'setTotalSize',
-      'setSelectedPaths',
-      'setFocusedPaths'
-    ]),
+    changeDepth(index) {
+      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.data.name === name)
+      }, this.root)
+
+      if (this.depth === node.depth) {
+        return
+      }
+
+      this.onClick(node)
+    },
+    ...mapMutations('local', ['setSelectedPaths', 'setFocusedPaths', 'setColorTable']),
     ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
   }
 }

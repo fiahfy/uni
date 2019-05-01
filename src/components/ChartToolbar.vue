@@ -24,7 +24,9 @@
       <v-icon left>find_in_page</v-icon>
       Scan
     </v-btn>
+
     <v-spacer />
+
     <v-btn
       class="ma-0"
       :title="'Settings' | accelerator('CmdOrCtrl+,')"

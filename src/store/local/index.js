@@ -1,30 +1,33 @@
+import path from 'path'
 import { clipboard, remote, shell } from 'electron'
 import status from '~/consts/status'
-import storage from '~/utils/storage'
 import Worker from '~/workers/scanner.worker.js'
 
 const worker = Worker()
+
+const reversed = {
+  name: false,
+  value: true
+}
 
 export const state = () => ({
   status: status.NOT_YET,
   error: null,
   rootPath: null,
+  selectedPaths: [],
+  focusedPaths: [],
   progressFilepath: null,
   begunAt: null,
   endedAt: null,
-  updatedAt: null,
-  selectedPaths: [],
-  focusedPaths: [],
-  totalSize: 0
+  node: {},
+  order: {
+    by: 'value',
+    descending: false
+  },
+  colorTable: () => {}
 })
 
 export const getters = {
-  getNode: (state) => () => {
-    if (state.status === status.NOT_YET) {
-      return
-    }
-    return storage.read(storage.getFilepath())
-  },
   getScanTime: (state, getters) => () => {
     if (state.status === status.PROGRESS) {
       return getters.getElapsedTime()
@@ -42,6 +45,48 @@ export const getters = {
       return null
     }
     return state.endedAt - state.begunAt
+  },
+  totalSize(state) {
+    return state.node.value || 0
+  },
+  rootPathHasNoTrailingSlash(state) {
+    // Remove trailing seperator
+    const rootPath = state.rootPath
+    if (rootPath && rootPath.slice(-1) === path.sep) {
+      return rootPath.slice(0, rootPath.length - 1)
+    }
+    return rootPath
+  },
+  paths(state) {
+    return [state.rootPath, ...state.selectedPaths, ...state.focusedPaths]
+  },
+  items(state) {
+    const { by, descending } = state.order
+    return state.selectedPaths
+      .reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.name === name)
+      }, state.node)
+      .children.concat()
+      .sort((a, b) => {
+        let result = 0
+        if (a[by] > b[by]) {
+          result = 1
+        } else if (a[by] < b[by]) {
+          result = -1
+        }
+        if (result === 0) {
+          if (a.path > b.path) {
+            result = 1
+          } else if (a.path < b.path) {
+            result = -1
+          }
+        }
+        result = reversed[by] ? -1 * result : result
+        return descending ? -1 * result : result
+      })
   }
 }
 
@@ -61,8 +106,8 @@ export const actions = {
       return
     }
 
-    commit('setStatus', { status: status.PROGRESS })
     commit('setRootPath', { rootPath: dirPath })
+    commit('setStatus', { status: status.PROGRESS })
     commit('begin')
 
     worker.onmessage = ({ data: { id, data } }) => {
@@ -70,27 +115,30 @@ export const actions = {
         case 'progress':
           commit('setProgressFilepath', { progressFilepath: data })
           break
-        case 'refresh':
-          commit('update')
+        case 'refresh': {
+          commit('setNode', { node: data })
           break
+        }
         case 'complete': {
-          commit('update')
           commit('end')
-          if (state.status === status.CANCELLING) {
-            commit('setStatus', { status: status.CANCELLED })
-            return
-          }
-          commit('setStatus', { status: status.DONE })
+          const newStatus =
+            state.status === status.CANCELLING ? status.CANCELLED : status.DONE
+          const title =
+            state.status === status.CANCELLING
+              ? 'Scan cancelled'
+              : 'Scan finished'
+
+          commit('setStatus', { status: newStatus })
+          commit('setNode', { node: data })
           const sec = (getters.getScanTime() / 1000).toFixed(2)
           dispatch(
             'showNotification',
-            { title: 'Scan finished', body: `Total time: ${sec} sec` },
+            { title, body: `Total time: ${sec} sec` },
             { root: true }
           )
           break
         }
         case 'error':
-          commit('update')
           commit('end')
           commit('setStatus', { status: status.ERROR })
           commit('setError', { error: new Error(data) })
@@ -99,7 +147,6 @@ export const actions = {
     }
     const data = {
       dirPath: state.rootPath,
-      dataFilepath: storage.getFilepath(),
       refreshInterval: rootState.settings.refreshInterval,
       ignoredPaths: rootState.settings.ignoredPaths
     }
@@ -131,6 +178,12 @@ export const actions = {
     }
     const ignoredPath = filepaths[0]
     commit('settings/addIgnoredPath', { ignoredPath }, { root: true })
+  },
+  changeOrderBy({ commit, state }, { orderBy }) {
+    const descending =
+      state.order.by === orderBy ? !state.order.descending : false
+    const order = { by: orderBy, descending }
+    commit('setOrder', { order })
   }
 }
 
@@ -144,6 +197,12 @@ export const mutations = {
   setRootPath(state, { rootPath }) {
     state.rootPath = rootPath
   },
+  setSelectedPaths(state, { selectedPaths }) {
+    state.selectedPaths = selectedPaths
+  },
+  setFocusedPaths(state, { focusedPaths }) {
+    state.focusedPaths = focusedPaths
+  },
   setProgressFilepath(state, { progressFilepath }) {
     state.progressFilepath = progressFilepath
   },
@@ -153,16 +212,13 @@ export const mutations = {
   end(state) {
     state.endedAt = new Date().getTime()
   },
-  update(state) {
-    state.updatedAt = new Date().getTime()
+  setNode(state, { node }) {
+    state.node = node
   },
-  setSelectedPaths(state, { selectedPaths }) {
-    state.selectedPaths = selectedPaths
+  setOrder(state, { order }) {
+    state.order = order
   },
-  setFocusedPaths(state, { focusedPaths }) {
-    state.focusedPaths = focusedPaths
-  },
-  setTotalSize(state, { totalSize }) {
-    state.totalSize = totalSize
+  setColorTable(state, { colorTable }) {
+    state.colorTable = colorTable
   }
 }

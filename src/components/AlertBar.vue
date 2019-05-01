@@ -47,7 +47,7 @@ export default {
           return `${this.error.message} "${this.rootPath}"`
         case status.NOT_YET:
         default:
-          return 'Select directory and scan'
+          return 'Click "SCAN" to get started'
       }
     },
     subText() {
