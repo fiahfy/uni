@@ -8,6 +8,7 @@
     :items="items"
     :class="classes"
     :disable-initial-sort="true"
+    :dense="dense"
     class="sticky-data-table"
   >
     <template slot="headers" slot-scope="props">
@@ -36,6 +37,10 @@ export default {
     items: {
       type: Array,
       default: () => []
+    },
+    dense: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -144,6 +149,31 @@ export default {
     border-bottom: none;
     &.v-datatable__progress > th:after {
       height: 10px;
+    }
+  }
+  &[dense] /deep/ .v-table__overflow .v-datatable {
+    > thead > tr {
+      height: unset;
+      > th {
+        padding: {
+          top: 8px;
+          bottom: 8px;
+        }
+      }
+      > th {
+        padding: {
+          top: 8px;
+          bottom: 8px;
+        }
+      }
+      &.v-datatable__progress > th {
+        top: 34px;
+      }
+    }
+    > tbody > tr > td {
+      height: 34px;
+      padding: 0 12px;
+      font-size: 12px;
     }
   }
 }

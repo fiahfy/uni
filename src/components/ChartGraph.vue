@@ -1,6 +1,6 @@
 <template>
   <div class="chart-graph pa-3">
-    <div ref="wrapper" class="wrapper fill-height">
+    <div ref="wrapper" class="wrapper fill-height hide-overflow">
       <svg ref="sunburst" />
     </div>
 
@@ -203,7 +203,7 @@ export default {
 
       this.partition = d3.partition()
 
-      this.transition = d3.transition().duration(750)
+      this.transition = d3.transition().duration(300)
 
       this.update()
     },

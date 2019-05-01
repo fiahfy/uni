@@ -57,8 +57,12 @@ export const getters = {
     }
     return rootPath
   },
-  paths(state) {
-    return [state.rootPath, ...state.selectedNames, ...state.hoveredNames]
+  paths(state, getters) {
+    return [
+      getters.rootPathHasNoTrailingSlash,
+      ...state.selectedNames,
+      ...state.hoveredNames
+    ]
   },
   items(state) {
     const { by, descending } = state.order

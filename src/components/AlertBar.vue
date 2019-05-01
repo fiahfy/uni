@@ -38,7 +38,7 @@ export default {
         case status.PROGRESS:
           return `Scanning... "${this.progressFilepath}"`
         case status.DONE:
-          return `Scanned directory "${this.rootPath}"`
+          return `Scan finished "${this.rootPath}"`
         case status.CANCELLING:
           return 'Cancelling...'
         case status.CANCELLED:
@@ -71,9 +71,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.v-alert /deep/ div {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.v-alert {
+  border: 0;
+  /deep/ div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 </style>

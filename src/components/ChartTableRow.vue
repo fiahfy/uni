@@ -7,18 +7,18 @@
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
   >
-    <td class="px-3 py-2 caption">
+    <td>
       <v-layout class="align-center">
-        <template v-if="item.system">
+        <span v-if="item.system" class="primary--text">
           {{ item.name }}
-        </template>
+        </span>
         <template v-else>
           <span class="square mr-1" :style="{ 'background-color': color }" />
           <span class="ellipsis spacer" v-text="item.name" />
         </template>
       </v-layout>
     </td>
-    <td class="px-3 py-2 caption text-xs-right text-no-wrap">
+    <td class="text-xs-right text-no-wrap">
       <template v-if="!item.system">
         {{ item.value | readableSize }} ({{ percentage }} %)
       </template>
@@ -116,9 +116,6 @@ export default {
 .chart-table-row {
   &.clickable {
     cursor: pointer;
-  }
-  td {
-    height: unset;
   }
   .square {
     display: inline-block;

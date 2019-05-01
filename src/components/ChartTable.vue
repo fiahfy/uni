@@ -6,6 +6,7 @@
     :items="items"
     item-key="name"
     hide-actions
+    dense
   >
     <chart-table-header-row
       slot="headers"

@@ -16,7 +16,6 @@
           </v-layout>
         </v-flex>
       </v-layout>
-      <!-- <v-divider /> -->
       <chart-info-card @click:chip="onChipClick" />
     </template>
     <v-layout v-else align-center justify-center>
