@@ -12,7 +12,14 @@
       slot-scope="props"
       :headers="props.headers"
     />
-    <chart-table-row slot="items" slot-scope="props" :item="props.item" />
+    <chart-table-row
+      slot="items"
+      slot-scope="props"
+      :item="props.item"
+      @click="onRowClick"
+      @mouseover="onRowMouseOver"
+      @mouseleave="onRowMouseLeave"
+    />
   </sticky-data-table>
 </template>
 
@@ -38,13 +45,24 @@ export default {
         {
           text: 'Size',
           value: 'value',
-          width: 128
+          width: 150
         }
       ]
     }
   },
   computed: {
     ...mapGetters('local', ['items'])
+  },
+  methods: {
+    onRowClick(item) {
+      this.$emit('click:row', item)
+    },
+    onRowMouseOver(item) {
+      this.$emit('mouseover:row', item)
+    },
+    onRowMouseLeave(item) {
+      this.$emit('mouseleave:row', item)
+    }
   }
 }
 </script>

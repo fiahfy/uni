@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar class="chart-toolbar" color="transparent" flat dense>
+  <v-toolbar class="chart-toolbar" flat dense>
     <v-btn
       v-if="scanning"
       class="pr-5"

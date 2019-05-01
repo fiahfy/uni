@@ -1,17 +1,27 @@
 <template>
   <tr
     class="chart-table-row"
+    :class="classes"
     @click.stop="onClick"
     @contextmenu.stop="onContextMenu"
+    @mouseover="onMouseOver"
+    @mouseleave="onMouseLeave"
   >
-    <td>
+    <td class="px-3 py-2 caption">
       <v-layout class="align-center">
-        <span :style="{ 'background-color': color }" />
-        <span class="ellipsis spacer" v-text="item.name" />
+        <template v-if="item.system">
+          {{ item.name }}
+        </template>
+        <template v-else>
+          <span class="square mr-1" :style="{ 'background-color': color }" />
+          <span class="ellipsis spacer" v-text="item.name" />
+        </template>
       </v-layout>
     </td>
-    <td class="text-xs-right">
-      {{ item.value | readableSize }} ({{ percentage }} %)
+    <td class="px-3 py-2 caption text-xs-right text-no-wrap">
+      <template v-if="!item.system">
+        {{ item.value | readableSize }} ({{ percentage }} %)
+      </template>
     </td>
   </tr>
 </template>
@@ -28,6 +38,12 @@ export default {
     }
   },
   computed: {
+    classes() {
+      return {
+        clickable:
+          this.item.system || (this.item.children && this.item.children.length)
+      }
+    },
     color() {
       if (!this.colorTable) {
         return null
@@ -35,9 +51,9 @@ export default {
       if (this.item.children && this.item.children.length) {
         return this.colorTable(this.item.name)
       }
-      if (this.selectedPaths.length) {
+      if (this.selectedNames.length) {
         return this.colorTable(
-          this.selectedPaths[this.selectedPaths.length - 1]
+          this.selectedNames[this.selectedNames.length - 1]
         )
       }
       return this.colorTable(this.node.name)
@@ -45,16 +61,35 @@ export default {
     percentage() {
       return ((this.item.value / this.totalSize) * 100).toFixed(2)
     },
-    ...mapState('local', ['node', 'selectedPaths', 'colorTable']),
+    ...mapState('local', ['selectedNames', 'node', 'colorTable']),
     ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
   },
   methods: {
+    onClick() {
+      this.$emit('click', this.item)
+    },
+    onMouseOver() {
+      this.$emit('mouseover', this.item)
+    },
+    onMouseLeave() {
+      this.$emit('mouseleave', this.item)
+    },
     onContextMenu() {
-      const filepath = [
-        this.rootPathHasNoTrailingSlash,
-        ...this.selectedPaths,
-        this.item.name
-      ].join(path.sep)
+      let paths = []
+      if (this.item.system) {
+        if (this.item.name === '<parent>') {
+          paths = [this.rootPathHasNoTrailingSlash, ...this.selectedNames]
+        } else {
+          paths = [this.rootPathHasNoTrailingSlash]
+        }
+      } else {
+        paths = [
+          this.rootPathHasNoTrailingSlash,
+          ...this.selectedNames,
+          this.item.name
+        ]
+      }
+      const filepath = paths.join(path.sep)
 
       this.$contextMenu.show([
         {
@@ -79,11 +114,16 @@ export default {
 
 <style scoped lang="scss">
 .chart-table-row {
-  cursor: pointer;
-  span {
+  &.clickable {
+    cursor: pointer;
+  }
+  td {
+    height: unset;
+  }
+  .square {
     display: inline-block;
-    height: 15px;
-    width: 15px;
+    height: 12px;
+    width: 12px;
   }
 }
 </style>

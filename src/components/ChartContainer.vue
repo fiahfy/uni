@@ -8,7 +8,11 @@
         <v-flex xs4>
           <v-layout row fill-height>
             <v-divider vertical />
-            <chart-table />
+            <chart-table
+              @click:row="onRowClick"
+              @mouseover:row="onRowMouseOver"
+              @mouseleave:row="onRowMouseLeave"
+            />
           </v-layout>
         </v-flex>
       </v-layout>
@@ -49,6 +53,15 @@ export default {
     ...mapGetters('local', ['totalSize'])
   },
   methods: {
+    onRowClick(item) {
+      this.$refs.graph.moveTo(item)
+    },
+    onRowMouseOver(item) {
+      this.$refs.graph.hover(item)
+    },
+    onRowMouseLeave(item) {
+      this.$refs.graph.unhover(item)
+    },
     onChipClick(index) {
       this.$refs.graph.changeDepth(index)
     }

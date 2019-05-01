@@ -14,8 +14,8 @@ export const state = () => ({
   status: status.NOT_YET,
   error: null,
   rootPath: null,
-  selectedPaths: [],
-  focusedPaths: [],
+  selectedNames: [],
+  hoveredNames: [],
   progressFilepath: null,
   begunAt: null,
   endedAt: null,
@@ -58,35 +58,39 @@ export const getters = {
     return rootPath
   },
   paths(state) {
-    return [state.rootPath, ...state.selectedPaths, ...state.focusedPaths]
+    return [state.rootPath, ...state.selectedNames, ...state.hoveredNames]
   },
   items(state) {
     const { by, descending } = state.order
-    return state.selectedPaths
-      .reduce((carry, name) => {
-        if (!carry) {
-          return carry
-        }
-        return carry.children.find((c) => c.name === name)
-      }, state.node)
-      .children.concat()
-      .sort((a, b) => {
-        let result = 0
-        if (a[by] > b[by]) {
-          result = 1
-        } else if (a[by] < b[by]) {
-          result = -1
-        }
-        if (result === 0) {
-          if (a.path > b.path) {
+    return [
+      { system: true, name: '<root>' },
+      { system: true, name: '<parent>' },
+      ...state.selectedNames
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.name === name)
+        }, state.node)
+        .children.concat()
+        .sort((a, b) => {
+          let result = 0
+          if (a[by] > b[by]) {
             result = 1
-          } else if (a.path < b.path) {
+          } else if (a[by] < b[by]) {
             result = -1
           }
-        }
-        result = reversed[by] ? -1 * result : result
-        return descending ? -1 * result : result
-      })
+          if (result === 0) {
+            if (a.path > b.path) {
+              result = 1
+            } else if (a.path < b.path) {
+              result = -1
+            }
+          }
+          result = reversed[by] ? -1 * result : result
+          return descending ? -1 * result : result
+        })
+    ]
   }
 }
 
@@ -197,11 +201,11 @@ export const mutations = {
   setRootPath(state, { rootPath }) {
     state.rootPath = rootPath
   },
-  setSelectedPaths(state, { selectedPaths }) {
-    state.selectedPaths = selectedPaths
+  setSelectedNames(state, { selectedNames }) {
+    state.selectedNames = selectedNames
   },
-  setFocusedPaths(state, { focusedPaths }) {
-    state.focusedPaths = focusedPaths
+  setHoveredNames(state, { hoveredNames }) {
+    state.hoveredNames = hoveredNames
   },
   setProgressFilepath(state, { progressFilepath }) {
     state.progressFilepath = progressFilepath

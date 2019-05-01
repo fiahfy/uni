@@ -14,7 +14,7 @@
     >
       <p class="ma-0">
         {{ tooltip.text }}<br />
-        <small>{{ focusedSize | readableSize }} ({{ percentage }} %)</small>
+        <small>{{ targetSize | readableSize }} ({{ percentage }} %)</small>
       </p>
     </v-tooltip>
   </div>
@@ -32,7 +32,7 @@ export default {
       sep: path.sep,
       loading: false,
       needsUpdate: false,
-      focusedSize: 0,
+      targetSize: 0,
       tooltip: {
         show: false,
         x: 0,
@@ -43,10 +43,10 @@ export default {
   },
   computed: {
     percentage() {
-      return ((this.focusedSize / this.totalSize) * 100).toFixed(2)
+      return ((this.targetSize / this.totalSize) * 100).toFixed(2)
     },
-    ...mapState('local', ['selectedPaths', 'focusedPaths', 'node']),
-    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash', 'paths'])
+    ...mapState('local', ['selectedNames', 'hoveredNames', 'node']),
+    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
   },
   watch: {
     node() {
@@ -84,12 +84,12 @@ export default {
       }
       const ancestors = d.ancestors().reverse()
 
-      const focusedPaths = ancestors
-        .slice(this.selectedPaths.length + 1)
+      const hoveredNames = ancestors
+        .slice(this.selectedNames.length + 1)
         .map((d) => d.data.name)
-      this.setFocusedPaths({ focusedPaths })
+      this.setHoveredNames({ hoveredNames })
 
-      this.focusedSize = d.value
+      this.targetSize = d.value
 
       this.svg
         .selectAll('path')
@@ -97,14 +97,18 @@ export default {
         .filter((d) => ancestors.indexOf(d) >= 0)
         .style('opacity', 1)
 
+      if (!d3.event) {
+        return
+      }
+
       this.tooltip.show = true
       this.tooltip.x = d3.event.clientX
       this.tooltip.y = d3.event.clientY
       this.tooltip.text = d.data.name
     },
     onMouseLeave() {
-      this.setFocusedPaths({ focusedPaths: [] })
-      this.focusedSize = this.totalSize
+      this.setHoveredNames({ hoveredNames: [] })
+      this.targetSize = this.totalSize
 
       this.svg.selectAll('path').style('opacity', 1)
 
@@ -117,9 +121,9 @@ export default {
       const ancestors = d.ancestors().reverse()
       const filepath = [
         this.rootPathHasNoTrailingSlash,
-        ...this.selectedPaths,
+        ...this.selectedNames,
         ...ancestors
-          .slice(this.selectedPaths.length + 1)
+          .slice(this.selectedNames.length + 1)
           .map((d) => d.data.name)
       ].join(path.sep)
 
@@ -149,9 +153,9 @@ export default {
       const ancestors = d.ancestors().reverse()
 
       this.depth = d.depth
-      const selectedPaths = ancestors.slice(1).map((d) => d.data.name)
-      this.setSelectedPaths({ selectedPaths })
-      this.setFocusedPaths({ focusedPaths: [] })
+      const selectedNames = ancestors.slice(1).map((d) => d.data.name)
+      this.setSelectedNames({ selectedNames })
+      this.setHoveredNames({ hoveredNames: [] })
 
       this.svg
         .transition(this.transition)
@@ -180,7 +184,6 @@ export default {
       this.radius = Math.min(this.width, this.height) / 2
       this.color = d3.scaleOrdinal(d3.schemePaired)
       this.setColorTable({ colorTable: this.color })
-      console.log('setColorTable')
 
       this.x = d3.scaleLinear().range([0, 2 * Math.PI])
       this.y = d3.scaleSqrt().range([0, this.radius])
@@ -205,9 +208,9 @@ export default {
       this.update()
     },
     update() {
-      this.focusedSize = 0
-      this.setFocusedPaths({ focusedPaths: [] })
-      this.setSelectedPaths({ selectedPaths: [] })
+      this.targetSize = 0
+      this.setHoveredNames({ hoveredNames: [] })
+      this.setSelectedNames({ selectedNames: [] })
 
       this.loading = true
 
@@ -223,7 +226,7 @@ export default {
 
       this.root = root
       this.depth = 0
-      this.focusedSize = root.value
+      this.targetSize = root.value
 
       const path = this.svg
         .selectAll('path')
@@ -261,13 +264,56 @@ export default {
       this.loading = false
       this.needsUpdate = false
     },
-    changeDepth(index) {
-      const node = this.paths.slice(1, index + 1).reduce((carry, name) => {
+    moveTo(item) {
+      let paths = []
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = this.selectedNames
+        }
+      } else {
+        paths = [...this.selectedNames, item.name]
+      }
+
+      const node = paths.reduce((carry, name) => {
         if (!carry) {
           return carry
         }
         return carry.children.find((c) => c.data.name === name)
       }, this.root)
+
+      this.onClick(node)
+    },
+    hover(item) {
+      let paths = []
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = this.selectedNames
+        }
+      } else {
+        paths = [...this.selectedNames, item.name]
+      }
+
+      const node = paths.reduce((carry, name) => {
+        if (!carry) {
+          return carry
+        }
+        return carry.children.find((c) => c.data.name === name)
+      }, this.root)
+
+      this.onMouseOver(node)
+    },
+    unhover() {
+      this.onMouseLeave()
+    },
+    changeDepth(index) {
+      const node = [...this.selectedNames, ...this.hoveredNames]
+        .slice(0, index)
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c) => c.data.name === name)
+        }, this.root)
 
       if (this.depth === node.depth) {
         return
@@ -275,7 +321,11 @@ export default {
 
       this.onClick(node)
     },
-    ...mapMutations('local', ['setSelectedPaths', 'setFocusedPaths', 'setColorTable']),
+    ...mapMutations('local', [
+      'setSelectedNames',
+      'setHoveredNames',
+      'setColorTable'
+    ]),
     ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
   }
 }
