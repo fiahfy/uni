@@ -3,8 +3,8 @@
     <v-card-title class="py-2">
       <span>Total size: {{ totalSize | readableSize }}</span>
     </v-card-title>
-    <v-card-actions>
-      <div class="pa-2">
+    <v-card-actions class="pa-0 scroll-x">
+      <div class="pa-2 text-no-wrap">
         <v-chip
           v-for="(p, index) of paths"
           :key="index"
@@ -48,10 +48,6 @@ export default {
 
 <style scoped lang="scss">
 .v-card > .v-card__actions {
-  overflow: auto;
-  padding: 0;
-  > div {
-    white-space: nowrap;
-  }
+  overflow-x: scroll;
 }
 </style>

@@ -7,11 +7,9 @@
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
   >
-    <td>
+    <td :title="item.name">
       <v-layout class="align-center">
-        <span v-if="item.system" class="primary--text">
-          {{ item.name }}
-        </span>
+        <span v-if="item.system" class="primary--text" v-text="item.name" />
         <template v-else>
           <span class="square mr-1" :style="{ 'background-color': color }" />
           <span class="ellipsis spacer" v-text="item.name" />
