@@ -12,16 +12,12 @@
 
 
 ## Screenshots
-![screenshot](./build/screenshots/screenshot.png?raw=true)
+![screenshot](.github/img/screenshot.png)
 
 
 ## Installation
 1. Download the file for your platform from [releases page](https://github.com/fiahfy/uni/releases).
-2. Open `.dmg` for OS X, Run `.exe` for Windows.
-
-
-## Download
-https://github.com/fiahfy/uni/releases
+2. 2. Open `.dmg` for OS X or run `.exe` for Windows.
 
 
 ## Development
