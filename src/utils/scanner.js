@@ -1,3 +1,4 @@
+/* eslint-disable require-atomic-updates */
 import fs from 'fs'
 import path from 'path'
 import clone from '@fiahfy/simple-clone'
