@@ -1,5 +1,5 @@
 module.exports = {
-  appId: 'net.fiahfy.electron-disk-analyzer',
+  appId: 'net.fiahfy.uni',
   files: ['app', 'main.js'],
   mac: {
     publish: {
