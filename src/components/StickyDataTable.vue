@@ -112,9 +112,9 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .sticky-data-table {
-  /deep/ .v-table__overflow {
+  ::v-deep .v-table__overflow {
     height: 100%;
     overflow-y: scroll;
     .v-datatable {
@@ -145,13 +145,13 @@ export default {
       }
     }
   }
-  &.scrolling /deep/ .v-datatable > thead > tr {
+  &.scrolling ::v-deep .v-datatable > thead > tr {
     border-bottom: none;
     &.v-datatable__progress > th:after {
       height: 10px;
     }
   }
-  &[dense] /deep/ .v-table__overflow .v-datatable {
+  &[dense] ::v-deep .v-table__overflow .v-datatable {
     > thead > tr {
       height: unset;
       > th {

@@ -24,46 +24,48 @@
   </v-layout>
 </template>
 
-<script>
-import { mapState, mapGetters } from 'vuex'
-import status from '~/consts/status'
-import ChartGraph from '~/components/ChartGraph'
-import ChartInfoCard from '~/components/ChartInfoCard'
-import ChartTable from '~/components/ChartTable'
+<script lang="ts">
+import { Vue, Component, Ref } from 'vue-property-decorator'
+import { scannerStore } from '~/store'
+import ChartGraph from '~/components/ChartGraph.vue'
+import ChartInfoCard from '~/components/ChartInfoCard.vue'
+import ChartTable from '~/components/ChartTable.vue'
 
-export default {
+@Component({
   components: {
     ChartGraph,
     ChartInfoCard,
     ChartTable
-  },
-  computed: {
-    message() {
-      switch (this.status) {
-        case status.NOT_YET:
-          return 'No Data'
-        case status.PROGRESS:
-          return this.totalSize ? null : 'Scanning...'
-        default:
-          return null
-      }
-    },
-    ...mapState('local', ['status']),
-    ...mapGetters('local', ['totalSize'])
-  },
-  methods: {
-    onRowClick(item) {
-      this.$refs.graph.moveTo(item)
-    },
-    onRowMouseOver(item) {
-      this.$refs.graph.hover(item)
-    },
-    onRowMouseLeave(item) {
-      this.$refs.graph.unhover(item)
-    },
-    onChipClick(index) {
-      this.$refs.graph.changeDepth(index)
+  }
+})
+export default class ChartContainer extends Vue {
+  @Ref() readonly graph!: ChartGraph
+
+  get message() {
+    switch (scannerStore.status) {
+      case 'NOT_YET':
+        return 'No Data'
+      case 'PROGRESS':
+        return scannerStore.totalSize ? null : 'Scanning...'
+      default:
+        return null
     }
+  }
+
+  onRowClick(item: any) {
+    this.$refs.graph.moveTo(item)
+  }
+
+  onRowMouseOver(item: any) {
+    this.$refs.graph.hover(item)
+  }
+
+  onRowMouseLeave(item: any) {
+    this.$refs.graph.unhover(item)
+  }
+
+  onChipClick(index: any) {
+    this.$refs.graph.changeDepth(index)
   }
 }
 </script>

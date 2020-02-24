@@ -1,12 +1,13 @@
 module.exports = {
   root: true,
-  env: {
-    node: true
-  },
   extends: [
-    'eslint:recommended',
+    '@nuxtjs/eslint-config-typescript',
     'plugin:prettier/recommended',
-    'plugin:vue/recommended',
     'prettier/vue'
-  ]
+  ],
+  rules: {
+    // @see: https://github.com/typescript-eslint/typescript-eslint/issues/1220
+    'no-unused-expressions': 'off',
+    '@typescript-eslint/no-unused-expressions': 'error'
+  }
 }

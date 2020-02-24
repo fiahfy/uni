@@ -12,14 +12,14 @@
         <v-content class="fill-height">
           <v-layout column fill-height>
             <v-toolbar flat dense>
-              <v-btn title="Close" flat icon @click="onCloseClick">
-                <v-icon>close</v-icon>
+              <v-btn title="Close" text icon @click="onClickClose">
+                <v-icon>mdi-close</v-icon>
               </v-btn>
               <v-toolbar-title>Settings</v-toolbar-title>
             </v-toolbar>
-            <v-container fill-height fluid pa-0 scroll-y>
+            <v-container fill-height fluid pa-0 overflow-y-scroll>
               <v-layout>
-                <v-container class="my-0">
+                <v-container>
                   <v-subheader class="pl-0">GENERAL</v-subheader>
                   <v-checkbox
                     v-model="darkTheme"
@@ -41,26 +41,26 @@
                   <v-list subheader dense>
                     <v-subheader class="pl-0">Ignored Directories</v-subheader>
                     <template v-if="ignoredPaths.length">
-                      <v-list-tile v-for="path of ignoredPaths" :key="path">
-                        <v-list-tile-content>
-                          <v-list-tile-title :title="path" v-text="path" />
-                        </v-list-tile-content>
-                        <v-list-tile-action>
-                          <v-btn icon @click="(e) => onListTileClick(e, path)">
-                            <v-icon>delete</v-icon>
+                      <v-list-item v-for="path of ignoredPaths" :key="path">
+                        <v-list-item-content>
+                          <v-list-item-title :title="path" v-text="path" />
+                        </v-list-item-content>
+                        <v-list-item-action class="my-0">
+                          <v-btn icon @click="() => onClickListItem(path)">
+                            <v-icon>mdi-delete</v-icon>
                           </v-btn>
-                        </v-list-tile-action>
-                      </v-list-tile>
+                        </v-list-item-action>
+                      </v-list-item>
                     </template>
-                    <v-list-tile v-else>
-                      <v-list-tile-content>
-                        <v-list-tile-title class="caption">
+                    <v-list-item v-else>
+                      <v-list-item-content>
+                        <v-list-item-title class="caption">
                           No directories
-                        </v-list-tile-title>
-                      </v-list-tile-content>
-                    </v-list-tile>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
                   </v-list>
-                  <v-btn color="primary" flat @click="onAddClick">
+                  <v-btn color="primary" depressed @click="onClickAdd">
                     Ignore Directory
                   </v-btn>
                 </v-container>
@@ -73,61 +73,77 @@
   </v-dialog>
 </template>
 
-<script>
-import { mapActions, mapMutations, mapState } from 'vuex'
-import TitleBar from '~/components/TitleBar'
+<script lang="ts">
+import { remote } from 'electron'
+import { Vue, Component } from 'vue-property-decorator'
+import { layoutStore, settingsStore } from '~/store'
+import TitleBar from '~/components/TitleBar.vue'
 
-export default {
+@Component({
   components: {
     TitleBar
-  },
-  computed: {
-    darkTheme: {
-      get() {
-        return this.$store.state.settings.darkTheme
-      },
-      set(value) {
-        this.$store.commit('settings/setDarkTheme', { darkTheme: value })
-      }
-    },
-    refreshInterval: {
-      get() {
-        return this.$store.state.settings.refreshInterval
-      },
-      set(value) {
-        if (value < 1000) {
-          value = 1000
-        }
-        this.$store.commit('settings/setRefreshInterval', {
-          refreshInterval: value
-        })
-      }
-    },
-    ...mapState(['dialog']),
-    ...mapState('settings', ['ignoredPaths'])
-  },
-  methods: {
-    onCloseClick() {
-      this.dismissDialog()
-    },
-    onAddClick() {
-      this.selectIgnoredDirectory()
-    },
-    onListTileClick(e, path) {
-      this.removeIgnoredPath({ ignoredPath: path })
-    },
-    ...mapMutations(['dismissDialog']),
-    ...mapMutations('settings', ['removeIgnoredPath']),
-    ...mapActions('local', ['selectIgnoredDirectory'])
+  }
+})
+export default class SettingsDialog extends Vue {
+  get dialog() {
+    return layoutStore.dialog
+  }
+
+  set dialog(value) {
+    layoutStore.setDialog({ dialog: value })
+  }
+
+  get darkTheme() {
+    return settingsStore.darkTheme
+  }
+
+  set darkTheme(value) {
+    settingsStore.setDarkTheme({ darkTheme: value })
+  }
+
+  get refreshInterval() {
+    return settingsStore.refreshInterval
+  }
+
+  set refreshInterval(value) {
+    if (value < 1000) {
+      value = 1000
+    }
+    settingsStore.setRefreshInterval({
+      refreshInterval: value
+    })
+  }
+
+  get ignoredPaths() {
+    return settingsStore.ignoredPaths
+  }
+
+  onClickClose() {
+    this.dialog = false
+  }
+
+  async onClickAdd() {
+    const { filePaths } = await remote.dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (!filePaths.length) {
+      return
+    }
+    const ignoredPath = filePaths[0]
+    settingsStore.addIgnoredPath({ ignoredPath })
+  }
+
+  onClickListItem(path: string) {
+    settingsStore.removeIgnoredPath({ ignoredPath: path })
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .v-card {
   height: 100% !important;
 }
-.v-list /deep/ .v-list__tile {
+.v-list ::v-deep .v-list__tile {
   padding: 0;
 }
 </style>

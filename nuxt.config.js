@@ -11,7 +11,7 @@ module.exports = {
         config.target = 'electron-renderer'
         config.output.globalObject = 'this'
         config.module.rules.unshift({
-          test: /\.worker\.js$/,
+          test: /\.worker\.ts$/,
           loader: 'worker-loader'
         })
       }
@@ -21,13 +21,14 @@ module.exports = {
   },
 
   /*
+   ** Build modules
+   */
+  buildModules: ['@nuxt/typescript-build'],
+
+  /*
    ** Global CSS
    */
-  css: [
-    'material-design-icons-iconfont/dist/material-design-icons.css',
-    'typeface-roboto/index.css',
-    '~/assets/css/app.css'
-  ],
+  css: ['@mdi/font/css/materialdesignicons.css', 'typeface-roboto/index.css'],
 
   /*
    ** Generate configuration
@@ -61,10 +62,21 @@ module.exports = {
     [
       '@nuxtjs/vuetify',
       {
-        materialIcons: false,
+        customVariables: ['~/assets/variables.scss'],
+        defaultAssets: false,
         theme: {
-          primary: '#ff4081',
-          accent: '#ff4081'
+          themes: {
+            light: {
+              primary: '#ff4081',
+              secondary: '#424242',
+              accent: '#ff4081'
+            },
+            dark: {
+              primary: '#ff4081',
+              secondary: '#E0E0E0',
+              accent: '#ff4081'
+            }
+          }
         }
       }
     ]
@@ -74,9 +86,10 @@ module.exports = {
    ** Plugins to load before mounting the App
    */
   plugins: [
-    '~/plugins/context-menu',
-    '~/plugins/filter',
-    '~/plugins/ipc-listener'
+    '~/plugins/electron-accelerator-formatter',
+    '~/plugins/electron-context-menu',
+    '~/plugins/ipc',
+    '~/plugins/vuex-persistedstate'
   ],
 
   /*

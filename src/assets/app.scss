@@ -6,3 +6,7 @@ html, body, #__nuxt, #__layout, #app {
 html {
   overflow-y: hidden;
 }
+
+.overflow-y-scroll {
+  overflow-y: scroll;
+}

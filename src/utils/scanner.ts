@@ -1,16 +1,21 @@
-/* eslint-disable require-atomic-updates */
 import fs from 'fs'
 import path from 'path'
-import clone from '@fiahfy/simple-clone'
+const clone = require('@fiahfy/simple-clone')
 
 const INTERVAL = 100
+
+type Node = {
+  name: string
+  value: number
+  children: Node[]
+}
 
 let scanning = false
 let cancelling = false
 let lastProgressTime = 0
-let callbacks = {}
-let ignoredPaths = []
-let node = {}
+const callbacks: { [event: string]: Function } = {}
+let ignoredPaths: string[] = []
+let node = { name: '', value: 0, children: [] }
 
 const delay = (millis = 0) => {
   return new Promise((resolve) => {
@@ -20,15 +25,15 @@ const delay = (millis = 0) => {
   })
 }
 
-const send = (event, args) => {
+const send = (event: string, args?: any) => {
   const callback = callbacks[event]
   if (callback) {
     callback(args)
   }
 }
 
-const scanFile = async (filepath, depth, node) => {
-  if (ignoredPaths.includes(filepath)) {
+const scanFile = async (filePath: string, depth: number, node: Node) => {
+  if (ignoredPaths.includes(filePath)) {
     return
   }
   if (cancelling) {
@@ -39,27 +44,27 @@ const scanFile = async (filepath, depth, node) => {
   if (now - lastProgressTime > INTERVAL) {
     await delay() // wait for receiving cancel request
     lastProgressTime = now
-    send('progress', filepath)
+    send('progress', filePath)
   }
 
   try {
-    const stats = fs.lstatSync(filepath)
+    const stats = fs.lstatSync(filePath)
     if (stats.isDirectory()) {
-      node.name = path.basename(filepath)
+      node.name = path.basename(filePath)
       node.value = 0
       node.children = []
-      const filenames = fs.readdirSync(filepath)
-      for (let filename of filenames) {
-        const childNode = {}
+      const filenames = fs.readdirSync(filePath)
+      for (const filename of filenames) {
+        const childNode = { name: '', value: 0, children: [] }
         node.children = [...node.children, childNode]
-        await scanFile(path.join(filepath, filename), depth + 1, childNode)
+        await scanFile(path.join(filePath, filename), depth + 1, childNode)
         node.value += childNode.value
       }
       if (depth > 10) {
         delete node.children
       }
     } else {
-      node.name = path.basename(filepath)
+      node.name = path.basename(filePath)
       node.value = stats.size
     }
   } catch (e) {
@@ -67,7 +72,7 @@ const scanFile = async (filepath, depth, node) => {
   }
 }
 
-const sum = (node) => {
+const sum = (node: Node) => {
   if (!node.children) {
     return
   }
@@ -78,7 +83,7 @@ const sum = (node) => {
   )
 }
 
-const reduce = (limit, node) => {
+const reduce = (limit: number, node: Node) => {
   if (!node.children) {
     return
   }
@@ -86,16 +91,16 @@ const reduce = (limit, node) => {
   node.children.forEach((child) => reduce(limit, child))
 }
 
-const scan = async (filepath) => {
+const scan = async (filePath: string) => {
   if (scanning) {
     return
   }
   cancelling = false
   scanning = true
 
-  node = {}
+  node = { name: '', value: 0, children: [] }
   lastProgressTime = 0
-  await scanFile(filepath, 0, node)
+  await scanFile(filePath, 0, node)
 
   send('complete')
   scanning = false
@@ -105,12 +110,12 @@ const cancel = () => {
   cancelling = true
 }
 
-const on = (event, callback) => {
+const on = (event: string, callback: Function) => {
   callbacks[event] = callback
 }
 
-const setConfig = (config) => {
-  ignoredPaths = config.ignoredPaths || []
+const setConfig = (config: { ignoredPaths: string[] }) => {
+  ignoredPaths = config.ignoredPaths
 }
 
 const getCalculatedNode = () => {

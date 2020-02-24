@@ -1,82 +1,85 @@
 <template>
-  <v-alert :value="true" :type="type" class="alert-bar ma-0">
-    <v-layout row>
-      <span class="spacer ellipsis" :title="text">{{ text }}</span>
-      <span>{{ subText }}</span>
-    </v-layout>
+  <v-alert
+    :value="true"
+    :type="type"
+    class="alert-bar mb-0 body-2"
+    tile
+    text
+    dense
+  >
+    <div class="d-flex">
+      <span class="spacer text-truncate" :title="text" v-text="text" />
+      <span v-text="subText" />
+    </div>
   </v-alert>
 </template>
 
-<script>
-import { mapGetters, mapState } from 'vuex'
-import status from '~/consts/status'
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+import { scannerStore } from '~/store'
 
-export default {
-  data() {
-    return {
-      time: 0
+@Component
+export default class AlertBar extends Vue {
+  scanTime = 0
+
+  get type() {
+    switch (scannerStore.status) {
+      case 'DONE':
+        return 'success'
+      case 'CANCELLING':
+      case 'CANCELLED':
+        return 'warning'
+      case 'ERROR':
+        return 'error'
+      case 'NOT_YET':
+      case 'PROGRESS':
+      default:
+        return 'info'
     }
-  },
-  computed: {
-    type() {
-      switch (this.status) {
-        case status.DONE:
-          return 'success'
-        case status.CANCELLING:
-        case status.CANCELLED:
-          return 'warning'
-        case status.ERROR:
-          return 'error'
-        case status.NOT_YET:
-        case status.PROGRESS:
-        default:
-          return 'info'
+  }
+
+  get text() {
+    switch (scannerStore.status) {
+      case 'PROGRESS':
+        return `Scanning... "${scannerStore.progressFilePath}"`
+      case 'DONE':
+        return `Scan finished "${scannerStore.rootPath}"`
+      case 'CANCELLING':
+        return 'Cancelling...'
+      case 'CANCELLED':
+        return 'Cancelled'
+      case 'ERROR':
+        return `${scannerStore.error?.message} "${scannerStore.rootPath}"`
+      case 'NOT_YET':
+      default:
+        return 'Click "SCAN" to get started'
+    }
+  }
+
+  get subText() {
+    switch (scannerStore.status) {
+      case 'PROGRESS':
+      case 'DONE': {
+        const time = (this.scanTime / 1000).toFixed(2)
+        return `Total time: ${time} sec`
       }
-    },
-    text() {
-      switch (this.status) {
-        case status.PROGRESS:
-          return `Scanning... "${this.progressFilepath}"`
-        case status.DONE:
-          return `Scan finished "${this.rootPath}"`
-        case status.CANCELLING:
-          return 'Cancelling...'
-        case status.CANCELLED:
-          return 'Cancelled'
-        case status.ERROR:
-          return `${this.error.message} "${this.rootPath}"`
-        case status.NOT_YET:
-        default:
-          return 'Click "SCAN" to get started'
-      }
-    },
-    subText() {
-      switch (this.status) {
-        case status.PROGRESS:
-        case status.DONE:
-          return `Total time: ${this.time} sec`
-        default:
-          return ''
-      }
-    },
-    ...mapState('local', ['status', 'error', 'rootPath', 'progressFilepath']),
-    ...mapGetters('local', ['getScanTime'])
-  },
+      default:
+        return ''
+    }
+  }
+
   mounted() {
     window.setInterval(() => {
-      this.time = (this.getScanTime() / 1000).toFixed(2)
+      this.scanTime = scannerStore.getScanTime()
     }, 0)
   }
 }
 </script>
 
-<style scoped lang="scss">
-.v-alert {
-  border: 0;
-  /deep/ div {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+<style lang="scss" scoped>
+.alert-bar {
+  ::v-deep .v-alert__content {
+    min-width: 0;
   }
 }
 </style>

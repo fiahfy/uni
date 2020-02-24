@@ -1,73 +1,73 @@
 <template>
   <v-toolbar class="chart-toolbar" flat dense>
     <v-btn
-      v-if="scanning"
-      class="pr-5"
-      color="primary"
-      :disabled="disabled"
-      outline
-      round
-      @click="onCancelClick"
-    >
-      <v-icon left>find_in_page</v-icon>
-      {{ title }}
-    </v-btn>
-    <v-btn
-      v-else
-      class="pr-5"
+      class="px-5"
       color="primary"
       :title="'Scan' | accelerator('CmdOrCtrl+O')"
-      depressed
-      round
-      @click="onScanClick"
+      :disabled="cancelling"
+      :depressed="!scanning"
+      :outlined="scanning"
+      rounded
+      @click="onClickScan"
     >
-      <v-icon left>find_in_page</v-icon>
-      Scan
+      <v-icon left>mdi-file-find</v-icon>
+      {{ title }}
     </v-btn>
 
     <v-spacer />
 
     <v-btn
-      class="ma-0"
       :title="'Settings' | accelerator('CmdOrCtrl+,')"
-      flat
+      text
       icon
-      @click="onSettingsClick"
+      @click="onClickSettings"
     >
-      <v-icon>settings</v-icon>
+      <v-icon>mdi-settings</v-icon>
     </v-btn>
   </v-toolbar>
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex'
-import status from '~/consts/status'
+import { remote } from 'electron'
+import { Vue, Component } from 'vue-property-decorator'
+import { layoutStore, scannerStore } from '~/store'
 
-export default {
-  computed: {
-    scanning() {
-      return [status.PROGRESS, status.CANCELLING].includes(this.status)
-    },
-    title() {
-      return this.status === status.CANCELLING ? 'Cancelling' : 'Cancel'
-    },
-    disabled() {
-      return this.status === status.CANCELLING
-    },
-    ...mapState('local', ['status'])
-  },
-  methods: {
-    onScanClick() {
-      this.selectDirectory()
-    },
-    onCancelClick() {
-      this.cancel()
-    },
-    onSettingsClick() {
-      this.showDialog()
-    },
-    ...mapMutations(['showDialog']),
-    ...mapActions('local', ['selectDirectory', 'cancel'])
+@Component
+export default class ChartToolbar extends Vue {
+  get scanning() {
+    return ['PROGRESS', 'CANCELLING'].includes(scannerStore.status)
+  }
+
+  get cancelling() {
+    return scannerStore.status === 'CANCELLING'
+  }
+
+  get title() {
+    switch (scannerStore.status) {
+      case 'PROGRESS':
+        return 'Cancel'
+      case 'CANCELLING':
+        return 'Cancelling'
+      default:
+        return 'Scan'
+    }
+  }
+
+  async onClickScan() {
+    if (this.scanning) {
+      return scannerStore.cancel()
+    }
+    const { filePaths } = await remote.dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    const dirPath = filePaths[0]
+    if (dirPath) {
+      scannerStore.start({ dirPath })
+    }
+  }
+
+  onClickSettings() {
+    layoutStore.setDialog({ dialog: true })
   }
 }
 </script>

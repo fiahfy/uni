@@ -46,7 +46,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .v-card > .v-card__actions {
   overflow-x: scroll;
 }

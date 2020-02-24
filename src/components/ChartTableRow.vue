@@ -83,20 +83,20 @@ export default {
       this.$emit('mouseleave', this.item)
     },
     onContextMenu() {
-      const filepath = this.getPaths(this.item).join(path.sep)
+      const filePath = this.getPaths(this.item).join(path.sep)
 
       this.$contextMenu.show([
         {
           label: 'Open',
           click: () => {
-            this.browseDirectory({ filepath })
+            this.browseDirectory({ filePath })
           }
         },
         { type: 'separator' },
         {
           label: 'Copy path',
           click: () => {
-            this.writeToClipboard({ filepath })
+            this.writeToClipboard({ filePath })
           }
         }
       ])
@@ -106,7 +106,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .chart-table-row {
   &.clickable {
     cursor: pointer;

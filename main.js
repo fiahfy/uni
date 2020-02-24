@@ -8,7 +8,9 @@ const port = process.env.PORT || 3000
 let mainWindow = null
 
 const send = (...args) => {
-  mainWindow && mainWindow.webContents.send(...args)
+  if (mainWindow) {
+    mainWindow.webContents.send(...args)
+  }
 }
 
 const createTemplate = () => {
@@ -70,7 +72,7 @@ const createTemplate = () => {
 
   if (process.platform === 'darwin') {
     template.unshift({
-      label: app.getName(),
+      label: app.name,
       submenu: [
         { role: 'about' },
         { type: 'separator' },
@@ -140,7 +142,7 @@ const createWindow = async () => {
 
   if (dev) {
     // Disable security warnings
-    process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+    process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
 
     // Install vue dev tool and open chrome dev tools
     const {

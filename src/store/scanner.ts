@@ -1,0 +1,255 @@
+import path from 'path'
+import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import { settingsStore } from '~/store'
+const Worker = require('~/workers/scanner.worker.ts')
+
+const worker = new Worker()
+
+const reversed: { [key: string]: boolean } = {
+  name: false,
+  value: true
+}
+
+type Status =
+  | 'NOT_YET'
+  | 'PROGRESS'
+  | 'DONE'
+  | 'CANCELLING'
+  | 'CANCELLED'
+  | 'ERROR'
+
+@Module({
+  name: 'scanner',
+  stateFactory: true,
+  namespaced: true
+})
+export default class ScannerModule extends VuexModule {
+  status: Status = 'NOT_YET'
+  error?: Error = undefined
+  rootPath = ''
+  selectedNames = []
+  hoveredNames = []
+  progressFilePath = ''
+  begunAt = 0
+  endedAt = 0
+  data: any = {}
+  order = {
+    by: 'value',
+    descending: false
+  }
+
+  colorTable = () => {}
+
+  get totalTime() {
+    if (!this.begunAt || !this.endedAt) {
+      return 0
+    }
+    return this.endedAt - this.begunAt
+  }
+
+  get totalSize() {
+    return this.data.value || 0
+  }
+
+  get rootPathHasNoTrailingSlash() {
+    // Remove trailing seperator
+    const rootPath = this.rootPath
+    if (rootPath && rootPath.slice(-1) === path.sep) {
+      return rootPath.slice(0, rootPath.length - 1)
+    }
+    return rootPath
+  }
+
+  get items() {
+    const { by, descending } = this.order
+    return []
+    return [
+      { system: true, name: '<root>' },
+      { system: true, name: '<parent>' },
+      ...this.selectedNames
+        .reduce((carry, name) => {
+          if (!carry) {
+            return carry
+          }
+          return carry.children.find((c: any) => c.name === name)
+        }, this.data)
+        .children.concat()
+        .sort((a: any, b: any) => {
+          let result = 0
+          if (a[by] > b[by]) {
+            result = 1
+          } else if (a[by] < b[by]) {
+            result = -1
+          }
+          if (result === 0) {
+            if (a.path > b.path) {
+              result = 1
+            } else if (a.path < b.path) {
+              result = -1
+            }
+          }
+          result = reversed[by] ? -1 * result : result
+          return descending ? -1 * result : result
+        })
+    ]
+  }
+
+  get getScanTime() {
+    return () => {
+      if (this.status === 'PROGRESS') {
+        return this.getElapsedTime()
+      }
+      return this.totalTime
+    }
+  }
+
+  get getElapsedTime() {
+    return () => {
+      if (!this.begunAt) {
+        return 0
+      }
+      return new Date().getTime() - this.begunAt
+    }
+  }
+
+  get getPaths() {
+    return (item: any) => {
+      let paths = [this.rootPathHasNoTrailingSlash]
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = [...paths, ...this.selectedNames]
+        }
+      } else {
+        paths = [...paths, ...this.selectedNames, item.name]
+      }
+      return paths
+    }
+  }
+
+  // @Action
+  // initialize() {
+  //   if ([status.PROGRESS, status.CANCELLING].includes(rootState.local.status)) {
+  //     commit('local/setStatus', { status: status.CANCELLED })
+  //   }
+  // }
+  @Mutation
+  setRootPath({ rootPath }: { rootPath: string }) {
+    this.rootPath = rootPath
+  }
+
+  @Mutation
+  setProgressFilePath({ progressFilePath }: { progressFilePath: string }) {
+    this.progressFilePath = progressFilePath
+  }
+
+  @Mutation
+  setStatus({ status }: { status: Status }) {
+    this.status = status
+  }
+
+  @Mutation
+  setBegunAt({ begunAt }: { begunAt: number }) {
+    this.begunAt = begunAt
+  }
+
+  @Mutation
+  setEndedAt({ endedAt }: { endedAt: number }) {
+    this.endedAt = endedAt
+  }
+
+  @Mutation
+  setData({ data }: { data: Object }) {
+    this.data = data
+  }
+
+  @Mutation
+  setError({ error }: { error: Error }) {
+    this.error = error
+  }
+
+  @Action
+  start({ dirPath }: { dirPath: string }) {
+    if (['PROGRESS', 'CANCELLING'].includes(this.status)) {
+      return
+    }
+
+    this.setRootPath({ rootPath: dirPath })
+    this.setStatus({ status: 'PROGRESS' })
+    this.setBegunAt({ begunAt: Date.now() })
+
+    worker.onmessage = ({
+      data: { id, data }
+    }: {
+      data: { id: string; data: any }
+    }) => {
+      switch (id) {
+        case 'progress':
+          this.setProgressFilePath({ progressFilePath: data })
+          break
+        case 'refresh': {
+          this.setData({ data })
+          break
+        }
+        case 'complete': {
+          this.setEndedAt({ endedAt: Date.now() })
+          const newStatus = this.status === 'CANCELLING' ? 'CANCELLED' : 'DONE'
+          // const title =
+          //   this.status === 'CANCELLING' ? 'Scan cancelled' : 'Scan finished'
+
+          this.setStatus({ status: newStatus })
+          this.setData({ data })
+          // const sec = (this.getScanTime() / 1000).toFixed(2)
+          // dispatch(
+          //   'showNotification',
+          //   { title, body: `Total time: ${sec} sec` },
+          //   { root: true }
+          // )
+          break
+        }
+        case 'error':
+          this.setEndedAt({ endedAt: Date.now() })
+          this.setStatus({ status: 'ERROR' })
+          this.setError({ error: new Error(data) })
+          break
+      }
+    }
+    const data = {
+      dirPath: this.rootPath,
+      refreshInterval: settingsStore.refreshInterval,
+      ignoredPaths: settingsStore.ignoredPaths
+    }
+    worker.postMessage({ id: 'start', data })
+  }
+
+  @Action
+  cancel() {
+    // this.setStatus({ status: 'CANCELLING' })
+    this.setStatus({ status: 'CANCELLED' })
+    worker.postMessage({ id: 'cancel' })
+  }
+
+  @Action
+  browseDirectory({ filePath }: { filePath: string }) {
+    // const result = shell.openItem(filePath)
+    // if (!result) {
+    //   dispatch(
+    //     'showMessage',
+    //     { color: 'error', text: 'Directory not found' },
+    //     { root: true }
+    //   )
+    // }
+  }
+
+  @Action
+  writeToClipboard({ filePath }: { filePath: string }) {
+    // clipboard.writeText(filePath)
+  }
+
+  @Action
+  changeOrderBy({ orderBy }: { orderBy: any }) {
+    // const descending =
+    //   state.order.by === orderBy ? !state.order.descending : false
+    // const order = { by: orderBy, descending }
+    // commit('setOrder', { order })
+  }
+}

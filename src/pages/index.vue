@@ -1,5 +1,5 @@
 <template>
-  <v-container class="index" fill-height fluid pa-0>
+  <v-container class="index" fluid pa-0>
     <v-layout column>
       <alert-bar />
       <chart-toolbar />
@@ -10,16 +10,18 @@
   </v-container>
 </template>
 
-<script>
-import AlertBar from '~/components/AlertBar'
-import ChartContainer from '~/components/ChartContainer'
-import ChartToolbar from '~/components/ChartToolbar'
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+import AlertBar from '~/components/AlertBar.vue'
+import ChartContainer from '~/components/ChartContainer.vue'
+import ChartToolbar from '~/components/ChartToolbar.vue'
 
-export default {
+@Component({
   components: {
     AlertBar,
     ChartContainer,
     ChartToolbar
   }
-}
+})
+export default class Index extends Vue {}
 </script>

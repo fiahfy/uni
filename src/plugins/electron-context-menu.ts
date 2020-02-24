@@ -1,0 +1,33 @@
+import { Plugin } from '@nuxt/types'
+import { open } from '@fiahfy/electron-context-menu'
+
+const contextMenu = {
+  open,
+  openEditMenu: () => {
+    open([{ role: 'cut' }, { role: 'copy' }, { role: 'paste' }])
+  }
+}
+
+declare module 'vue/types/vue' {
+  interface Vue {
+    $contextMenu: typeof contextMenu
+  }
+}
+
+declare module '@nuxt/types' {
+  interface NuxtAppOptions {
+    $contextMenu: typeof contextMenu
+  }
+}
+
+declare module 'vuex/types/index' {
+  interface Store<S> {
+    $contextMenu: typeof contextMenu
+  }
+}
+
+const contextMenuPlugin: Plugin = (_, inject) => {
+  inject('contextMenu', contextMenu)
+}
+
+export default contextMenuPlugin
