@@ -9,11 +9,11 @@ module.exports = {
       // Extend only webpack config for client-bundle
       if (ctx.isClient) {
         config.target = 'electron-renderer'
-        config.output.globalObject = 'this'
-        config.module.rules.unshift({
-          test: /\.worker\.ts$/,
-          loader: 'worker-loader'
-        })
+        // config.output.globalObject = 'this'
+        // config.module.rules.unshift({
+        //   test: /\.worker\.ts$/,
+        //   loader: 'worker-loader'
+        // })
       }
       // Set relative path
       config.output.publicPath = './_nuxt/'
@@ -89,6 +89,7 @@ module.exports = {
     '~/plugins/electron-accelerator-formatter',
     '~/plugins/electron-context-menu',
     '~/plugins/ipc',
+    '~/plugins/pretty-bytes',
     '~/plugins/vuex-persistedstate'
   ],
 

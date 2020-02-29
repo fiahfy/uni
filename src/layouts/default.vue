@@ -5,26 +5,26 @@
     @drop.native.prevent="onDrop"
     @dragover.native.prevent
   >
-    <title-bar />
+    <!-- <title-bar />
     <v-content class="fill-height">
       <router-view class="fill-height" />
-    </v-content>
-    <notification-bar />
-    <settings-dialog />
+    </v-content> -->
+    <!-- <notification-bar />
+    <settings-dialog /> -->
   </v-app>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator'
 import { settingsStore } from '~/store'
-import NotificationBar from '~/components/NotificationBar.vue'
-import SettingsDialog from '~/components/SettingsDialog.vue'
+// import NotificationBar from '~/components/NotificationBar.vue'
+// import SettingsDialog from '~/components/SettingsDialog.vue'
 import TitleBar from '~/components/TitleBar.vue'
 
 @Component({
   components: {
-    NotificationBar,
-    SettingsDialog,
+    // NotificationBar,
+    // SettingsDialog,
     TitleBar
   }
 })

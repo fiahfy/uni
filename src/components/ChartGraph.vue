@@ -14,7 +14,7 @@
     >
       <p class="ma-0">
         {{ tooltip.text }}<br />
-        <small>{{ targetSize | readableSize }} ({{ percentage }} %)</small>
+        <small>{{ targetSize | prettyBytes }} ({{ percentage }} %)</small>
       </p>
     </v-tooltip>
   </div>
@@ -30,7 +30,7 @@ import { scannerStore } from '~/store'
 @Component
 export default class ChartContainer extends Vue {
   @Ref() readonly wrapper!: HTMLDivElement
-  @Ref() readonly sunburst!: HTMLOrSVGElement
+  @Ref() readonly sunburst!: any
 
   loading = false
   needsUpdate = false
@@ -45,15 +45,15 @@ export default class ChartContainer extends Vue {
   depth = 0
   resizeObserver!: ResizeObserver
   debounced!: ReturnType<typeof debounce>
-  svg!: d3.Selection<any, any, any, any>
-  transition!: d3.Transition<any, any, any, any>
+  svg!: d3.Selection<SVGGElement, unknown, null, undefined>
+  transition!: d3.Transition<any, unknown, null, undefined>
   width = 0
   height = 0
   radius = 0
-  color!: d3.ScaleOrdinal<any, any>
-  x!: d3.ScaleLinear<any, any>
-  y!: d3.ScalePower<any, any>
-  arc!: d3.Arc<any, any>
+  color!: d3.ScaleOrdinal<string, string>
+  x!: d3.ScaleLinear<number, number>
+  y!: d3.ScalePower<number, number>
+  arc!: d3.Arc<any, d3.DefaultArcObject>
   partition!: d3.PartitionLayout<any>
   root!: d3.HierarchyNode<any>
 
@@ -62,7 +62,7 @@ export default class ChartContainer extends Vue {
   }
 
   get node() {
-    return scannerStore.node
+    return scannerStore.data
   }
 
   @Watch('node')
@@ -137,7 +137,7 @@ export default class ChartContainer extends Vue {
     this.tooltip.show = false
   }
 
-  onContextMenu(d) {
+  onContextMenu(d: any) {
     if (d.depth === 0) {
       return
     }
@@ -245,7 +245,7 @@ export default class ChartContainer extends Vue {
       this.loading = false
       return
     }
-
+console.log(this.node)
     const root = d3.hierarchy(this.node)
 
     this.root = root
@@ -268,13 +268,13 @@ export default class ChartContainer extends Vue {
       .append('path')
       // .merge(path)
       .attr('d', this.arc)
-      .style('fill', (d) =>
+      .style('fill', (d: any) =>
         d.depth === 0
           ? 'transparent'
           : this.color((d.children ? d : d.parent).data.name)
       )
       .style('fill-rule', 'evenodd')
-      .style('cursor', (d) => (d.children ? 'pointer' : 'auto'))
+      .style('cursor', (d: any) => (d.children ? 'pointer' : 'auto'))
       .style('opacity', 0)
       .on('mouseover', this.onMouseOver)
       .on('mouseleave', this.onMouseLeave)
@@ -290,26 +290,28 @@ export default class ChartContainer extends Vue {
   }
 
   moveTo(item: any) {
-    const node = scannerStore.getPaths(item)
+    const node = scannerStore
+      .getPaths(item)
       .slice(1)
       .reduce((carry: any, name: any) => {
         if (!carry) {
           return carry
         }
-        return carry.children.find((c) => c.data.name === name)
+        return carry.children.find((c: any) => c.data.name === name)
       }, this.root)
 
     this.onClick(node)
   }
 
   hover(item: any) {
-    const node = scannerStore.getPaths(item)
+    const node = scannerStore
+      .getPaths(item)
       .slice(1)
       .reduce((carry: any, name: any) => {
         if (!carry) {
           return carry
         }
-        return carry.children.find((c) => c.data.name === name)
+        return carry.children.find((c: any) => c.data.name === name)
       }, this.root)
 
     this.onMouseOver(node)
@@ -326,7 +328,7 @@ export default class ChartContainer extends Vue {
         if (!carry) {
           return carry
         }
-        return carry.children.find((c) => c.data.name === name)
+        return carry.children.find((c: any) => c.data.name === name)
       }, this.root)
 
     if (this.depth === node.depth) {

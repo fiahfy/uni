@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-const clone = require('@fiahfy/simple-clone')
+const clone = require('@fiahfy/simple-clone').default
 
 const INTERVAL = 100
 
@@ -33,6 +33,7 @@ const send = (event: string, args?: any) => {
 }
 
 const scanFile = async (filePath: string, depth: number, node: Node) => {
+  console.log(filePath)
   if (ignoredPaths.includes(filePath)) {
     return
   }
@@ -49,6 +50,7 @@ const scanFile = async (filePath: string, depth: number, node: Node) => {
 
   try {
     const stats = fs.lstatSync(filePath)
+    console.log(stats)
     if (stats.isDirectory()) {
       node.name = path.basename(filePath)
       node.value = 0

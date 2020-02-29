@@ -18,7 +18,7 @@
     </td>
     <td class="text-xs-right text-no-wrap">
       <template v-if="!item.system">
-        {{ item.value | readableSize }} ({{ percentage }} %)
+        {{ item.value | prettyBytes }} ({{ percentage }} %)
       </template>
     </td>
   </tr>

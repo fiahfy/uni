@@ -27,8 +27,8 @@ export default class ScannerModule extends VuexModule {
   status: Status = 'NOT_YET'
   error?: Error = undefined
   rootPath = ''
-  selectedNames = []
-  hoveredNames = []
+  selectedNames: string[] = []
+  hoveredNames: string[] = []
   progressFilePath = ''
   begunAt = 0
   endedAt = 0
@@ -38,7 +38,7 @@ export default class ScannerModule extends VuexModule {
     descending: false
   }
 
-  colorTable = () => {}
+  colorTable: Function = () => {}
 
   get totalTime() {
     if (!this.begunAt || !this.endedAt) {
@@ -167,6 +167,21 @@ export default class ScannerModule extends VuexModule {
     this.error = error
   }
 
+  @Mutation
+  setHoveredNames({ hoveredNames }: { hoveredNames: string[] }) {
+    this.hoveredNames = hoveredNames
+  }
+
+  @Mutation
+  setSelectedNames({ selectedNames }: { selectedNames: string[] }) {
+    this.selectedNames = selectedNames
+  }
+
+  @Mutation
+  setColorTable({ colorTable }: { colorTable: Function }) {
+    this.colorTable = colorTable
+  }
+
   @Action
   start({ dirPath }: { dirPath: string }) {
     if (['PROGRESS', 'CANCELLING'].includes(this.status)) {
@@ -191,6 +206,8 @@ export default class ScannerModule extends VuexModule {
           break
         }
         case 'complete': {
+          console.log(1)
+          console.log(data)
           this.setEndedAt({ endedAt: Date.now() })
           const newStatus = this.status === 'CANCELLING' ? 'CANCELLED' : 'DONE'
           // const title =

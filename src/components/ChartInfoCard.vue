@@ -1,7 +1,7 @@
 <template>
   <v-card tile flat>
     <v-card-title class="py-2">
-      <span>Total size: {{ totalSize | readableSize }}</span>
+      <span>Total size: {{ totalSize | prettyBytes }}</span>
     </v-card-title>
     <v-card-actions class="pa-0 scroll-x">
       <div class="pa-2 text-no-wrap">
