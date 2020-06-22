@@ -3,24 +3,21 @@
     "target": "es2018",
     "module": "esnext",
     "sourceMap": true,
+    "noEmit": true,
     "strict": true,
     "moduleResolution": "node",
-    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@/*": ["./src/*"],
       "~~/*": ["./*"],
-      "@@/*": ["./*"]
     },
     "types": [
-      "@types/node",
-      // "@nuxt/types",
-      "@nuxtjs/vuetify"
+      "vuetify",
     ],
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
   },
-  "include": ["src/**/*"]
+  "include": ["src"],
 }

@@ -33,7 +33,6 @@ const send = (event: string, args?: any) => {
 }
 
 const scanFile = async (filePath: string, depth: number, node: Node) => {
-  console.log(filePath)
   if (ignoredPaths.includes(filePath)) {
     return
   }
@@ -50,7 +49,6 @@ const scanFile = async (filePath: string, depth: number, node: Node) => {
 
   try {
     const stats = fs.lstatSync(filePath)
-    console.log(stats)
     if (stats.isDirectory()) {
       node.name = path.basename(filePath)
       node.value = 0
@@ -75,7 +73,7 @@ const scanFile = async (filePath: string, depth: number, node: Node) => {
 }
 
 const sum = (node: Node) => {
-  if (!node.children) {
+  if (!node.children || !node.children.length) {
     return
   }
   node.children.forEach((child) => sum(child))

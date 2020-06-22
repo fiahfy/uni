@@ -20,30 +20,30 @@ export default {
   props: {
     headers: {
       type: Array,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   computed: {
-    ...mapState('local', ['order'])
+    ...mapState('local', ['order']),
   },
   methods: {
     getClass(header) {
       return [
         'column sortable px-0',
         this.order.descending ? 'desc' : 'asc',
-        header.value === this.order.by ? 'active' : ''
+        header.value === this.order.by ? 'active' : '',
       ]
     },
     getStyle(header) {
       return {
         'box-sizing': 'content-box',
-        width: header.width ? `${header.width}px` : null
+        width: header.width ? `${header.width}px` : null,
       }
     },
     onHeaderClick(e, header) {
       this.changeOrderBy({ orderBy: header.value })
     },
-    ...mapActions('local', ['changeOrderBy'])
-  }
+    ...mapActions('local', ['changeOrderBy']),
+  },
 }
 </script>

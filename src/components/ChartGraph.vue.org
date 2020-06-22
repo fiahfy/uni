@@ -39,7 +39,7 @@ export default class ChartContainer extends Vue {
     show: false,
     x: 0,
     y: 0,
-    text: ''
+    text: '',
   }
 
   depth = 0
@@ -147,7 +147,7 @@ export default class ChartContainer extends Vue {
       ...scannerStore.selectedNames,
       ...ancestors
         .slice(scannerStore.selectedNames.length + 1)
-        .map((d: any) => d.data.name)
+        .map((d: any) => d.data.name),
     ].join(path.sep)
 
     // this.$contextMenu.show([
@@ -245,7 +245,7 @@ export default class ChartContainer extends Vue {
       this.loading = false
       return
     }
-console.log(this.node)
+    console.log(this.node)
     const root = d3.hierarchy(this.node)
 
     this.root = root

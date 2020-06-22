@@ -28,24 +28,24 @@ export default {
   props: {
     value: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     pagination: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     items: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     dense: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
-      scrolling: false
+      scrolling: false,
     }
   },
   computed: {
@@ -55,7 +55,7 @@ export default {
       },
       set(value) {
         this.$emit('update:pagination', value)
-      }
+      },
     },
     model: {
       get() {
@@ -63,18 +63,18 @@ export default {
       },
       set(value) {
         this.$emit('input', value)
-      }
+      },
     },
     classes() {
       return {
-        scrolling: this.scrolling
+        scrolling: this.scrolling,
       }
-    }
+    },
   },
   watch: {
     items() {
       this.adjustItems()
-    }
+    },
   },
   mounted() {
     this.container = this.$el.querySelector('.v-table__overflow')
@@ -107,8 +107,8 @@ export default {
     onScroll(e) {
       this.adjustItems()
       this.$emit('scroll', e)
-    }
-  }
+    },
+  },
 }
 </script>
 

@@ -5,7 +5,7 @@ const contextMenu = {
   open,
   openEditMenu: () => {
     open([{ role: 'cut' }, { role: 'copy' }, { role: 'paste' }])
-  }
+  },
 }
 
 declare module 'vue/types/vue' {
@@ -26,7 +26,7 @@ declare module 'vuex/types/index' {
   }
 }
 
-const contextMenuPlugin: Plugin = (_, inject) => {
+const contextMenuPlugin: Plugin = (_ctx, inject) => {
   inject('contextMenu', contextMenu)
 }
 

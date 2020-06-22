@@ -7,24 +7,24 @@ const worker = new Worker()
 
 const reversed: { [key: string]: boolean } = {
   name: false,
-  value: true
+  value: true,
 }
 
 type Status =
-  | 'NOT_YET'
-  | 'PROGRESS'
-  | 'DONE'
-  | 'CANCELLING'
-  | 'CANCELLED'
-  | 'ERROR'
+  | 'ready'
+  | 'running'
+  | 'succeeded'
+  | 'cancelling'
+  | 'cancelled'
+  | 'failed'
 
 @Module({
   name: 'scanner',
   stateFactory: true,
-  namespaced: true
+  namespaced: true,
 })
 export default class ScannerModule extends VuexModule {
-  status: Status = 'NOT_YET'
+  status: Status = 'ready'
   error?: Error = undefined
   rootPath = ''
   selectedNames: string[] = []
@@ -35,7 +35,7 @@ export default class ScannerModule extends VuexModule {
   data: any = {}
   order = {
     by: 'value',
-    descending: false
+    descending: false,
   }
 
   colorTable: Function = () => {}
@@ -90,13 +90,13 @@ export default class ScannerModule extends VuexModule {
           }
           result = reversed[by] ? -1 * result : result
           return descending ? -1 * result : result
-        })
+        }),
     ]
   }
 
   get getScanTime() {
     return () => {
-      if (this.status === 'PROGRESS') {
+      if (this.status === 'running') {
         return this.getElapsedTime()
       }
       return this.totalTime
@@ -184,16 +184,16 @@ export default class ScannerModule extends VuexModule {
 
   @Action
   start({ dirPath }: { dirPath: string }) {
-    if (['PROGRESS', 'CANCELLING'].includes(this.status)) {
+    if (['running', 'cancelling'].includes(this.status)) {
       return
     }
 
     this.setRootPath({ rootPath: dirPath })
-    this.setStatus({ status: 'PROGRESS' })
+    this.setStatus({ status: 'running' })
     this.setBegunAt({ begunAt: Date.now() })
 
     worker.onmessage = ({
-      data: { id, data }
+      data: { id, data },
     }: {
       data: { id: string; data: any }
     }) => {
@@ -209,7 +209,8 @@ export default class ScannerModule extends VuexModule {
           console.log(1)
           console.log(data)
           this.setEndedAt({ endedAt: Date.now() })
-          const newStatus = this.status === 'CANCELLING' ? 'CANCELLED' : 'DONE'
+          const newStatus =
+            this.status === 'cancelling' ? 'cancelled' : 'succeeded'
           // const title =
           //   this.status === 'CANCELLING' ? 'Scan cancelled' : 'Scan finished'
 
@@ -225,7 +226,7 @@ export default class ScannerModule extends VuexModule {
         }
         case 'error':
           this.setEndedAt({ endedAt: Date.now() })
-          this.setStatus({ status: 'ERROR' })
+          this.setStatus({ status: 'failed' })
           this.setError({ error: new Error(data) })
           break
       }
@@ -233,7 +234,7 @@ export default class ScannerModule extends VuexModule {
     const data = {
       dirPath: this.rootPath,
       refreshInterval: settingsStore.refreshInterval,
-      ignoredPaths: settingsStore.ignoredPaths
+      ignoredPaths: settingsStore.ignoredPaths,
     }
     worker.postMessage({ id: 'start', data })
   }
@@ -241,7 +242,7 @@ export default class ScannerModule extends VuexModule {
   @Action
   cancel() {
     // this.setStatus({ status: 'CANCELLING' })
-    this.setStatus({ status: 'CANCELLED' })
+    this.setStatus({ status: 'cancelled' })
     worker.postMessage({ id: 'cancel' })
   }
 

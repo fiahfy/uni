@@ -1,50 +1,92 @@
 <template>
   <v-system-bar
     v-if="titleBar"
-    class="title-bar user-select-none"
+    class="title-bar user-select-none px-0"
+    :app="app"
+    :absolute="!app"
     height="22"
-    app
-    @dblclick="onDoubleClick"
+    @dblclick="handleDoubleClick"
   >
-    <v-spacer />
-    <span class="caption text-truncate">Uni</span>
-    <v-spacer />
+    <v-sheet tile class="fill-height d-flex flex-grow-1 align-center">
+      <v-spacer />
+      <span class="caption text-truncate">Uni</span>
+      <v-spacer />
+    </v-sheet>
   </v-system-bar>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
 import { remote } from 'electron'
-import { layoutStore } from '~/store'
+import {
+  defineComponent,
+  reactive,
+  computed,
+  onMounted,
+  onUnmounted,
+} from '@vue/composition-api'
 
-@Component
-export default class TitleBar extends Vue {
-  get titleBar() {
-    return process.platform === 'darwin' && !layoutStore.fullScreen
-  }
+type Props = {
+  app: boolean
+}
 
-  // @see https://github.com/electron/electron/issues/16385
-  onDoubleClick() {
-    const doubleClickAction = remote.systemPreferences.getUserDefault(
-      'AppleActionOnDoubleClick',
-      'string'
-    )
-    const win = remote.getCurrentWindow()
-    if (doubleClickAction === 'Minimize') {
-      win.minimize()
-    } else if (doubleClickAction === 'Maximize') {
-      if (win.isMaximized()) {
-        win.unmaximize()
-      } else {
-        win.maximize()
+export default defineComponent({
+  props: {
+    app: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  setup(_props: Props) {
+    const state = reactive({
+      fullScreen: false,
+    })
+
+    const titleBar = computed(() => {
+      return process.platform === 'darwin' && !state.fullScreen
+    })
+
+    // @see https://github.com/electron/electron/issues/16385
+    const handleDoubleClick = () => {
+      const doubleClickAction = remote.systemPreferences.getUserDefault(
+        'AppleActionOnDoubleClick',
+        'string'
+      )
+      const win = remote.getCurrentWindow()
+      if (doubleClickAction === 'Minimize') {
+        win.minimize()
+      } else if (doubleClickAction === 'Maximize') {
+        if (win.isMaximized()) {
+          win.unmaximize()
+        } else {
+          win.maximize()
+        }
       }
     }
-  }
-}
+    const handleFullScreenChange = () => {
+      state.fullScreen = !!document.fullscreenElement
+    }
+
+    onMounted(() => {
+      document.body.addEventListener('fullscreenchange', handleFullScreenChange)
+    })
+
+    onUnmounted(() => {
+      document.body.removeEventListener(
+        'fullscreenchange',
+        handleFullScreenChange
+      )
+    })
+
+    return {
+      titleBar,
+      handleDoubleClick,
+    }
+  },
+})
 </script>
 
 <style lang="scss" scoped>
-.title-bar {
+.title-bar > .v-sheet {
   padding: 0 72px;
   -webkit-app-region: drag;
 }

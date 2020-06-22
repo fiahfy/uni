@@ -3,21 +3,21 @@ module.exports = {
   files: ['app', 'main.js'],
   mac: {
     publish: {
-      provider: 'github'
-    }
+      provider: 'github',
+    },
   },
   win: {
     publish: {
-      provider: 'github'
-    }
+      provider: 'github',
+    },
   },
   linux: {
     publish: {
-      provider: 'github'
-    }
+      provider: 'github',
+    },
   },
   nsis: {
     oneClick: false,
-    allowToChangeInstallationDirectory: true
-  }
+    allowToChangeInstallationDirectory: true,
+  },
 }

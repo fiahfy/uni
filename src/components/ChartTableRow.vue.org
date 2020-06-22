@@ -32,8 +32,8 @@ export default {
   props: {
     item: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   computed: {
     clickable() {
@@ -43,7 +43,7 @@ export default {
     },
     classes() {
       return {
-        clickable: this.clickable
+        clickable: this.clickable,
       }
     },
     color() {
@@ -67,8 +67,8 @@ export default {
     ...mapGetters('local', [
       'totalSize',
       'rootPathHasNoTrailingSlash',
-      'getPaths'
-    ])
+      'getPaths',
+    ]),
   },
   methods: {
     onClick() {
@@ -90,19 +90,19 @@ export default {
           label: 'Open',
           click: () => {
             this.browseDirectory({ filePath })
-          }
+          },
         },
         { type: 'separator' },
         {
           label: 'Copy path',
           click: () => {
             this.writeToClipboard({ filePath })
-          }
-        }
+          },
+        },
       ])
     },
-    ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
-  }
+    ...mapActions('local', ['browseDirectory', 'writeToClipboard']),
+  },
 }
 </script>
 

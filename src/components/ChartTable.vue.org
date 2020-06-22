@@ -25,34 +25,34 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import ChartTableHeaderRow from './ChartTableHeaderRow'
 import ChartTableRow from './ChartTableRow'
 import StickyDataTable from './StickyDataTable'
-import { mapGetters } from 'vuex'
 
 export default {
   components: {
     ChartTableHeaderRow,
     ChartTableRow,
-    StickyDataTable
+    StickyDataTable,
   },
   data() {
     return {
       headers: [
         {
           text: 'Name',
-          value: 'name'
+          value: 'name',
         },
         {
           text: 'Size',
           value: 'value',
-          width: 150
-        }
-      ]
+          width: 150,
+        },
+      ],
     }
   },
   computed: {
-    ...mapGetters('local', ['items'])
+    ...mapGetters('local', ['items']),
   },
   methods: {
     onRowClick(item) {
@@ -63,7 +63,7 @@ export default {
     },
     onRowMouseLeave(item) {
       this.$emit('mouseleave:row', item)
-    }
-  }
+    },
+  },
 }
 </script>

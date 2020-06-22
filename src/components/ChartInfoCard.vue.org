@@ -24,7 +24,7 @@ import { mapState, mapGetters } from 'vuex'
 export default {
   data() {
     return {
-      sep: path.sep
+      sep: path.sep,
     }
   },
   computed: {
@@ -32,17 +32,17 @@ export default {
       return [
         this.rootPathHasNoTrailingSlash,
         ...this.selectedNames,
-        ...this.hoveredNames
+        ...this.hoveredNames,
       ]
     },
     ...mapState('local', ['selectedNames', 'hoveredNames', 'node']),
-    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash'])
+    ...mapGetters('local', ['totalSize', 'rootPathHasNoTrailingSlash']),
   },
   methods: {
     onChipClick(e, index) {
       this.$emit('click:chip', index)
-    }
-  }
+    },
+  },
 }
 </script>
 

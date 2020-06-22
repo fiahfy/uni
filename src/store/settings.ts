@@ -3,7 +3,7 @@ import { Module, VuexModule, Mutation } from 'vuex-module-decorators'
 @Module({
   name: 'settings',
   stateFactory: true,
-  namespaced: true
+  namespaced: true,
 })
 export default class SettingsModule extends VuexModule {
   darkTheme = false

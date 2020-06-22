@@ -15,65 +15,77 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import {
+  defineComponent,
+  reactive,
+  computed,
+  onMounted,
+} from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
-@Component
-export default class AlertBar extends Vue {
-  scanTime = 0
+export default defineComponent({
+  setup(_props: {}) {
+    const state = reactive({
+      scanTime: 0,
+    })
 
-  get type() {
-    switch (scannerStore.status) {
-      case 'DONE':
-        return 'success'
-      case 'CANCELLING':
-      case 'CANCELLED':
-        return 'warning'
-      case 'ERROR':
-        return 'error'
-      case 'NOT_YET':
-      case 'PROGRESS':
-      default:
-        return 'info'
-    }
-  }
-
-  get text() {
-    switch (scannerStore.status) {
-      case 'PROGRESS':
-        return `Scanning... "${scannerStore.progressFilePath}"`
-      case 'DONE':
-        return `Scan finished "${scannerStore.rootPath}"`
-      case 'CANCELLING':
-        return 'Cancelling...'
-      case 'CANCELLED':
-        return 'Cancelled'
-      case 'ERROR':
-        return `${scannerStore.error?.message} "${scannerStore.rootPath}"`
-      case 'NOT_YET':
-      default:
-        return 'Click "SCAN" to get started'
-    }
-  }
-
-  get subText() {
-    switch (scannerStore.status) {
-      case 'PROGRESS':
-      case 'DONE': {
-        const time = (this.scanTime / 1000).toFixed(2)
-        return `Total time: ${time} sec`
+    const type = computed(() => {
+      switch (scannerStore.status) {
+        case 'succeeded':
+          return 'success'
+        case 'cancelling':
+        case 'cancelled':
+          return 'warning'
+        case 'failed':
+          return 'error'
+        case 'ready':
+        case 'running':
+        default:
+          return 'info'
       }
-      default:
-        return ''
-    }
-  }
+    })
+    const text = computed(() => {
+      switch (scannerStore.status) {
+        case 'running':
+          return `Scanning... "${scannerStore.progressFilePath}"`
+        case 'succeeded':
+          return `Scan finished "${scannerStore.rootPath}"`
+        case 'cancelling':
+          return 'Cancelling...'
+        case 'cancelled':
+          return 'Cancelled'
+        case 'failed':
+          return `${scannerStore.error?.message} "${scannerStore.rootPath}"`
+        case 'ready':
+        default:
+          return 'Click "SCAN" to get started'
+      }
+    })
+    const subText = computed(() => {
+      switch (scannerStore.status) {
+        case 'running':
+        case 'succeeded': {
+          const time = (state.scanTime / 1000).toFixed(2)
+          return `Total time: ${time} sec`
+        }
+        default:
+          return ''
+      }
+    })
 
-  mounted() {
-    window.setInterval(() => {
-      this.scanTime = scannerStore.getScanTime()
-    }, 0)
-  }
-}
+    onMounted(() => {
+      window.setInterval(() => {
+        state.scanTime = scannerStore.getScanTime()
+      }, 0)
+    })
+
+    return {
+      type,
+      text,
+      subText,
+    }
+  },
+})
 </script>
 
 <style lang="scss" scoped>

@@ -1,8 +1,8 @@
 import { Plugin } from '@nuxt/types'
-import { ipcRenderer } from 'electron'
-import { settingsStore } from '~/store'
+// import { ipcRenderer } from 'electron'
+// import { settingsStore } from '~/store'
 
-const ipcPlugin: Plugin = (ctx) => {
+const ipcPlugin: Plugin = (_ctx) => {
   // ipcRenderer.on('scan', () => {
   //   store.dispatch('local/selectDirectory')
   // })

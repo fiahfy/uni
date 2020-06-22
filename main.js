@@ -8,9 +8,7 @@ const port = process.env.PORT || 3000
 let mainWindow = null
 
 const send = (...args) => {
-  if (mainWindow) {
-    mainWindow.webContents.send(...args)
-  }
+  mainWindow && mainWindow.webContents.send(...args)
 }
 
 const createTemplate = () => {
@@ -21,11 +19,9 @@ const createTemplate = () => {
         {
           label: 'Scan...',
           accelerator: 'CmdOrCtrl+O',
-          click: () => {
-            send('scan')
-          }
-        }
-      ]
+          click: () => send('scan'),
+        },
+      ],
     },
     {
       label: 'Edit',
@@ -38,8 +34,8 @@ const createTemplate = () => {
         { role: 'paste' },
         // { role: 'pasteandmatchstyle' },
         { role: 'delete' },
-        { role: 'selectall' }
-      ]
+        { role: 'selectall' },
+      ],
     },
     {
       label: 'View',
@@ -52,22 +48,22 @@ const createTemplate = () => {
         // { role: 'zoomin' },
         // { role: 'zoomout' },
         // { type: 'separator' },
-        { role: 'togglefullscreen' }
-      ]
+        { role: 'togglefullscreen' },
+      ],
     },
     {
       role: 'window',
-      submenu: [{ role: 'close' }, { role: 'minimize' }]
+      submenu: [{ role: 'close' }, { role: 'minimize' }],
     },
     {
       role: 'help',
       submenu: [
         {
           label: 'Learn More',
-          click: () => shell.openExternal('https://github.com/fiahfy/picty')
-        }
-      ]
-    }
+          click: () => shell.openExternal('https://github.com/fiahfy/uni'),
+        },
+      ],
+    },
   ]
 
   if (process.platform === 'darwin') {
@@ -79,7 +75,7 @@ const createTemplate = () => {
         {
           label: 'Preferences...',
           accelerator: 'CmdOrCtrl+,',
-          click: () => send('showSettings')
+          click: () => send('show-settings'),
         },
         { type: 'separator' },
         { role: 'services', submenu: [] },
@@ -88,8 +84,8 @@ const createTemplate = () => {
         { role: 'hideothers' },
         { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit' }
-      ]
+        { role: 'quit' },
+      ],
     })
 
     template.forEach((menu) => {
@@ -98,7 +94,7 @@ const createTemplate = () => {
           { type: 'separator' },
           {
             label: 'Speech',
-            submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }]
+            submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }],
           }
         )
       } else if (menu.role === 'window') {
@@ -117,7 +113,7 @@ const createTemplate = () => {
 const createWindow = async () => {
   const windowState = windowStateKeeper({
     defaultWidth: 820,
-    defaultHeight: 600
+    defaultHeight: 600,
   })
 
   const options = {
@@ -125,18 +121,16 @@ const createWindow = async () => {
     titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: true,
-      nodeIntegrationInWorker: true
-    }
+      nodeIntegrationInWorker: true,
+    },
   }
 
   if (dev) {
     options.webPreferences = {
       ...options.webPreferences,
-      webSecurity: false
+      webSecurity: false,
     }
   }
-
-  const path = ''
 
   mainWindow = new BrowserWindow(options)
 
@@ -147,14 +141,14 @@ const createWindow = async () => {
     // Install vue dev tool and open chrome dev tools
     const {
       default: installExtension,
-      VUEJS_DEVTOOLS
+      VUEJS_DEVTOOLS,
     } = require('electron-devtools-installer')
 
     const name = await installExtension(VUEJS_DEVTOOLS.id)
     console.log(`Added Extension: ${name}`) // eslint-disable-line no-console
 
     // Wait for nuxt to build
-    const url = `http://localhost:${port}/${path}`
+    const url = `http://localhost:${port}`
     const pollServer = () => {
       http
         .get(url, (res) => {
@@ -169,7 +163,7 @@ const createWindow = async () => {
     }
     pollServer()
   } else {
-    mainWindow.loadURL(`file://${__dirname}/app/index.html${path}`)
+    mainWindow.loadURL(`file://${__dirname}/app/index.html`)
   }
 
   windowState.manage(mainWindow)
@@ -179,8 +173,6 @@ const createWindow = async () => {
   Menu.setApplicationMenu(menu)
 
   mainWindow.on('closed', () => (mainWindow = null))
-  mainWindow.on('enter-full-screen', () => send('enterFullScreen'))
-  mainWindow.on('leave-full-screen', () => send('leaveFullScreen'))
 }
 
 app.on('ready', createWindow)

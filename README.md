@@ -1,27 +1,28 @@
 # Uni
-[![Build Status](https://travis-ci.com/fiahfy/uni.svg?branch=master)](https://travis-ci.com/fiahfy/uni)
+
+![badge](https://github.com/fiahfy/uni/workflows/Electron%20CI/badge.svg)
 
 > Simple Disk Usage Analyzer based on Electron.  
 > "Uni" means sea urchin in Japanese.  
 > Inspired from [Space Radar Electron](https://github.com/zz85/space-radar).
 
-
 ## Features
-* Pie chart graph view
-* Change theme (Light/Dark)
 
+- Pie chart graph view
+- Change theme (Light/Dark)
 
 ## Screenshots
+
 ![screenshot](.github/img/screenshot.png)
 
-
 ## Installation
-1. Download the file for your platform from [releases page](https://github.com/fiahfy/uni/releases).
-2. 2. Open `.dmg` for OS X or run `.exe` for Windows.
 
+Download the app from [release page](https://github.com/fiahfy/picky/releases) and install it.  
+:warning: For macOS, this app is not signed, so a warning will be displayed at startup.
 
 ## Development
-``` bash
+
+```bash
 # install dependencies
 yarn
 

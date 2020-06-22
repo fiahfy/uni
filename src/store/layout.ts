@@ -3,7 +3,7 @@ import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 @Module({
   name: 'layout',
   stateFactory: true,
-  namespaced: true
+  namespaced: true,
 })
 export default class LayoutModule extends VuexModule {
   fullScreen = false

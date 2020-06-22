@@ -1,63 +1,56 @@
 <template>
   <v-app
-    :dark="darkTheme"
-    @contextmenu.native="onContextMenu"
-    @drop.native.prevent="onDrop"
+    @contextmenu.native="handleContextMenu"
+    @drop.native.prevent="handleDrop"
     @dragover.native.prevent
   >
-    <!-- <title-bar />
-    <v-content class="fill-height">
+    <title-bar />
+    <v-main class="fill-height">
       <router-view class="fill-height" />
-    </v-content> -->
-    <!-- <notification-bar />
-    <settings-dialog /> -->
+    </v-main>
+    <settings-dialog />
+    <!-- <notification-bar /> -->
   </v-app>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from 'vue-property-decorator'
-import { settingsStore } from '~/store'
+import { defineComponent, watch, SetupContext } from '@vue/composition-api'
 // import NotificationBar from '~/components/NotificationBar.vue'
-// import SettingsDialog from '~/components/SettingsDialog.vue'
+import SettingsDialog from '~/components/SettingsDialog.vue'
 import TitleBar from '~/components/TitleBar.vue'
+import { settingsStore } from '~/store'
 
-@Component({
+export default defineComponent({
   components: {
-    // NotificationBar,
-    // SettingsDialog,
-    TitleBar
-  }
+    SettingsDialog,
+    TitleBar,
+  },
+  setup(_props: {}, context: SetupContext) {
+    const handleContextMenu = () => {
+      context.root.$contextMenu.open()
+    }
+    const handleDrop = (e: DragEvent) => {
+      const files = Array.from(e.dataTransfer?.files ?? [])
+      const filePath = files[0].path
+      if (filePath) {
+        //   this.scan({ dirPath })
+        // context.root.$eventBus.$emit('change-location', filePath)
+      }
+    }
+
+    watch(
+      () => settingsStore.darkTheme,
+      (darkTheme) => {
+        context.root.$vuetify.theme.dark = darkTheme
+      }
+    )
+
+    context.root.$vuetify.theme.dark = settingsStore.darkTheme
+
+    return {
+      handleContextMenu,
+      handleDrop,
+    }
+  },
 })
-export default class Layout extends Vue {
-  get darkTheme() {
-    return settingsStore.darkTheme
-  }
-
-  created() {
-    // this.initialize()
-    this.$vuetify.theme.dark = this.darkTheme
-  }
-
-  @Watch('darkTheme')
-  onDarkThemeChanged(value: boolean) {
-    this.$vuetify.theme.dark = value
-  }
-
-  onContextMenu() {
-    this.$contextMenu.open()
-  }
-
-  // onDrop(e) {
-  //   const files = Array.from(e.dataTransfer.files)
-  //   if (!files.length) {
-  //     return
-  //   }
-  //   const dirPath = files[0].path
-  //   this.scan({ dirPath })
-  // }
-}
 </script>
-
-<style lang="scss">
-@import '~/assets/app.scss';
-</style>
