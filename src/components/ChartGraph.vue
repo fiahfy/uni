@@ -1,6 +1,6 @@
 <template>
   <div ref="graph" class="chart-graph pa-3">
-    <div ref="wrapper" class="wrapper fill-height hide-overflow">
+    <div ref="wrapper" class="wrapper fill-height overflow-hidden">
       <svg ref="sunburst" />
     </div>
 
@@ -11,19 +11,19 @@
       :position-x="state.tooltip.x"
       :position-y="state.tooltip.y"
       top
+      transition="no-animation"
     >
-      <p class="ma-0">
-        {{ state.tooltip.text }}<br />
-        <small>{{ state.targetSize | prettyBytes }} ({{ percentage }} %)</small>
-      </p>
+      {{ state.tooltip.text }}<br />
+      <small>{{ state.targetSize | prettyBytes }} ({{ percentage }} %)</small>
     </v-tooltip>
   </div>
 </template>
 
 <script lang="ts">
 import path from 'path'
-import * as d3 from 'd3'
+import { remote, clipboard } from 'electron'
 import { debounce } from 'debounce'
+import * as d3 from 'd3'
 import {
   defineComponent,
   computed,
@@ -32,11 +32,12 @@ import {
   watch,
   onMounted,
   onUnmounted,
+  SetupContext,
 } from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
-  setup(_props: {}) {
+  setup(_props: {}, context: SetupContext) {
     const state = reactive<{
       loading: boolean
       needsUpdate: boolean
@@ -151,7 +152,6 @@ export default defineComponent({
         state.loading = false
         return
       }
-      console.log(node.value)
       const root = d3.hierarchy(node.value)
 
       state.root = root
@@ -182,7 +182,7 @@ export default defineComponent({
         .style('fill-rule', 'evenodd')
         .style('cursor', (d: any) => (d.children ? 'pointer' : 'auto'))
         .style('opacity', 0)
-        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
         .on('mouseleave', handleMouseLeave)
         .on('contextmenu', handleContextMenu)
         .on('click', handleClick)
@@ -218,7 +218,7 @@ export default defineComponent({
           return carry.children.find((c: any) => c.data.name === name)
         }, state.root)
 
-      handleMouseOver(node)
+      handleMouseMove(node)
     }
     const unhover = () => {
       handleMouseLeave()
@@ -248,7 +248,7 @@ export default defineComponent({
     const handleResize = () => {
       state.debounced!()
     }
-    const handleMouseOver = (d: any) => {
+    const handleMouseMove = (d: any) => {
       if (d.depth === 0) {
         return
       }
@@ -297,21 +297,17 @@ export default defineComponent({
           .map((d: any) => d.data.name),
       ].join(path.sep)
 
-      // this.$contextMenu.show([
-      //   {
-      //     label: 'Open',
-      //     click: () => {
-      //       this.browseDirectory({ filePath })
-      //     }
-      //   },
-      //   { type: 'separator' },
-      //   {
-      //     label: 'Copy path',
-      //     click: () => {
-      //       this.writeToClipboard({ filePath })
-      //     }
-      //   }
-      // ])
+      context.root.$contextMenu.open([
+        {
+          label: 'Open',
+          click: () => remote.shell.openItem(filePath),
+        },
+        { type: 'separator' },
+        {
+          label: 'Copy Path',
+          click: () => clipboard.writeText(filePath),
+        },
+      ])
     }
     const handleClick = (d: any) => {
       if (!d.children) {

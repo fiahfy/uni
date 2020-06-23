@@ -1,22 +1,32 @@
 <template>
   <v-card class="toolbar" flat tile>
-    <v-toolbar flat dense extension-height="1" color="transparent">
+    <v-toolbar flat dense color="transparent">
+      <v-text-field
+        v-model="location"
+        dense
+        filled
+        rounded
+        single-line
+        hide-details
+        class="mr-3"
+        placeholder="Select Folder..."
+        prepend-inner-icon="mdi-folder"
+        @click:prepend-inner="handleClickFolder"
+        @contextmenu.stop="handleContextMenu"
+      />
       <v-btn
         class="px-5"
         color="primary"
         :title="'Scan' | accelerator('CmdOrCtrl+O')"
-        :disabled="cancelling"
-        :depressed="!scanning"
-        :outlined="scanning"
+        :disabled="disabled"
+        :depressed="depressed"
+        :outlined="outlined"
         rounded
         @click="handleClickScan"
       >
         <v-icon left>mdi-file-find</v-icon>
         {{ title }}
       </v-btn>
-
-      <v-spacer />
-
       <v-btn
         :title="'Settings' | accelerator('CmdOrCtrl+,')"
         icon
@@ -24,7 +34,6 @@
       >
         <v-icon>mdi-cog</v-icon>
       </v-btn>
-      <v-divider slot="extension" />
     </v-toolbar>
   </v-card>
 </template>
@@ -36,14 +45,33 @@ import { scannerStore } from '~/store'
 
 export default defineComponent({
   setup(_props: {}, context: SetupContext) {
+    const location = computed({
+      get: () => {
+        return scannerStore.location
+      },
+      set: (value) => {
+        scannerStore.setLocation({ location: value })
+      },
+    })
+    const disabled = computed(() => {
+      switch (scannerStore.status) {
+        case 'running':
+          return false
+        case 'cancelling':
+          return true
+        default:
+          return !location.value
+      }
+    })
     const scanning = computed(() => {
       return ['running', 'cancelling'].includes(scannerStore.status)
     })
-
-    const cancelling = computed(() => {
-      return scannerStore.status === 'cancelling'
+    const depressed = computed(() => {
+      return !scanning.value
     })
-
+    const outlined = computed(() => {
+      return scanning.value
+    })
     const title = computed(() => {
       switch (scannerStore.status) {
         case 'running':
@@ -55,27 +83,26 @@ export default defineComponent({
       }
     })
 
-    const handleClickScan = async () => {
-      if (scanning.value) {
-        return scannerStore.cancel()
-      }
+    const handleClickFolder = async () => {
       const { filePaths } = await remote.dialog.showOpenDialog({
         properties: ['openDirectory'],
       })
-      const dirPath = filePaths[0]
-      if (dirPath) {
-        scannerStore.start({ dirPath })
-      }
+      location.value = filePaths[0] ?? ''
     }
-
+    const handleClickScan = () => {
+      scanning.value ? scannerStore.cancel() : scannerStore.start()
+    }
     const handleClickSettings = () => {
       context.root.$eventBus.$emit('show-settings')
     }
 
     return {
-      scanning,
-      cancelling,
+      location,
+      disabled,
+      depressed,
+      outlined,
       title,
+      handleClickFolder,
       handleClickScan,
       handleClickSettings,
     }

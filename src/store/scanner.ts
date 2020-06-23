@@ -27,6 +27,7 @@ export default class ScannerModule extends VuexModule {
   status: Status = 'ready'
   error?: Error = undefined
   rootPath = ''
+  location = ''
   selectedNames: string[] = []
   hoveredNames: string[] = []
   progressFilePath = ''
@@ -96,19 +97,13 @@ export default class ScannerModule extends VuexModule {
 
   get getScanTime() {
     return () => {
-      if (this.status === 'running') {
-        return this.getElapsedTime()
-      }
-      return this.totalTime
+      return this.status === 'running' ? this.getElapsedTime() : this.totalTime
     }
   }
 
   get getElapsedTime() {
     return () => {
-      if (!this.begunAt) {
-        return 0
-      }
-      return new Date().getTime() - this.begunAt
+      return this.begunAt ? new Date().getTime() - this.begunAt : 0
     }
   }
 
@@ -126,15 +121,21 @@ export default class ScannerModule extends VuexModule {
     }
   }
 
-  // @Action
-  // initialize() {
-  //   if ([status.PROGRESS, status.CANCELLING].includes(rootState.local.status)) {
-  //     commit('local/setStatus', { status: status.CANCELLED })
-  //   }
-  // }
+  @Action
+  initialize() {
+    if (['running', 'cancelling'].includes(this.status)) {
+      this.setStatus({ status: 'ready' })
+    }
+  }
+
   @Mutation
   setRootPath({ rootPath }: { rootPath: string }) {
     this.rootPath = rootPath
+  }
+
+  @Mutation
+  setLocation({ location }: { location: string }) {
+    this.location = location
   }
 
   @Mutation
@@ -183,12 +184,12 @@ export default class ScannerModule extends VuexModule {
   }
 
   @Action
-  start({ dirPath }: { dirPath: string }) {
+  start() {
     if (['running', 'cancelling'].includes(this.status)) {
       return
     }
 
-    this.setRootPath({ rootPath: dirPath })
+    this.setRootPath({ rootPath: this.location })
     this.setStatus({ status: 'running' })
     this.setBegunAt({ begunAt: Date.now() })
 
@@ -206,8 +207,6 @@ export default class ScannerModule extends VuexModule {
           break
         }
         case 'complete': {
-          console.log(1)
-          console.log(data)
           this.setEndedAt({ endedAt: Date.now() })
           const newStatus =
             this.status === 'cancelling' ? 'cancelled' : 'succeeded'
@@ -241,26 +240,8 @@ export default class ScannerModule extends VuexModule {
 
   @Action
   cancel() {
-    // this.setStatus({ status: 'CANCELLING' })
-    this.setStatus({ status: 'cancelled' })
+    this.setStatus({ status: 'cancelling' })
     worker.postMessage({ id: 'cancel' })
-  }
-
-  @Action
-  browseDirectory({ filePath }: { filePath: string }) {
-    // const result = shell.openItem(filePath)
-    // if (!result) {
-    //   dispatch(
-    //     'showMessage',
-    //     { color: 'error', text: 'Directory not found' },
-    //     { root: true }
-    //   )
-    // }
-  }
-
-  @Action
-  writeToClipboard({ filePath }: { filePath: string }) {
-    // clipboard.writeText(filePath)
   }
 
   @Action

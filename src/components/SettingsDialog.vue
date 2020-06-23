@@ -39,7 +39,7 @@
                 />
 
                 <v-list subheader dense>
-                  <v-subheader class="pl-0">Ignored Directories</v-subheader>
+                  <v-subheader class="pl-0">Ignored Folders</v-subheader>
                   <template v-if="ignoredPaths.length">
                     <v-list-item v-for="path of ignoredPaths" :key="path">
                       <v-list-item-content>
@@ -55,13 +55,13 @@
                   <v-list-item v-else>
                     <v-list-item-content>
                       <v-list-item-title class="caption">
-                        No directories
+                        No folders
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
                 <v-btn color="primary" depressed @click="handleClickAdd">
-                  Ignore Directory
+                  Add Folder
                 </v-btn>
               </div>
             </v-container>
@@ -129,13 +129,12 @@ export default defineComponent({
     }
     const handleClickAdd = async () => {
       const { filePaths } = await remote.dialog.showOpenDialog({
-        properties: ['openDirectory'],
+        properties: ['openDirectory', 'multiSelections'],
       })
       if (!filePaths.length) {
         return
       }
-      const ignoredPath = filePaths[0]
-      settingsStore.addIgnoredPath({ ignoredPath })
+      settingsStore.addIgnoredPaths({ ignoredPaths: filePaths })
     }
     const handleClickListItem = (path: string) => {
       settingsStore.removeIgnoredPath({ ignoredPath: path })

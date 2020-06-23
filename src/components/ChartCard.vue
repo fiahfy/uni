@@ -1,19 +1,20 @@
 <template>
-  <v-card class="chart-info-card" tile flat>
-    <v-card-title class="py-2 subtitle-2">
+  <v-card class="chart-card d-flex align-center px-3" tile flat>
+    <div class="pr-3 subtitle-2 text-no-wrap">
       Total size: {{ totalSize | prettyBytes }}
-    </v-card-title>
-    <v-card-actions class="pa-0 scroll-x">
-      <div class="pa-2 text-no-wrap">
+    </div>
+    <div class="flex-grow-1 overflow-x-scroll no-scrollbar">
+      <div class="pa-1 text-no-wrap">
         <v-chip
           v-for="(p, index) of paths"
           :key="index"
+          class="mr-1"
           @click="() => handleChipClick(index)"
         >
           {{ p }}{{ sep }}
         </v-chip>
       </div>
-    </v-card-actions>
+    </div>
   </v-card>
 </template>
 
@@ -48,7 +49,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.chart-info-card > .v-card__actions {
-  overflow-x: scroll;
+.chart-card > .no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 </style>

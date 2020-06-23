@@ -21,9 +21,11 @@ export default class SettingsModule extends VuexModule {
   }
 
   @Mutation
-  addIgnoredPath({ ignoredPath }: { ignoredPath: string }) {
-    if (!this.ignoredPaths.includes(ignoredPath)) {
-      this.ignoredPaths = [...this.ignoredPaths, ignoredPath]
+  addIgnoredPaths({ ignoredPaths }: { ignoredPaths: string[] }) {
+    for (const ignoredPath of ignoredPaths) {
+      if (!this.ignoredPaths.includes(ignoredPath)) {
+        this.ignoredPaths = [...this.ignoredPaths, ignoredPath]
+      }
     }
   }
 
