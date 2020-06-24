@@ -5,10 +5,10 @@ const Worker = require('~/workers/scanner.worker.ts')
 
 const worker = new Worker()
 
-const reversed: { [key: string]: boolean } = {
-  name: false,
-  value: true,
-}
+// const reversed: { [key: string]: boolean } = {
+//   name: false,
+//   value: true,
+// }
 
 type Status =
   | 'ready'
@@ -26,20 +26,16 @@ type Status =
 export default class ScannerModule extends VuexModule {
   status: Status = 'ready'
   message = ''
-  rootPath = ''
   location = ''
-  selectedNames: string[] = []
-  hoveredNames: string[] = []
-  progressFilePath = ''
+  rootPath = ''
+  progressPath = ''
   startTime = 0
   endTime = 0
   data: any = {}
-  order = {
-    by: 'value',
-    descending: false,
-  }
-
-  colorTable: Function = () => {}
+  // order = {
+  //   by: 'value',
+  //   descending: false,
+  // }
 
   get totalTime() {
     if (!this.startTime || !this.endTime) {
@@ -62,37 +58,37 @@ export default class ScannerModule extends VuexModule {
   }
 
   get items() {
-    const { by, descending } = this.order
+    // const { by, descending } = this.order
     return []
-    return [
-      { system: true, name: '<root>' },
-      { system: true, name: '<parent>' },
-      ...this.selectedNames
-        .reduce((carry, name) => {
-          if (!carry) {
-            return carry
-          }
-          return carry.children.find((c: any) => c.name === name)
-        }, this.data)
-        .children.concat()
-        .sort((a: any, b: any) => {
-          let result = 0
-          if (a[by] > b[by]) {
-            result = 1
-          } else if (a[by] < b[by]) {
-            result = -1
-          }
-          if (result === 0) {
-            if (a.path > b.path) {
-              result = 1
-            } else if (a.path < b.path) {
-              result = -1
-            }
-          }
-          result = reversed[by] ? -1 * result : result
-          return descending ? -1 * result : result
-        }),
-    ]
+    // return [
+    //   { system: true, name: '<root>' },
+    //   { system: true, name: '<parent>' },
+    //   ...this.selectedNames
+    //     .reduce((carry, name) => {
+    //       if (!carry) {
+    //         return carry
+    //       }
+    //       return carry.children.find((c: any) => c.name === name)
+    //     }, this.data)
+    //     .children.concat()
+    //     .sort((a: any, b: any) => {
+    //       let result = 0
+    //       if (a[by] > b[by]) {
+    //         result = 1
+    //       } else if (a[by] < b[by]) {
+    //         result = -1
+    //       }
+    //       if (result === 0) {
+    //         if (a.path > b.path) {
+    //           result = 1
+    //         } else if (a.path < b.path) {
+    //           result = -1
+    //         }
+    //       }
+    //       result = reversed[by] ? -1 * result : result
+    //       return descending ? -1 * result : result
+    //     }),
+    // ]
   }
 
   get getScanTime() {
@@ -107,20 +103,6 @@ export default class ScannerModule extends VuexModule {
     }
   }
 
-  get getPaths() {
-    return (item: any) => {
-      let paths = [this.rootPathHasNoTrailingSlash]
-      if (item.system) {
-        if (item.name === '<parent>') {
-          paths = [...paths, ...this.selectedNames]
-        }
-      } else {
-        paths = [...paths, ...this.selectedNames, item.name]
-      }
-      return paths
-    }
-  }
-
   @Action
   initialize() {
     if (['running', 'cancelling'].includes(this.status)) {
@@ -129,14 +111,14 @@ export default class ScannerModule extends VuexModule {
   }
 
   @Action
-  start() {
+  run() {
     if (['running', 'cancelling'].includes(this.status)) {
       return
     }
 
     this.setStatus({ status: 'running' })
     this.setMessage({ message: '' })
-    this.setstartTime({ startTime: Date.now() })
+    this.setStartTime({ startTime: Date.now() })
     this.setRootPath({ rootPath: this.location })
 
     worker.onmessage = ({
@@ -146,14 +128,14 @@ export default class ScannerModule extends VuexModule {
     }) => {
       switch (id) {
         case 'progress':
-          this.setProgressFilePath({ progressFilePath: data })
+          this.setProgressPath({ progressPath: data })
           break
         case 'refresh': {
           this.setData({ data })
           break
         }
         case 'done': {
-          this.setendTime({ endTime: Date.now() })
+          this.setEndTime({ endTime: Date.now() })
           const status =
             this.status === 'cancelling' ? 'cancelled' : 'succeeded'
           const title =
@@ -170,7 +152,7 @@ export default class ScannerModule extends VuexModule {
           break
         }
         case 'failed':
-          this.setendTime({ endTime: Date.now() })
+          this.setEndTime({ endTime: Date.now() })
           this.setStatus({ status: 'failed' })
           this.setMessage({ message: data })
           break
@@ -190,47 +172,17 @@ export default class ScannerModule extends VuexModule {
     worker.postMessage({ id: 'cancel' })
   }
 
-  @Action
-  changeOrderBy({ orderBy }: { orderBy: any }) {
-    // const descending =
-    //   state.order.by === orderBy ? !state.order.descending : false
-    // const order = { by: orderBy, descending }
-    // commit('setOrder', { order })
-  }
-
-  @Mutation
-  setRootPath({ rootPath }: { rootPath: string }) {
-    this.rootPath = rootPath
-  }
-
-  @Mutation
-  setLocation({ location }: { location: string }) {
-    this.location = location
-  }
-
-  @Mutation
-  setProgressFilePath({ progressFilePath }: { progressFilePath: string }) {
-    this.progressFilePath = progressFilePath
-  }
+  // @Action
+  // changeOrderBy({ orderBy }: { orderBy: any }) {
+  //   const descending =
+  //     state.order.by === orderBy ? !state.order.descending : false
+  //   const order = { by: orderBy, descending }
+  //   commit('setOrder', { order })
+  // }
 
   @Mutation
   setStatus({ status }: { status: Status }) {
     this.status = status
-  }
-
-  @Mutation
-  setstartTime({ startTime }: { startTime: number }) {
-    this.startTime = startTime
-  }
-
-  @Mutation
-  setendTime({ endTime }: { endTime: number }) {
-    this.endTime = endTime
-  }
-
-  @Mutation
-  setData({ data }: { data: Object }) {
-    this.data = data
   }
 
   @Mutation
@@ -239,17 +191,32 @@ export default class ScannerModule extends VuexModule {
   }
 
   @Mutation
-  setHoveredNames({ hoveredNames }: { hoveredNames: string[] }) {
-    this.hoveredNames = hoveredNames
+  setLocation({ location }: { location: string }) {
+    this.location = location
   }
 
   @Mutation
-  setSelectedNames({ selectedNames }: { selectedNames: string[] }) {
-    this.selectedNames = selectedNames
+  setRootPath({ rootPath }: { rootPath: string }) {
+    this.rootPath = rootPath
   }
 
   @Mutation
-  setColorTable({ colorTable }: { colorTable: Function }) {
-    this.colorTable = colorTable
+  setProgressPath({ progressPath }: { progressPath: string }) {
+    this.progressPath = progressPath
+  }
+
+  @Mutation
+  setStartTime({ startTime }: { startTime: number }) {
+    this.startTime = startTime
+  }
+
+  @Mutation
+  setEndTime({ endTime }: { endTime: number }) {
+    this.endTime = endTime
+  }
+
+  @Mutation
+  setData({ data }: { data: Object }) {
+    this.data = data
   }
 }

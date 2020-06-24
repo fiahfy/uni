@@ -40,7 +40,13 @@
 
 <script lang="ts">
 import { remote } from 'electron'
-import { defineComponent, computed, SetupContext, onMounted, onUnmounted } from '@vue/composition-api'
+import {
+  defineComponent,
+  computed,
+  onMounted,
+  onUnmounted,
+  SetupContext,
+} from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
@@ -94,7 +100,7 @@ export default defineComponent({
       location.value = filePaths[0] ?? ''
     }
     const handleClickScan = () => {
-      scanning.value ? scannerStore.cancel() : scannerStore.start()
+      scanning.value ? scannerStore.cancel() : scannerStore.run()
     }
     const handleClickSettings = () => {
       context.root.$eventBus.$emit('show-settings')

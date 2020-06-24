@@ -36,8 +36,23 @@ import {
 } from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
+type Props = {
+  selectedPaths: string[]
+  hoveredPaths: string[]
+}
+
 export default defineComponent({
-  setup(_props: {}, context: SetupContext) {
+  props: {
+    selectedPaths: {
+      type: Array,
+      default: () => [],
+    },
+    hoveredPaths: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props: Props, context: SetupContext) {
     const state = reactive<{
       loading: boolean
       needsUpdate: boolean
@@ -110,7 +125,7 @@ export default defineComponent({
       state.height = wrapper.value!.offsetHeight
       state.radius = Math.min(state.width, state.height) / 2
       state.color = d3.scaleOrdinal(d3.schemePaired)
-      scannerStore.setColorTable({ colorTable: state.color })
+      context.emit('change:color-category', state.color)
 
       state.x = d3.scaleLinear().range([0, 2 * Math.PI])
       state.y = d3.scaleSqrt().range([0, state.radius])
@@ -140,8 +155,8 @@ export default defineComponent({
     }
     const update = () => {
       state.targetSize = 0
-      scannerStore.setHoveredNames({ hoveredNames: [] })
-      scannerStore.setSelectedNames({ selectedNames: [] })
+      context.emit('change:selected-items', [])
+      context.emit('change:hovered-items', [])
 
       state.loading = true
 
@@ -194,9 +209,19 @@ export default defineComponent({
       state.loading = false
       state.needsUpdate = false
     }
+    const getPaths = (item: any) => {
+      let paths = [scannerStore.rootPathHasNoTrailingSlash]
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = [...paths, ...props.selectedPaths]
+        }
+      } else {
+        paths = [...paths, ...props.selectedPaths, item.name]
+      }
+      return paths
+    }
     const moveTo = (item: any) => {
-      const node = scannerStore
-        .getPaths(item)
+      const node = getPaths(item)
         .slice(1)
         .reduce((carry: any, name: any) => {
           if (!carry) {
@@ -208,8 +233,7 @@ export default defineComponent({
       handleClick(node)
     }
     const hover = (item: any) => {
-      const node = scannerStore
-        .getPaths(item)
+      const node = getPaths(item)
         .slice(1)
         .reduce((carry: any, name: any) => {
           if (!carry) {
@@ -224,7 +248,7 @@ export default defineComponent({
       handleMouseLeave()
     }
     const changeDepth = (index: number) => {
-      const node = [...scannerStore.selectedNames, ...scannerStore.hoveredNames]
+      const node = [...props.selectedPaths, ...props.hoveredPaths]
         .slice(0, index)
         .reduce((carry: any, name: any) => {
           if (!carry) {
@@ -254,10 +278,10 @@ export default defineComponent({
       }
       const ancestors = d.ancestors().reverse()
 
-      const hoveredNames = ancestors
-        .slice(scannerStore.selectedNames.length + 1)
+      const hoveredPaths = ancestors
+        .slice(props.selectedPaths.length + 1)
         .map((d: any) => d.data.name)
-      scannerStore.setHoveredNames({ hoveredNames })
+      context.emit('change:hovered-items', hoveredPaths)
 
       state.targetSize = d.value
 
@@ -277,7 +301,7 @@ export default defineComponent({
       state.tooltip.text = d.data.name
     }
     const handleMouseLeave = () => {
-      scannerStore.setHoveredNames({ hoveredNames: [] })
+      context.emit('change:hovered-items', [])
       state.targetSize = scannerStore.totalSize
 
       state.svg!.selectAll('path').style('opacity', 1)
@@ -291,9 +315,9 @@ export default defineComponent({
       const ancestors = d.ancestors().reverse()
       const filePath = [
         scannerStore.rootPathHasNoTrailingSlash,
-        ...scannerStore.selectedNames,
+        ...props.selectedPaths,
         ...ancestors
-          .slice(scannerStore.selectedNames.length + 1)
+          .slice(props.selectedPaths.length + 1)
           .map((d: any) => d.data.name),
       ].join(path.sep)
 
@@ -319,9 +343,9 @@ export default defineComponent({
       const ancestors = d.ancestors().reverse()
 
       state.depth = d.depth
-      const selectedNames = ancestors.slice(1).map((d: any) => d.data.name)
-      scannerStore.setSelectedNames({ selectedNames })
-      scannerStore.setHoveredNames({ hoveredNames: [] })
+      const selectedPaths = ancestors.slice(1).map((d: any) => d.data.name)
+      context.emit('change:selected-items', selectedPaths)
+      context.emit('change:hovered-items', [])
 
       state
         .svg!.transition(state.transition!)

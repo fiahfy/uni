@@ -23,13 +23,28 @@ import path from 'path'
 import { defineComponent, computed, SetupContext } from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
+type Props = {
+  selectedPaths: string[]
+  hoveredPaths: string[]
+}
+
 export default defineComponent({
-  setup(_props: {}, context: SetupContext) {
+  props: {
+    selectedPaths: {
+      type: Array,
+      default: () => [],
+    },
+    hoveredPaths: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props: Props, context: SetupContext) {
     const paths = computed(() => {
       return [
         scannerStore.rootPathHasNoTrailingSlash,
-        ...scannerStore.selectedNames,
-        ...scannerStore.hoveredNames,
+        ...props.selectedPaths,
+        ...props.hoveredPaths,
       ]
     })
     const totalSize = computed(() => scannerStore.totalSize)

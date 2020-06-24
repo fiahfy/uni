@@ -45,7 +45,7 @@ export default defineComponent({
     const text = computed(() => {
       switch (scannerStore.status) {
         case 'running':
-          return `Scanning... "${scannerStore.progressFilePath}"`
+          return `Scanning... "${scannerStore.progressPath}"`
         case 'succeeded':
           return `Scan finished "${scannerStore.rootPath}"`
         case 'cancelling':
