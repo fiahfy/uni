@@ -1,8 +1,7 @@
 import fs from 'fs'
-import scanner from '~/utils/scanner'
+import { scanner } from '~/utils/scanner'
 
-const increaseInterval = 0
-const mininumRefreshInterval = 1000
+const minRefreshInterval = 1000
 
 const exists = (filePath: string) => {
   try {
@@ -20,14 +19,6 @@ const isDir = (filePath: string) => {
   return fs.lstatSync(filePath).isDirectory()
 }
 
-const wait = (millis: number) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, millis)
-  })
-}
-
 const ctx: Worker = self as any
 
 ctx.onmessage = async ({ data: { id, data } }) => {
@@ -38,32 +29,25 @@ ctx.onmessage = async ({ data: { id, data } }) => {
       ctx.postMessage({ id: 'refresh', data: {} })
 
       if (!exists(dirPath)) {
-        ctx.postMessage({ id: 'error', data: 'Directory not found' })
-        return
-      }
-      if (!isDir(dirPath)) {
-        ctx.postMessage({ id: 'error', data: 'Not directory' })
-        return
+        return ctx.postMessage({ id: 'failed', data: 'Directory not found' })
       }
 
-      let time = new Date().getTime()
-      let times = 0
+      if (!isDir(dirPath)) {
+        return ctx.postMessage({ id: 'failed', data: 'Not directory' })
+      }
+
+      const interval = Math.max(minRefreshInterval, Number(refreshInterval))
+      let refreshTime = Date.now() + interval
       scanner.on('progress', (filePath: string) => {
         ctx.postMessage({ id: 'progress', data: filePath })
-        const now = new Date().getTime()
-        const interval = Math.max(mininumRefreshInterval, refreshInterval)
-        if (now - time > Number(interval) + increaseInterval * times) {
+        const now = Date.now()
+        if (now > refreshTime) {
+          refreshTime = now + interval
           ctx.postMessage({ id: 'refresh', data: scanner.getCalculatedNode() })
-          time = new Date().getTime()
-          times++
         }
       })
-      scanner.on('complete', async () => {
-        const now = new Date().getTime()
-        if (now - time < mininumRefreshInterval) {
-          await wait(mininumRefreshInterval)
-        }
-        ctx.postMessage({ id: 'complete', data: scanner.getCalculatedNode() })
+      scanner.on('done', () => {
+        ctx.postMessage({ id: 'done', data: scanner.getCalculatedNode() })
       })
       scanner.setConfig({ ignoredPaths })
       await scanner.scan(dirPath)

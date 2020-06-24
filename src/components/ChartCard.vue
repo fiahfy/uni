@@ -1,6 +1,6 @@
 <template>
-  <v-card class="chart-card d-flex align-center px-3" tile flat>
-    <div class="pr-3 subtitle-2 text-no-wrap">
+  <v-card class="chart-card d-flex align-center px-5" tile flat>
+    <div class="pr-5 subtitle-2 text-no-wrap">
       Total size: {{ totalSize | prettyBytes }}
     </div>
     <div class="flex-grow-1 overflow-x-scroll no-scrollbar">
@@ -9,7 +9,7 @@
           v-for="(p, index) of paths"
           :key="index"
           class="mr-1"
-          @click="() => handleChipClick(index)"
+          @click="() => handleClickChip(index)"
         >
           {{ p }}{{ sep }}
         </v-chip>
@@ -20,11 +20,11 @@
 
 <script lang="ts">
 import path from 'path'
-import { defineComponent, computed } from '@vue/composition-api'
+import { defineComponent, computed, SetupContext } from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
-  setup(_props: {}) {
+  setup(_props: {}, context: SetupContext) {
     const paths = computed(() => {
       return [
         scannerStore.rootPathHasNoTrailingSlash,
@@ -34,15 +34,15 @@ export default defineComponent({
     })
     const totalSize = computed(() => scannerStore.totalSize)
 
-    const handleChipClick = (_index: number) => {
-      // this.$emit('click:chip', index)
+    const handleClickChip = (index: number) => {
+      context.emit('click:chip', index)
     }
 
     return {
       sep: path.sep,
       paths,
       totalSize,
-      handleChipClick,
+      handleClickChip,
     }
   },
 })

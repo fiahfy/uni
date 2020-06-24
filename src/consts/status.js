@@ -1,8 +1,0 @@
-export default {
-  NOT_YET: 'NOT_YET',
-  PROGRESS: 'PROGRESS',
-  DONE: 'DONE',
-  CANCELLING: 'CANCELLING',
-  CANCELLED: 'CANCELLED',
-  ERROR: 'ERROR'
-}

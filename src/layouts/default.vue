@@ -9,13 +9,11 @@
       <router-view class="fill-height" />
     </v-main>
     <settings-dialog />
-    <!-- <notification-bar /> -->
   </v-app>
 </template>
 
 <script lang="ts">
 import { defineComponent, watch, SetupContext } from '@vue/composition-api'
-// import NotificationBar from '~/components/NotificationBar.vue'
 import SettingsDialog from '~/components/SettingsDialog.vue'
 import TitleBar from '~/components/TitleBar.vue'
 import { settingsStore } from '~/store'
@@ -33,8 +31,7 @@ export default defineComponent({
       const files = Array.from(e.dataTransfer?.files ?? [])
       const filePath = files[0].path
       if (filePath) {
-        //   this.scan({ dirPath })
-        // context.root.$eventBus.$emit('change-location', filePath)
+        context.root.$eventBus.$emit('change-location', filePath)
       }
     }
 

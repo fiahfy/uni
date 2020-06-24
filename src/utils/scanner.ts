@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 const clone = require('@fiahfy/simple-clone').default
 
-const INTERVAL = 100
+const progressInterval = 100
 
 type Node = {
   name: string
@@ -12,10 +12,10 @@ type Node = {
 
 let scanning = false
 let cancelling = false
-let lastProgressTime = 0
-const callbacks: { [event: string]: Function } = {}
-let ignoredPaths: string[] = []
+let progressTime = 0
 let node = { name: '', value: 0, children: [] }
+let ignoredPaths: string[] = []
+const callbacks: { [event: string]: Function } = {}
 
 const delay = (millis = 0) => {
   return new Promise((resolve) => {
@@ -25,14 +25,14 @@ const delay = (millis = 0) => {
   })
 }
 
-const send = (event: string, args?: any) => {
+const call = (event: string, args?: any) => {
   const callback = callbacks[event]
   if (callback) {
     callback(args)
   }
 }
 
-const scanFile = async (filePath: string, depth: number, node: Node) => {
+const scanPath = async (filePath: string, depth: number, node: Node) => {
   if (ignoredPaths.includes(filePath)) {
     return
   }
@@ -41,10 +41,10 @@ const scanFile = async (filePath: string, depth: number, node: Node) => {
   }
 
   const now = new Date().getTime()
-  if (now - lastProgressTime > INTERVAL) {
+  if (now > progressTime) {
+    progressTime = now + progressInterval
+    call('progress', filePath)
     await delay() // wait for receiving cancel request
-    lastProgressTime = now
-    send('progress', filePath)
   }
 
   try {
@@ -57,7 +57,7 @@ const scanFile = async (filePath: string, depth: number, node: Node) => {
       for (const filename of filenames) {
         const childNode = { name: '', value: 0, children: [] }
         node.children = [...node.children, childNode]
-        await scanFile(path.join(filePath, filename), depth + 1, childNode)
+        await scanPath(path.join(filePath, filename), depth + 1, childNode)
         node.value += childNode.value
       }
       if (depth > 10) {
@@ -92,17 +92,19 @@ const reduce = (limit: number, node: Node) => {
 }
 
 const scan = async (filePath: string) => {
-  if (scanning) {
+  if (scanning || cancelling) {
     return
   }
-  cancelling = false
   scanning = true
-
+  cancelling = false
+  progressTime = Date.now() + progressInterval
   node = { name: '', value: 0, children: [] }
-  lastProgressTime = 0
-  await scanFile(filePath, 0, node)
 
-  send('complete')
+  await scanPath(filePath, 0, node)
+
+  call('done')
+
+  cancelling = false
   scanning = false
 }
 
@@ -126,4 +128,4 @@ const getCalculatedNode = () => {
   return root
 }
 
-export default { scan, cancel, on, setConfig, getCalculatedNode }
+export const scanner = { scan, cancel, on, setConfig, getCalculatedNode }

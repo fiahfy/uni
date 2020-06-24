@@ -25,14 +25,14 @@ type Status =
 })
 export default class ScannerModule extends VuexModule {
   status: Status = 'ready'
-  error?: Error = undefined
+  message = ''
   rootPath = ''
   location = ''
   selectedNames: string[] = []
   hoveredNames: string[] = []
   progressFilePath = ''
-  begunAt = 0
-  endedAt = 0
+  startTime = 0
+  endTime = 0
   data: any = {}
   order = {
     by: 'value',
@@ -42,10 +42,10 @@ export default class ScannerModule extends VuexModule {
   colorTable: Function = () => {}
 
   get totalTime() {
-    if (!this.begunAt || !this.endedAt) {
+    if (!this.startTime || !this.endTime) {
       return 0
     }
-    return this.endedAt - this.begunAt
+    return this.endTime - this.startTime
   }
 
   get totalSize() {
@@ -103,7 +103,7 @@ export default class ScannerModule extends VuexModule {
 
   get getElapsedTime() {
     return () => {
-      return this.begunAt ? new Date().getTime() - this.begunAt : 0
+      return this.startTime ? new Date().getTime() - this.startTime : 0
     }
   }
 
@@ -128,70 +128,16 @@ export default class ScannerModule extends VuexModule {
     }
   }
 
-  @Mutation
-  setRootPath({ rootPath }: { rootPath: string }) {
-    this.rootPath = rootPath
-  }
-
-  @Mutation
-  setLocation({ location }: { location: string }) {
-    this.location = location
-  }
-
-  @Mutation
-  setProgressFilePath({ progressFilePath }: { progressFilePath: string }) {
-    this.progressFilePath = progressFilePath
-  }
-
-  @Mutation
-  setStatus({ status }: { status: Status }) {
-    this.status = status
-  }
-
-  @Mutation
-  setBegunAt({ begunAt }: { begunAt: number }) {
-    this.begunAt = begunAt
-  }
-
-  @Mutation
-  setEndedAt({ endedAt }: { endedAt: number }) {
-    this.endedAt = endedAt
-  }
-
-  @Mutation
-  setData({ data }: { data: Object }) {
-    this.data = data
-  }
-
-  @Mutation
-  setError({ error }: { error: Error }) {
-    this.error = error
-  }
-
-  @Mutation
-  setHoveredNames({ hoveredNames }: { hoveredNames: string[] }) {
-    this.hoveredNames = hoveredNames
-  }
-
-  @Mutation
-  setSelectedNames({ selectedNames }: { selectedNames: string[] }) {
-    this.selectedNames = selectedNames
-  }
-
-  @Mutation
-  setColorTable({ colorTable }: { colorTable: Function }) {
-    this.colorTable = colorTable
-  }
-
   @Action
   start() {
     if (['running', 'cancelling'].includes(this.status)) {
       return
     }
 
-    this.setRootPath({ rootPath: this.location })
     this.setStatus({ status: 'running' })
-    this.setBegunAt({ begunAt: Date.now() })
+    this.setMessage({ message: '' })
+    this.setstartTime({ startTime: Date.now() })
+    this.setRootPath({ rootPath: this.location })
 
     worker.onmessage = ({
       data: { id, data },
@@ -206,27 +152,27 @@ export default class ScannerModule extends VuexModule {
           this.setData({ data })
           break
         }
-        case 'complete': {
-          this.setEndedAt({ endedAt: Date.now() })
-          const newStatus =
+        case 'done': {
+          this.setendTime({ endTime: Date.now() })
+          const status =
             this.status === 'cancelling' ? 'cancelled' : 'succeeded'
-          // const title =
-          //   this.status === 'CANCELLING' ? 'Scan cancelled' : 'Scan finished'
+          const title =
+            this.status === 'cancelling' ? 'Scan cancelled' : 'Scan finished'
 
-          this.setStatus({ status: newStatus })
+          this.setStatus({ status })
           this.setData({ data })
-          // const sec = (this.getScanTime() / 1000).toFixed(2)
-          // dispatch(
-          //   'showNotification',
-          //   { title, body: `Total time: ${sec} sec` },
-          //   { root: true }
-          // )
+
+          const totalTime = (this.getScanTime() / 1000).toFixed(2)
+          // eslint-disable-next-line
+          const _ = new Notification(title, {
+            body: `Total time: ${totalTime} sec`,
+          })
           break
         }
-        case 'error':
-          this.setEndedAt({ endedAt: Date.now() })
+        case 'failed':
+          this.setendTime({ endTime: Date.now() })
           this.setStatus({ status: 'failed' })
-          this.setError({ error: new Error(data) })
+          this.setMessage({ message: data })
           break
       }
     }
@@ -250,5 +196,60 @@ export default class ScannerModule extends VuexModule {
     //   state.order.by === orderBy ? !state.order.descending : false
     // const order = { by: orderBy, descending }
     // commit('setOrder', { order })
+  }
+
+  @Mutation
+  setRootPath({ rootPath }: { rootPath: string }) {
+    this.rootPath = rootPath
+  }
+
+  @Mutation
+  setLocation({ location }: { location: string }) {
+    this.location = location
+  }
+
+  @Mutation
+  setProgressFilePath({ progressFilePath }: { progressFilePath: string }) {
+    this.progressFilePath = progressFilePath
+  }
+
+  @Mutation
+  setStatus({ status }: { status: Status }) {
+    this.status = status
+  }
+
+  @Mutation
+  setstartTime({ startTime }: { startTime: number }) {
+    this.startTime = startTime
+  }
+
+  @Mutation
+  setendTime({ endTime }: { endTime: number }) {
+    this.endTime = endTime
+  }
+
+  @Mutation
+  setData({ data }: { data: Object }) {
+    this.data = data
+  }
+
+  @Mutation
+  setMessage({ message }: { message: string }) {
+    this.message = message
+  }
+
+  @Mutation
+  setHoveredNames({ hoveredNames }: { hoveredNames: string[] }) {
+    this.hoveredNames = hoveredNames
+  }
+
+  @Mutation
+  setSelectedNames({ selectedNames }: { selectedNames: string[] }) {
+    this.selectedNames = selectedNames
+  }
+
+  @Mutation
+  setColorTable({ colorTable }: { colorTable: Function }) {
+    this.colorTable = colorTable
   }
 }

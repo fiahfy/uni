@@ -53,7 +53,7 @@ export default defineComponent({
         case 'cancelled':
           return `Cancelled "${scannerStore.rootPath}"`
         case 'failed':
-          return `${scannerStore.error?.message} "${scannerStore.rootPath}"`
+          return `${scannerStore.message} "${scannerStore.rootPath}"`
         case 'ready':
         default:
           return 'Ready'

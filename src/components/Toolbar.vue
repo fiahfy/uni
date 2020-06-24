@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { remote } from 'electron'
-import { defineComponent, computed, SetupContext } from '@vue/composition-api'
+import { defineComponent, computed, SetupContext, onMounted, onUnmounted } from '@vue/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
@@ -83,6 +83,10 @@ export default defineComponent({
       }
     })
 
+    const changeLocation = (loc: string) => {
+      location.value = loc
+    }
+
     const handleClickFolder = async () => {
       const { filePaths } = await remote.dialog.showOpenDialog({
         properties: ['openDirectory'],
@@ -95,6 +99,14 @@ export default defineComponent({
     const handleClickSettings = () => {
       context.root.$eventBus.$emit('show-settings')
     }
+
+    onMounted(() => {
+      context.root.$eventBus.$on('change-location', changeLocation)
+    })
+
+    onUnmounted(() => {
+      context.root.$eventBus.$off('change-location', changeLocation)
+    })
 
     return {
       location,
