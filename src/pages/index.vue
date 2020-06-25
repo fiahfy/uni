@@ -7,15 +7,29 @@
         :hovered-paths="state.hoveredPaths"
         @click:chip="handleClickChip"
       />
-      <chart-graph
-        ref="graph"
-        class="flex-grow-1 overflow-hidden"
-        :selected-paths="state.selectedPaths"
-        :hovered-paths="state.hoveredPaths"
-        @change:selected-paths="handleChangeSelectedPaths"
-        @change:hovered-paths="handleChangeHoveredPaths"
-        @change:color-category="handleChangeColorCategory"
-      />
+      <v-row no-gutters class="overflow-hidden">
+        <v-col cols="8" class="fill-height">
+          <chart-graph
+            ref="graph"
+            class="fill-height overflow-hidden"
+            :selected-paths="state.selectedPaths"
+            :hovered-paths="state.hoveredPaths"
+            @change:selected-paths="handleChangeSelectedPaths"
+            @change:hovered-paths="handleChangeHoveredPaths"
+            @change:color-category="handleChangeColorCategory"
+          />
+        </v-col>
+        <v-col cols="4" class="fill-height">
+          <chart-table
+            class="fill-height overflow-hidden"
+            :selected-paths="state.selectedPaths"
+            :color-category="state.colorCategory"
+            @click:row="handleClickRow"
+            @mouseover:row="handleMouseOverRow"
+            @mouseleave:row="handleMouseLeaveRow"
+          />
+        </v-col>
+      </v-row>
       <status-bar />
     </div>
   </v-container>
@@ -25,6 +39,7 @@
 import { defineComponent, ref, reactive } from '@vue/composition-api'
 import ChartCard from '~/components/ChartCard.vue'
 import ChartGraph from '~/components/ChartGraph.vue'
+import ChartTable from '~/components/ChartTable.vue'
 import StatusBar from '~/components/StatusBar.vue'
 import Toolbar from '~/components/Toolbar.vue'
 import { scannerStore } from '~/store'
@@ -33,6 +48,7 @@ export default defineComponent({
   components: {
     ChartCard,
     ChartGraph,
+    ChartTable,
     StatusBar,
     Toolbar,
   },
@@ -61,6 +77,15 @@ export default defineComponent({
     const handleChangeColorCategory = (colorCategory: Function) => {
       state.colorCategory = colorCategory
     }
+    const handleClickRow = (item: any) => {
+      graph.value && graph.value.moveTo(item)
+    }
+    const handleMouseOverRow = (item: any) => {
+      graph.value && graph.value.hover(item)
+    }
+    const handleMouseLeaveRow = (_item: any) => {
+      graph.value && graph.value.unhover()
+    }
 
     scannerStore.initialize()
 
@@ -71,6 +96,9 @@ export default defineComponent({
       handleChangeSelectedPaths,
       handleChangeHoveredPaths,
       handleChangeColorCategory,
+      handleClickRow,
+      handleMouseOverRow,
+      handleMouseLeaveRow,
     }
   },
 })

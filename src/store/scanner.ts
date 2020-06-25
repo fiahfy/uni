@@ -5,11 +5,6 @@ const Worker = require('~/workers/scanner.worker.ts')
 
 const worker = new Worker()
 
-// const reversed: { [key: string]: boolean } = {
-//   name: false,
-//   value: true,
-// }
-
 type Status =
   | 'ready'
   | 'running'
@@ -32,10 +27,6 @@ export default class ScannerModule extends VuexModule {
   startTime = 0
   endTime = 0
   data: any = {}
-  // order = {
-  //   by: 'value',
-  //   descending: false,
-  // }
 
   get totalTime() {
     if (!this.startTime || !this.endTime) {
@@ -55,40 +46,6 @@ export default class ScannerModule extends VuexModule {
       return rootPath.slice(0, rootPath.length - 1)
     }
     return rootPath
-  }
-
-  get items() {
-    // const { by, descending } = this.order
-    return []
-    // return [
-    //   { system: true, name: '<root>' },
-    //   { system: true, name: '<parent>' },
-    //   ...this.selectedNames
-    //     .reduce((carry, name) => {
-    //       if (!carry) {
-    //         return carry
-    //       }
-    //       return carry.children.find((c: any) => c.name === name)
-    //     }, this.data)
-    //     .children.concat()
-    //     .sort((a: any, b: any) => {
-    //       let result = 0
-    //       if (a[by] > b[by]) {
-    //         result = 1
-    //       } else if (a[by] < b[by]) {
-    //         result = -1
-    //       }
-    //       if (result === 0) {
-    //         if (a.path > b.path) {
-    //           result = 1
-    //         } else if (a.path < b.path) {
-    //           result = -1
-    //         }
-    //       }
-    //       result = reversed[by] ? -1 * result : result
-    //       return descending ? -1 * result : result
-    //     }),
-    // ]
   }
 
   get getScanTime() {
@@ -171,14 +128,6 @@ export default class ScannerModule extends VuexModule {
     this.setStatus({ status: 'cancelling' })
     worker.postMessage({ id: 'cancel' })
   }
-
-  // @Action
-  // changeOrderBy({ orderBy }: { orderBy: any }) {
-  //   const descending =
-  //     state.order.by === orderBy ? !state.order.descending : false
-  //   const order = { by: orderBy, descending }
-  //   commit('setOrder', { order })
-  // }
 
   @Mutation
   setStatus({ status }: { status: Status }) {

@@ -124,7 +124,7 @@ export default defineComponent({
       state.width = wrapper.value!.offsetWidth
       state.height = wrapper.value!.offsetHeight
       state.radius = Math.min(state.width, state.height) / 2
-      state.color = d3.scaleOrdinal(d3.schemePaired)
+      state.color = d3.scaleOrdinal(d3.schemeSet3)
       context.emit('change:color-category', state.color)
 
       state.x = d3.scaleLinear().range([0, 2 * Math.PI])
@@ -155,8 +155,8 @@ export default defineComponent({
     }
     const update = () => {
       state.targetSize = 0
-      context.emit('change:selected-items', [])
-      context.emit('change:hovered-items', [])
+      context.emit('change:selected-paths', [])
+      context.emit('change:hovered-paths', [])
 
       state.loading = true
 
@@ -281,13 +281,13 @@ export default defineComponent({
       const hoveredPaths = ancestors
         .slice(props.selectedPaths.length + 1)
         .map((d: any) => d.data.name)
-      context.emit('change:hovered-items', hoveredPaths)
+      context.emit('change:hovered-paths', hoveredPaths)
 
       state.targetSize = d.value
 
       state
         .svg!.selectAll('path')
-        .style('opacity', 0.3)
+        .style('opacity', 0.5)
         .filter((d) => ancestors.includes(d))
         .style('opacity', 1)
 
@@ -301,7 +301,7 @@ export default defineComponent({
       state.tooltip.text = d.data.name
     }
     const handleMouseLeave = () => {
-      context.emit('change:hovered-items', [])
+      context.emit('change:hovered-paths', [])
       state.targetSize = scannerStore.totalSize
 
       state.svg!.selectAll('path').style('opacity', 1)
@@ -344,8 +344,8 @@ export default defineComponent({
 
       state.depth = d.depth
       const selectedPaths = ancestors.slice(1).map((d: any) => d.data.name)
-      context.emit('change:selected-items', selectedPaths)
-      context.emit('change:hovered-items', [])
+      context.emit('change:selected-paths', selectedPaths)
+      context.emit('change:hovered-paths', [])
 
       state
         .svg!.transition(state.transition!)
