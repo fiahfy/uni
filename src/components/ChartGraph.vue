@@ -1,5 +1,5 @@
 <template>
-  <div ref="graph" class="chart-graph pa-3">
+  <div ref="graph" class="chart-graph pa-5">
     <div ref="wrapper" class="wrapper fill-height overflow-hidden">
       <svg ref="sunburst" />
     </div>

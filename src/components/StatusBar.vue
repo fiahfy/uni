@@ -47,7 +47,7 @@ export default defineComponent({
         case 'running':
           return `Scanning... "${scannerStore.progressPath}"`
         case 'succeeded':
-          return `Scan finished "${scannerStore.rootPath}"`
+          return `Scan completed "${scannerStore.rootPath}"`
         case 'cancelling':
           return `Cancelling... "${scannerStore.rootPath}"`
         case 'cancelled':

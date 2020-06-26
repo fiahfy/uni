@@ -72,7 +72,7 @@ export default defineComponent({
         )
       }
       // file for root
-      return props.colorCategory(scannerStore.data.name)
+      return props.colorCategory(scannerStore.data?.name ?? '')
     })
     const percentage = computed(() => {
       return ((props.item.value / scannerStore.totalSize) * 100).toFixed(2)

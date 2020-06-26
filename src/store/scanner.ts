@@ -1,5 +1,6 @@
 import path from 'path'
 import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import { Node } from '~/models'
 import { settingsStore } from '~/store'
 const Worker = require('~/workers/scanner.worker.ts')
 
@@ -26,7 +27,11 @@ export default class ScannerModule extends VuexModule {
   progressPath = ''
   startTime = 0
   endTime = 0
-  data: any = {}
+  data: Node | null = null
+
+  get scanning() {
+    return ['running', 'cancelling'].includes(this.status)
+  }
 
   get totalTime() {
     if (!this.startTime || !this.endTime) {
@@ -36,7 +41,7 @@ export default class ScannerModule extends VuexModule {
   }
 
   get totalSize() {
-    return this.data.value || 0
+    return this.data?.value ?? 0
   }
 
   get rootPathHasNoTrailingSlash() {
@@ -62,14 +67,14 @@ export default class ScannerModule extends VuexModule {
 
   @Action
   initialize() {
-    if (['running', 'cancelling'].includes(this.status)) {
+    if (this.scanning) {
       this.setStatus({ status: 'ready' })
     }
   }
 
   @Action
   run() {
-    if (['running', 'cancelling'].includes(this.status)) {
+    if (this.scanning) {
       return
     }
 
@@ -96,7 +101,7 @@ export default class ScannerModule extends VuexModule {
           const status =
             this.status === 'cancelling' ? 'cancelled' : 'succeeded'
           const title =
-            this.status === 'cancelling' ? 'Scan cancelled' : 'Scan finished'
+            this.status === 'cancelling' ? 'Scan cancelled' : 'Scan completed'
 
           this.setStatus({ status })
           this.setData({ data })
@@ -165,7 +170,7 @@ export default class ScannerModule extends VuexModule {
   }
 
   @Mutation
-  setData({ data }: { data: Object }) {
+  setData({ data }: { data: Node | null }) {
     this.data = data
   }
 }

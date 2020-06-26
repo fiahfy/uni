@@ -34,6 +34,7 @@ import {
   SetupContext,
 } from '@vue/composition-api'
 import ChartTableRow from '~/components/ChartTableRow.vue'
+import { Node } from '~/models'
 import { scannerStore } from '~/store'
 
 const headers = [
@@ -72,23 +73,25 @@ export default defineComponent({
       return [
         { system: true, name: '<root>' },
         { system: true, name: '<parent>' },
-        ...props.selectedPaths
-          .reduce((carry, name) => {
-            if (!carry) {
-              return carry
-            }
-            return carry.children.find((c: any) => c.name === name)
-          }, scannerStore.data)
-          .children.concat()
-          .sort((a: any, b: any) => {
-            return a.value > b.value ? -1 : 1
-          }),
+        ...(scannerStore.data
+          ? props.selectedPaths
+              .reduce((carry, name) => {
+                if (!carry) {
+                  return carry
+                }
+                return carry.children.find((c) => c.name === name)!
+              }, scannerStore.data)
+              .children.concat()
+              .sort((a, b) => {
+                return a.value > b.value ? -1 : 1
+              })
+          : []),
       ]
     })
 
     const table = ref<Vue>()
 
-    const getPaths = (item: any) => {
+    const getPaths = (item: Node) => {
       let paths = [scannerStore.rootPathHasNoTrailingSlash]
       if (item.system) {
         if (item.name === '<parent>') {
@@ -100,16 +103,16 @@ export default defineComponent({
       return paths
     }
 
-    const handleClickRow = (item: any) => {
+    const handleClickRow = (item: Node) => {
       context.emit('click:row', item)
     }
-    const handleMouseOverRow = (item: any) => {
+    const handleMouseOverRow = (item: Node) => {
       context.emit('mouseover:row', item)
     }
-    const handleMouseLeaveRow = (item: any) => {
+    const handleMouseLeaveRow = (item: Node) => {
       context.emit('mouseleave:row', item)
     }
-    const handleContextMenuRow = (item: any) => {
+    const handleContextMenuRow = (item: Node) => {
       const filePath = getPaths(item).join(path.sep)
 
       context.root.$contextMenu.open([

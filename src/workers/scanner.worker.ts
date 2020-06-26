@@ -26,7 +26,7 @@ ctx.onmessage = async ({ data: { id, data } }) => {
     case 'start': {
       const { dirPath, refreshInterval, ignoredPaths } = data
 
-      ctx.postMessage({ id: 'refresh', data: {} })
+      ctx.postMessage({ id: 'refresh', data: null })
 
       if (!exists(dirPath)) {
         return ctx.postMessage({ id: 'failed', data: 'Directory not found' })
