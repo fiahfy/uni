@@ -1,117 +1,98 @@
 <template>
-  <tr
-    class="chart-table-row"
-    :class="classes"
-    @click.stop="onClick"
-    @contextmenu.stop="onContextMenu"
-    @mouseover="onMouseOver"
-    @mouseleave="onMouseLeave"
-  >
+  <tr class="chart-table-row" :class="classes">
     <td :title="item.name">
       <v-layout class="align-center">
         <span v-if="item.system" class="primary--text" v-text="item.name" />
         <template v-else>
-          <span class="square mr-1" :style="{ 'background-color': color }" />
+          <span class="color mr-1" :style="{ 'background-color': color }" />
           <span class="ellipsis spacer" v-text="item.name" />
         </template>
       </v-layout>
     </td>
     <td class="text-xs-right text-no-wrap">
       <template v-if="!item.system">
-        {{ item.value | readableSize }} ({{ percentage }} %)
+        {{ item.value | prettyBytes }} ({{ percentage }} %)
       </template>
     </td>
   </tr>
 </template>
 
-<script>
-import path from 'path'
-import { mapActions, mapGetters, mapState } from 'vuex'
+<script lang="ts">
+import { defineComponent, computed } from '@vue/composition-api'
+import { scannerStore } from '../store'
 
-export default {
+type Item = {
+  name: string
+  value: number
+  children: Item[]
+  system: boolean
+}
+
+type Props = {
+  item: Item
+  selectedPaths: string[]
+  colorCategory: Function
+}
+
+export default defineComponent({
   props: {
     item: {
       type: Object,
-      default: () => ({})
-    }
+      required: true,
+    },
+    selectedPaths: {
+      type: Array,
+      required: true,
+    },
+    colorCategory: {
+      type: Function,
+      required: true,
+    },
   },
-  computed: {
-    clickable() {
+  setup(props: Props) {
+    const clickable = computed(() => {
       return (
-        this.item.system || (this.item.children && this.item.children.length)
+        props.item.system || (props.item.children && props.item.children.length)
       )
-    },
-    classes() {
+    })
+    const classes = computed(() => {
       return {
-        clickable: this.clickable
+        clickable,
       }
-    },
-    color() {
-      if (!this.colorTable) {
-        return null
+    })
+    const color = computed(() => {
+      // directory
+      if (props.item.children && props.item.children.length) {
+        return props.colorCategory(props.item.name)
       }
-      if (this.item.children && this.item.children.length) {
-        return this.colorTable(this.item.name)
-      }
-      if (this.selectedNames.length) {
-        return this.colorTable(
-          this.selectedNames[this.selectedNames.length - 1]
+      // file
+      if (props.selectedPaths.length) {
+        return props.colorCategory(
+          props.selectedPaths[props.selectedPaths.length - 1]
         )
       }
-      return this.colorTable(this.node.name)
-    },
-    percentage() {
-      return ((this.item.value / this.totalSize) * 100).toFixed(2)
-    },
-    ...mapState('local', ['selectedNames', 'node', 'colorTable']),
-    ...mapGetters('local', [
-      'totalSize',
-      'rootPathHasNoTrailingSlash',
-      'getPaths'
-    ])
-  },
-  methods: {
-    onClick() {
-      if (this.clickable) {
-        this.$emit('click', this.item)
-      }
-    },
-    onMouseOver() {
-      this.$emit('mouseover', this.item)
-    },
-    onMouseLeave() {
-      this.$emit('mouseleave', this.item)
-    },
-    onContextMenu() {
-      const filepath = this.getPaths(this.item).join(path.sep)
+      // file for root
+      return props.colorCategory(scannerStore.data?.name ?? '')
+    })
+    const percentage = computed(() => {
+      return ((props.item.value / scannerStore.totalSize) * 100).toFixed(2)
+    })
 
-      this.$contextMenu.show([
-        {
-          label: 'Open',
-          click: () => {
-            this.browseDirectory({ filepath })
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Copy path',
-          click: () => {
-            this.writeToClipboard({ filepath })
-          }
-        }
-      ])
-    },
-    ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
-  }
-}
+    return {
+      classes,
+      color,
+      percentage,
+    }
+  },
+})
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .chart-table-row {
   &.clickable {
     cursor: pointer;
   }
-  .square {
+  .color {
     display: inline-block;
     height: 12px;
     width: 12px;

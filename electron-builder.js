@@ -1,17 +1,23 @@
 module.exports = {
-  appId: 'net.fiahfy.electron-disk-analyzer',
+  appId: 'net.fiahfy.uni',
   files: ['app', 'main.js'],
   mac: {
-    target: ['dmg']
+    publish: {
+      provider: 'github',
+    },
   },
   win: {
-    target: ['nsis']
+    publish: {
+      provider: 'github',
+    },
+  },
+  linux: {
+    publish: {
+      provider: 'github',
+    },
   },
   nsis: {
     oneClick: false,
-    allowToChangeInstallationDirectory: true
+    allowToChangeInstallationDirectory: true,
   },
-  publish: {
-    provider: 'github'
-  }
 }

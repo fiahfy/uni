@@ -1,69 +1,182 @@
 <template>
-  <sticky-data-table
+  <v-data-table
     ref="table"
-    class="chart-table"
     :headers="headers"
     :items="items"
-    item-key="name"
-    hide-actions
+    class="chart-table"
+    disable-pagination
+    disable-sort
+    hide-default-footer
     dense
   >
-    <chart-table-header-row
-      slot="headers"
-      slot-scope="props"
-      :headers="props.headers"
-    />
-    <chart-table-row
-      slot="items"
-      slot-scope="props"
-      :item="props.item"
-      @click="onRowClick"
-      @mouseover="onRowMouseOver"
-      @mouseleave="onRowMouseLeave"
-    />
-  </sticky-data-table>
+    <template v-slot:item="props">
+      <chart-table-row
+        :item="props.item"
+        :selected-paths="selectedPaths"
+        :color-category="colorCategory"
+        @click.native="() => handleClickRow(props.item)"
+        @mouseover.native="() => handleMouseOverRow(props.item)"
+        @mouseleave.native="() => handleMouseLeaveRow(props.item)"
+        @contextmenu.native.stop="() => handleContextMenuRow(props.item)"
+      />
+    </template>
+  </v-data-table>
 </template>
 
-<script>
-import ChartTableHeaderRow from './ChartTableHeaderRow'
-import ChartTableRow from './ChartTableRow'
-import StickyDataTable from './StickyDataTable'
-import { mapGetters } from 'vuex'
+<script lang="ts">
+import path from 'path'
+import { remote, clipboard } from 'electron'
+import {
+  defineComponent,
+  computed,
+  ref,
+  onMounted,
+  SetupContext,
+} from '@vue/composition-api'
+import ChartTableRow from '~/components/ChartTableRow.vue'
+import { Node } from '~/models'
+import { scannerStore } from '~/store'
 
-export default {
-  components: {
-    ChartTableHeaderRow,
-    ChartTableRow,
-    StickyDataTable
+const headers = [
+  {
+    text: 'Name',
+    value: 'name',
   },
-  data() {
-    return {
-      headers: [
-        {
-          text: 'Name',
-          value: 'name'
-        },
-        {
-          text: 'Size',
-          value: 'value',
-          width: 150
-        }
+  {
+    text: 'Size',
+    value: 'value',
+    width: 150,
+  },
+]
+
+type Props = {
+  selectedPaths: string[]
+  colorCategory: Function
+}
+
+export default defineComponent({
+  components: {
+    ChartTableRow,
+  },
+  props: {
+    selectedPaths: {
+      type: Array,
+      required: true,
+    },
+    colorCategory: {
+      type: Function,
+      required: true,
+    },
+  },
+  setup(props: Props, context: SetupContext) {
+    const items = computed(() => {
+      return [
+        { system: true, name: '<root>' },
+        { system: true, name: '<parent>' },
+        ...(scannerStore.data
+          ? props.selectedPaths
+              .reduce((carry, name) => {
+                if (!carry) {
+                  return carry
+                }
+                return carry.children.find((c) => c.name === name)!
+              }, scannerStore.data)
+              .children.concat()
+              .sort((a, b) => {
+                return a.value > b.value ? -1 : 1
+              })
+          : []),
       ]
+    })
+
+    const table = ref<Vue>()
+
+    const getPaths = (item: Node) => {
+      let paths = [scannerStore.rootPathHasNoTrailingSlash]
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = [...paths, ...props.selectedPaths]
+        }
+      } else {
+        paths = [...paths, ...props.selectedPaths, item.name]
+      }
+      return paths
+    }
+
+    const handleClickRow = (item: Node) => {
+      context.emit('click:row', item)
+    }
+    const handleMouseOverRow = (item: Node) => {
+      context.emit('mouseover:row', item)
+    }
+    const handleMouseLeaveRow = (item: Node) => {
+      context.emit('mouseleave:row', item)
+    }
+    const handleContextMenuRow = (item: Node) => {
+      const filePath = getPaths(item).join(path.sep)
+
+      context.root.$contextMenu.open([
+        {
+          label: 'Open',
+          click: () => remote.shell.openItem(filePath),
+        },
+        { type: 'separator' },
+        {
+          label: 'Copy path',
+          click: () => clipboard.writeText(filePath),
+        },
+      ])
+    }
+
+    onMounted(() => {
+      const container = (table.value?.$el.querySelector(
+        '.v-data-table__wrapper'
+      ) ?? null) as HTMLDivElement | null
+      if (container) {
+        container.classList.add('scrollbar')
+        // Must set overflow after scrollbar class is added
+        container.style.overflowY = 'scroll'
+      }
+    })
+
+    return {
+      headers,
+      items,
+      table,
+      handleClickRow,
+      handleMouseOverRow,
+      handleMouseLeaveRow,
+      handleContextMenuRow,
     }
   },
-  computed: {
-    ...mapGetters('local', ['items'])
-  },
-  methods: {
-    onRowClick(item) {
-      this.$emit('click:row', item)
-    },
-    onRowMouseOver(item) {
-      this.$emit('mouseover:row', item)
-    },
-    onRowMouseLeave(item) {
-      this.$emit('mouseleave:row', item)
+})
+</script>
+
+<style lang="scss" scoped>
+.chart-table {
+  ::v-deep .v-data-table__wrapper {
+    height: 100%;
+    background: inherit;
+    position: relative;
+    table {
+      table-layout: fixed;
+      background: inherit;
+      > thead {
+        background: inherit;
+        &.v-data-table-header-mobile {
+          display: none;
+        }
+        > tr {
+          background: inherit;
+          > th {
+            background: inherit;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+          }
+        }
+      }
     }
   }
 }
-</script>
+</style>

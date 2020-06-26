@@ -1,24 +1,93 @@
 <template>
-  <v-system-bar v-if="titleBar" class="title-bar" height="22" app status>
-    <v-spacer />
-    <span>{{ title }}</span>
-    <v-spacer />
+  <v-system-bar
+    v-if="titleBar"
+    class="title-bar user-select-none px-0"
+    :app="app"
+    :absolute="!app"
+    height="22"
+    @dblclick="handleDoubleClick"
+  >
+    <v-sheet tile class="fill-height d-flex flex-grow-1 align-center">
+      <v-spacer />
+      <span class="caption text-truncate">Uni</span>
+      <v-spacer />
+    </v-sheet>
   </v-system-bar>
 </template>
 
-<script>
-import { mapGetters, mapState } from 'vuex'
+<script lang="ts">
+import { remote } from 'electron'
+import {
+  defineComponent,
+  reactive,
+  computed,
+  onMounted,
+  onUnmounted,
+} from '@vue/composition-api'
 
-export default {
-  computed: {
-    ...mapState(['title']),
-    ...mapGetters(['titleBar'])
-  }
+type Props = {
+  app: boolean
 }
+
+export default defineComponent({
+  props: {
+    app: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  setup(_props: Props) {
+    const state = reactive({
+      fullScreen: false,
+    })
+
+    const titleBar = computed(() => {
+      return process.platform === 'darwin' && !state.fullScreen
+    })
+
+    // @see https://github.com/electron/electron/issues/16385
+    const handleDoubleClick = () => {
+      const doubleClickAction = remote.systemPreferences.getUserDefault(
+        'AppleActionOnDoubleClick',
+        'string'
+      )
+      const win = remote.getCurrentWindow()
+      if (doubleClickAction === 'Minimize') {
+        win.minimize()
+      } else if (doubleClickAction === 'Maximize') {
+        if (win.isMaximized()) {
+          win.unmaximize()
+        } else {
+          win.maximize()
+        }
+      }
+    }
+    const handleFullScreenChange = () => {
+      state.fullScreen = !!document.fullscreenElement
+    }
+
+    onMounted(() => {
+      document.body.addEventListener('fullscreenchange', handleFullScreenChange)
+    })
+
+    onUnmounted(() => {
+      document.body.removeEventListener(
+        'fullscreenchange',
+        handleFullScreenChange
+      )
+    })
+
+    return {
+      titleBar,
+      handleDoubleClick,
+    }
+  },
+})
 </script>
 
-<style scoped lang="scss">
-.title-bar {
+<style lang="scss" scoped>
+.title-bar > .v-sheet {
+  padding: 0 72px;
   -webkit-app-region: drag;
 }
 </style>

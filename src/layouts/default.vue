@@ -1,49 +1,53 @@
 <template>
   <v-app
-    :dark="darkTheme"
-    @contextmenu.native="onContextMenu"
-    @drop.native.prevent="onDrop"
+    @contextmenu.native="handleContextMenu"
+    @drop.native.prevent="handleDrop"
     @dragover.native.prevent
   >
     <title-bar />
-    <v-content class="fill-height"><router-view /></v-content>
-    <notification-bar />
+    <v-main class="fill-height">
+      <router-view class="fill-height" />
+    </v-main>
     <settings-dialog />
   </v-app>
 </template>
 
-<script>
-import { mapActions, mapState } from 'vuex'
-import NotificationBar from '~/components/NotificationBar'
-import SettingsDialog from '~/components/SettingsDialog'
-import TitleBar from '~/components/TitleBar'
+<script lang="ts">
+import { defineComponent, watch, SetupContext } from '@vue/composition-api'
+import SettingsDialog from '~/components/SettingsDialog.vue'
+import TitleBar from '~/components/TitleBar.vue'
+import { settingsStore } from '~/store'
 
-export default {
+export default defineComponent({
   components: {
-    NotificationBar,
     SettingsDialog,
-    TitleBar
+    TitleBar,
   },
-  computed: {
-    ...mapState('settings', ['darkTheme'])
-  },
-  created() {
-    this.initialize()
-  },
-  methods: {
-    onContextMenu() {
-      this.$contextMenu.show()
-    },
-    onDrop(e) {
-      const files = Array.from(e.dataTransfer.files)
-      if (!files.length) {
-        return
+  setup(_props: {}, context: SetupContext) {
+    const handleContextMenu = () => {
+      context.root.$contextMenu.open()
+    }
+    const handleDrop = (e: DragEvent) => {
+      const files = Array.from(e.dataTransfer?.files ?? [])
+      const filePath = files[0].path
+      if (filePath) {
+        context.root.$eventBus.$emit('change-location', filePath)
       }
-      const dirPath = files[0].path
-      this.scan({ dirPath })
-    },
-    ...mapActions(['initialize']),
-    ...mapActions('local', ['scan'])
-  }
-}
+    }
+
+    watch(
+      () => settingsStore.darkTheme,
+      (darkTheme) => {
+        context.root.$vuetify.theme.dark = darkTheme
+      }
+    )
+
+    context.root.$vuetify.theme.dark = settingsStore.darkTheme
+
+    return {
+      handleContextMenu,
+      handleDrop,
+    }
+  },
+})
 </script>

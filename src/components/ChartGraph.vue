@@ -1,35 +1,83 @@
 <template>
-  <div class="chart-graph pa-3">
-    <div ref="wrapper" class="wrapper fill-height hide-overflow">
+  <div ref="graph" class="chart-graph pa-5">
+    <div ref="wrapper" class="wrapper fill-height overflow-hidden">
       <svg ref="sunburst" />
     </div>
 
-    <div v-if="loading" class="overlay" />
+    <div v-if="state.loading" class="overlay" />
 
     <v-tooltip
-      v-model="tooltip.show"
-      :position-x="tooltip.x"
-      :position-y="tooltip.y"
+      v-model="state.tooltip.show"
+      :position-x="state.tooltip.x"
+      :position-y="state.tooltip.y"
       top
+      transition="no-animation"
     >
-      <p class="ma-0">
-        {{ tooltip.text }}<br />
-        <small>{{ targetSize | readableSize }} ({{ percentage }} %)</small>
-      </p>
+      {{ state.tooltip.text }}<br />
+      <small>{{ state.targetSize | prettyBytes }} ({{ percentage }} %)</small>
     </v-tooltip>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import path from 'path'
-import { mapActions, mapGetters, mapState, mapMutations } from 'vuex'
-import * as d3 from 'd3'
+import { remote, clipboard } from 'electron'
 import { debounce } from 'debounce'
+import * as d3 from 'd3'
+import {
+  defineComponent,
+  computed,
+  ref,
+  reactive,
+  watch,
+  onMounted,
+  onUnmounted,
+  SetupContext,
+} from '@vue/composition-api'
+import { scannerStore } from '~/store'
 
-export default {
-  data() {
-    return {
-      sep: path.sep,
+type Props = {
+  selectedPaths: string[]
+  hoveredPaths: string[]
+}
+
+export default defineComponent({
+  props: {
+    selectedPaths: {
+      type: Array,
+      default: () => [],
+    },
+    hoveredPaths: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props: Props, context: SetupContext) {
+    const state = reactive<{
+      loading: boolean
+      needsUpdate: boolean
+      targetSize: number
+      tooltip: {
+        show: boolean
+        x: number
+        y: number
+        text: string
+      }
+      depth: number
+      resizeObserver?: ResizeObserver
+      debounced?: ReturnType<typeof debounce>
+      svg?: d3.Selection<SVGGElement, unknown, null, undefined>
+      transition?: d3.Transition<any, unknown, null, undefined>
+      width: number
+      height: number
+      radius: number
+      color?: d3.ScaleOrdinal<string, string>
+      x?: d3.ScaleLinear<number, number>
+      y?: d3.ScalePower<number, number>
+      arc?: d3.Arc<any, d3.DefaultArcObject>
+      partition?: d3.PartitionLayout<any>
+      root?: d3.HierarchyNode<any>
+    }>({
       loading: false,
       needsUpdate: false,
       targetSize: 0,
@@ -37,210 +85,102 @@ export default {
         show: false,
         x: 0,
         y: 0,
-        text: ''
-      }
-    }
-  },
-  computed: {
-    percentage() {
-      return ((this.targetSize / this.totalSize) * 100).toFixed(2)
-    },
-    ...mapState('local', ['selectedNames', 'hoveredNames', 'node']),
-    ...mapGetters('local', [
-      'totalSize',
-      'rootPathHasNoTrailingSlash',
-      'getPaths'
-    ])
-  },
-  watch: {
-    node() {
-      if (document.hidden) {
-        this.needsUpdate = true
-      } else {
-        this.update()
-      }
-    }
-  },
-  mounted() {
-    window.addEventListener('visibilitychange', this.onVisibilitychange)
-    this.resizeObserver = new ResizeObserver(this.onResize)
-    this.resizeObserver.observe(this.$refs.wrapper)
-    this.debounced = debounce(() => {
-      this.setup()
-    }, 500)
-    this.debounced()
-  },
-  beforeDestroy() {
-    window.removeEventListener('visibilitychange', this.onVisibilitychange)
-    this.resizeObserver.disconnect()
-  },
-  methods: {
-    onResize() {
-      this.debounced()
-    },
-    onVisibilitychange() {
-      if (!document.hidden && this.needsUpdate) {
-        this.update()
-      }
-    },
-    onMouseOver(d) {
-      if (d.depth === 0) {
-        return
-      }
-      const ancestors = d.ancestors().reverse()
+        text: '',
+      },
+      depth: 0,
+      resizeObserver: undefined,
+      debounced: undefined,
+      svg: undefined,
+      transition: undefined,
+      width: 0,
+      height: 0,
+      radius: 0,
+      color: undefined,
+      x: undefined,
+      y: undefined,
+      arc: undefined,
+      partition: undefined,
+      root: undefined,
+    })
 
-      const hoveredNames = ancestors
-        .slice(this.selectedNames.length + 1)
-        .map((d) => d.data.name)
-      this.setHoveredNames({ hoveredNames })
+    const percentage = computed(() => {
+      return ((state.targetSize / scannerStore.totalSize) * 100).toFixed(2)
+    })
+    const node = computed(() => {
+      return scannerStore.data
+    })
 
-      this.targetSize = d.value
+    const graph = ref<HTMLDivElement>()
+    const wrapper = ref<HTMLDivElement>()
+    const sunburst = ref<any>()
 
-      this.svg
-        .selectAll('path')
-        .style('opacity', 0.3)
-        .filter((d) => ancestors.indexOf(d) >= 0)
-        .style('opacity', 1)
+    const setup = () => {
+      const g = graph.value?.querySelector('svg g')
+      g && g.remove()
 
-      if (!d3.event) {
-        return
-      }
+      sunburst.value!.setAttribute('width', 0)
+      sunburst.value!.setAttribute('height', 0)
 
-      this.tooltip.show = true
-      this.tooltip.x = d3.event.clientX
-      this.tooltip.y = d3.event.clientY
-      this.tooltip.text = d.data.name
-    },
-    onMouseLeave() {
-      this.setHoveredNames({ hoveredNames: [] })
-      this.targetSize = this.totalSize
+      state.width = wrapper.value!.offsetWidth
+      state.height = wrapper.value!.offsetHeight
+      state.radius = Math.min(state.width, state.height) / 2
+      state.color = d3.scaleOrdinal(d3.schemeSet3)
+      context.emit('change:color-category', state.color)
 
-      this.svg.selectAll('path').style('opacity', 1)
-
-      this.tooltip.show = false
-    },
-    onContextMenu(d) {
-      if (d.depth === 0) {
-        return
-      }
-      const ancestors = d.ancestors().reverse()
-      const filepath = [
-        this.rootPathHasNoTrailingSlash,
-        ...this.selectedNames,
-        ...ancestors
-          .slice(this.selectedNames.length + 1)
-          .map((d) => d.data.name)
-      ].join(path.sep)
-
-      this.$contextMenu.show([
-        {
-          label: 'Open',
-          click: () => {
-            this.browseDirectory({ filepath })
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Copy path',
-          click: () => {
-            this.writeToClipboard({ filepath })
-          }
-        }
-      ])
-    },
-    onClick(d) {
-      if (!d.children) {
-        return
-      }
-      if (this.depth === d.depth && d.parent) {
-        d = d.parent
-      }
-      const ancestors = d.ancestors().reverse()
-
-      this.depth = d.depth
-      const selectedNames = ancestors.slice(1).map((d) => d.data.name)
-      this.setSelectedNames({ selectedNames })
-      this.setHoveredNames({ hoveredNames: [] })
-
-      this.svg
-        .transition(this.transition)
-        .tween('scale', () => {
-          const xd = d3.interpolate(this.x.domain(), [d.x0, d.x1])
-          const yd = d3.interpolate(this.y.domain(), [d.y0, 1])
-          const yr = d3.interpolate(this.y.range(), [0, this.radius])
-          return (t) => {
-            this.x.domain(xd(t))
-            this.y.domain(yd(t)).range(yr(t))
-          }
-        })
-        .selectAll('path')
-        .attrTween('d', (d) => () => this.arc(d))
-    },
-    setup() {
-      if (this.$el.querySelector('svg g')) {
-        this.$el.querySelector('svg g').remove()
-      }
-
-      this.$refs.sunburst.setAttribute('width', 0)
-      this.$refs.sunburst.setAttribute('height', 0)
-
-      this.width = this.$refs.wrapper.offsetWidth
-      this.height = this.$refs.wrapper.offsetHeight
-      this.radius = Math.min(this.width, this.height) / 2
-      this.color = d3.scaleOrdinal(d3.schemePaired)
-      this.setColorTable({ colorTable: this.color })
-
-      this.x = d3.scaleLinear().range([0, 2 * Math.PI])
-      this.y = d3.scaleSqrt().range([0, this.radius])
-      this.arc = d3
+      state.x = d3.scaleLinear().range([0, 2 * Math.PI])
+      state.y = d3.scaleSqrt().range([0, state.radius])
+      state.arc = d3
         .arc()
-        .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x0))))
-        .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, this.x(d.x1))))
-        .innerRadius((d) => Math.max(0, this.y(d.y0)))
-        .outerRadius((d) => Math.max(0, this.y(d.y1)))
+        .startAngle((d: any) =>
+          Math.max(0, Math.min(2 * Math.PI, state.x!(d.x0)))
+        )
+        .endAngle((d: any) =>
+          Math.max(0, Math.min(2 * Math.PI, state.x!(d.x1)))
+        )
+        .innerRadius((d: any) => Math.max(0, state.y!(d.y0)))
+        .outerRadius((d: any) => Math.max(0, state.y!(d.y1)))
 
-      this.svg = d3
-        .select(this.$el.querySelector('svg'))
-        .attr('width', this.width)
-        .attr('height', this.height)
+      state.svg = d3
+        .select(graph.value!.querySelector('svg'))
+        .attr('width', state.width)
+        .attr('height', state.height)
         .append('g')
-        .attr('transform', `translate(${this.width / 2},${this.height / 2})`)
+        .attr('transform', `translate(${state.width / 2},${state.height / 2})`)
 
-      this.partition = d3.partition()
+      state.partition = d3.partition()
 
-      this.transition = d3.transition().duration(300)
+      state.transition = d3.transition().duration(300)
 
-      this.update()
-    },
-    update() {
-      this.targetSize = 0
-      this.setHoveredNames({ hoveredNames: [] })
-      this.setSelectedNames({ selectedNames: [] })
+      update()
+    }
+    const update = () => {
+      state.targetSize = 0
+      context.emit('change:selected-paths', [])
+      context.emit('change:hovered-paths', [])
 
-      this.loading = true
+      state.loading = true
 
-      if (!this.node) {
-        Array.from(this.$el.querySelectorAll('svg path')).forEach((el) =>
+      if (!node.value) {
+        Array.from(graph.value!.querySelectorAll('svg path')).forEach((el) =>
           el.remove()
         )
-        this.loading = false
+        state.loading = false
         return
       }
+      const root = d3.hierarchy(node.value)
 
-      const root = d3.hierarchy(this.node)
+      state.root = root
+      state.depth = 0
+      state.targetSize = root.value ?? 0
 
-      this.root = root
-      this.depth = 0
-      this.targetSize = root.value
-
-      const path = this.svg
-        .selectAll('path')
-        .data(this.partition(root).descendants(), (d) => d)
+      const path = state
+        .svg!.selectAll('path')
+        .data(state.partition!(root).descendants(), (d: any) => d)
 
       path
         .exit()
         .style('opacity', 1)
-        .transition(this.transition)
+        .transition(state.transition!)
         .style('opacity', 0)
         .remove()
 
@@ -248,78 +188,219 @@ export default {
         .enter()
         .append('path')
         // .merge(path)
-        .attr('d', this.arc)
-        .style('fill', (d) =>
+        .attr('d', state.arc as any)
+        .style('fill', (d: any) =>
           d.depth === 0
             ? 'transparent'
-            : this.color((d.children ? d : d.parent).data.name)
+            : state.color!((d.children ? d : d.parent).data.name)
         )
         .style('fill-rule', 'evenodd')
-        .style('cursor', (d) => (d.children ? 'pointer' : 'auto'))
+        .style('cursor', (d: any) => (d.children ? 'pointer' : 'auto'))
         .style('opacity', 0)
-        .on('mouseover', this.onMouseOver)
-        .on('mouseleave', this.onMouseLeave)
-        .on('contextmenu', this.onContextMenu)
-        .on('click', this.onClick)
-        .transition(this.transition)
+        .on('mousemove', handleMouseMove)
+        .on('mouseleave', handleMouseLeave)
+        .on('contextmenu', handleContextMenu)
+        .on('click', handleClick)
+        .transition(state.transition!)
         .style('opacity', 1)
 
-      this.onClick(root)
+      handleClick(root)
 
-      this.loading = false
-      this.needsUpdate = false
-    },
-    moveTo(item) {
-      const node = this.getPaths(item)
+      state.loading = false
+      state.needsUpdate = false
+    }
+    const getPaths = (item: any) => {
+      let paths = [scannerStore.rootPathHasNoTrailingSlash]
+      if (item.system) {
+        if (item.name === '<parent>') {
+          paths = [...paths, ...props.selectedPaths]
+        }
+      } else {
+        paths = [...paths, ...props.selectedPaths, item.name]
+      }
+      return paths
+    }
+    const moveTo = (item: any) => {
+      const node = getPaths(item)
         .slice(1)
-        .reduce((carry, name) => {
+        .reduce((carry: any, name: any) => {
           if (!carry) {
             return carry
           }
-          return carry.children.find((c) => c.data.name === name)
-        }, this.root)
+          return carry.children.find((c: any) => c.data.name === name)
+        }, state.root)
 
-      this.onClick(node)
-    },
-    hover(item) {
-      const node = this.getPaths(item)
+      handleClick(node)
+    }
+    const hover = (item: any) => {
+      const node = getPaths(item)
         .slice(1)
-        .reduce((carry, name) => {
+        .reduce((carry: any, name: any) => {
           if (!carry) {
             return carry
           }
-          return carry.children.find((c) => c.data.name === name)
-        }, this.root)
+          return carry.children.find((c: any) => c.data.name === name)
+        }, state.root)
 
-      this.onMouseOver(node)
-    },
-    unhover() {
-      this.onMouseLeave()
-    },
-    changeDepth(index) {
-      const node = [...this.selectedNames, ...this.hoveredNames]
+      handleMouseMove(node)
+    }
+    const unhover = () => {
+      handleMouseLeave()
+    }
+    const changeDepth = (index: number) => {
+      const node = [...props.selectedPaths, ...props.hoveredPaths]
         .slice(0, index)
-        .reduce((carry, name) => {
+        .reduce((carry: any, name: any) => {
           if (!carry) {
             return carry
           }
-          return carry.children.find((c) => c.data.name === name)
-        }, this.root)
+          return carry.children.find((c: any) => c.data.name === name)
+        }, state.root)
 
-      if (this.depth === node.depth) {
+      if (state.depth === node.depth) {
         return
       }
 
-      this.onClick(node)
-    },
-    ...mapMutations('local', [
-      'setSelectedNames',
-      'setHoveredNames',
-      'setColorTable'
-    ]),
-    ...mapActions('local', ['browseDirectory', 'writeToClipboard'])
-  }
-}
+      handleClick(node)
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && state.needsUpdate) {
+        update()
+      }
+    }
+    const handleResize = () => {
+      state.debounced!()
+    }
+    const handleMouseMove = (d: any) => {
+      if (d.depth === 0) {
+        return
+      }
+      const ancestors = d.ancestors().reverse()
+
+      const hoveredPaths = ancestors
+        .slice(props.selectedPaths.length + 1)
+        .map((d: any) => d.data.name)
+      context.emit('change:hovered-paths', hoveredPaths)
+
+      state.targetSize = d.value
+
+      state
+        .svg!.selectAll('path')
+        .style('opacity', 0.5)
+        .filter((d) => ancestors.includes(d))
+        .style('opacity', 1)
+
+      if (!d3.event) {
+        return
+      }
+
+      state.tooltip.show = true
+      state.tooltip.x = d3.event.clientX
+      state.tooltip.y = d3.event.clientY
+      state.tooltip.text = d.data.name
+    }
+    const handleMouseLeave = () => {
+      context.emit('change:hovered-paths', [])
+      state.targetSize = scannerStore.totalSize
+
+      state.svg!.selectAll('path').style('opacity', 1)
+
+      state.tooltip.show = false
+    }
+    const handleContextMenu = (d: any) => {
+      if (d.depth === 0) {
+        return
+      }
+      const ancestors = d.ancestors().reverse()
+      const filePath = [
+        scannerStore.rootPathHasNoTrailingSlash,
+        ...props.selectedPaths,
+        ...ancestors
+          .slice(props.selectedPaths.length + 1)
+          .map((d: any) => d.data.name),
+      ].join(path.sep)
+
+      context.root.$contextMenu.open([
+        {
+          label: 'Open',
+          click: () => remote.shell.openItem(filePath),
+        },
+        { type: 'separator' },
+        {
+          label: 'Copy Path',
+          click: () => clipboard.writeText(filePath),
+        },
+      ])
+    }
+    const handleClick = (d: any) => {
+      if (!d.children) {
+        return
+      }
+      if (state.depth === d.depth && d.parent) {
+        d = d.parent
+      }
+      const ancestors = d.ancestors().reverse()
+
+      state.depth = d.depth
+      const selectedPaths = ancestors.slice(1).map((d: any) => d.data.name)
+      context.emit('change:selected-paths', selectedPaths)
+      context.emit('change:hovered-paths', [])
+
+      state
+        .svg!.transition(state.transition!)
+        .tween('scale', () => {
+          const xd = d3.interpolate(state.x!.domain(), [d.x0, d.x1])
+          const yd = d3.interpolate(state.y!.domain(), [d.y0, 1])
+          const yr = d3.interpolate(state.y!.range(), [0, state.radius])
+          return (t: any) => {
+            state.x!.domain(xd(t))
+            state.y!.domain(yd(t)).range(yr(t))
+          }
+        })
+        .selectAll('path')
+        .attrTween('d', (d: any) => () => state.arc!(d) as any)
+    }
+
+    watch(
+      () => node.value,
+      () => {
+        if (document.hidden) {
+          state.needsUpdate = true
+        } else {
+          update()
+        }
+      }
+    )
+
+    onMounted(() => {
+      window.addEventListener('visibilitychange', handleVisibilityChange)
+      state.resizeObserver = new ResizeObserver(handleResize)
+      wrapper.value && state.resizeObserver.observe(wrapper.value)
+      state.debounced = debounce(() => {
+        setup()
+      }, 500)
+      state.debounced()
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange)
+      state.resizeObserver!.disconnect()
+    })
+
+    return {
+      state,
+      percentage,
+      graph,
+      wrapper,
+      sunburst,
+      moveTo,
+      hover,
+      unhover,
+      changeDepth,
+    }
+  },
+})
 </script>
 
 <style lang="scss">
@@ -331,7 +412,7 @@ svg path {
 }
 </style>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .chart-graph {
   position: relative;
   > .wrapper > svg {
