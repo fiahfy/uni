@@ -55,7 +55,7 @@ export default class ScannerModule extends VuexModule {
 
   get getScanTime() {
     return () => {
-      return this.status === 'running' ? this.getElapsedTime() : this.totalTime
+      return this.scanning ? this.getElapsedTime() : this.totalTime
     }
   }
 

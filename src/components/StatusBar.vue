@@ -49,9 +49,9 @@ export default defineComponent({
         case 'succeeded':
           return `Scan completed "${scannerStore.rootPath}"`
         case 'cancelling':
-          return `Cancelling... "${scannerStore.rootPath}"`
+          return `Scan cancelling... "${scannerStore.rootPath}"`
         case 'cancelled':
-          return `Cancelled "${scannerStore.rootPath}"`
+          return `Scan cancelled "${scannerStore.rootPath}"`
         case 'failed':
           return `${scannerStore.message} "${scannerStore.rootPath}"`
         case 'ready':
