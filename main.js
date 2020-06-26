@@ -175,6 +175,10 @@ const createWindow = async () => {
   mainWindow.on('closed', () => (mainWindow = null))
 }
 
+app.setAboutPanelOptions({
+  credits: 'Icons made by Freepik from www.flaticon.com',
+})
+
 app.on('ready', createWindow)
 app.on('activate', () => mainWindow === null && createWindow())
 app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit())

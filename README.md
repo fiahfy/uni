@@ -4,7 +4,8 @@
 
 > Simple Disk Usage Analyzer based on Electron.  
 > "Uni" means sea urchin in Japanese.  
-> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar).
+> Inspired from [Space Radar Electron](https://github.com/zz85/space-radar).  
+> Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
 
 ## Features
 
