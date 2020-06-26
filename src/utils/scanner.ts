@@ -83,12 +83,12 @@ const sum = (node: Node) => {
   )
 }
 
-const reduce = (limit: number, node: Node) => {
+const reduce = (node: Node, limit: number, root: boolean) => {
   if (!node.children) {
     return
   }
-  node.children = node.children.filter((child) => child.value > limit)
-  node.children.forEach((child) => reduce(limit, child))
+  node.children = node.children.filter((child) => root || child.value > limit)
+  node.children.forEach((child) => reduce(child, limit, false))
 }
 
 const scan = async (filePath: string) => {
@@ -124,7 +124,7 @@ const getCalculatedNode = () => {
   const root = clone(node)
   sum(root)
   const limit = root.value * 0.001
-  reduce(limit, root)
+  reduce(root, limit, true)
   return root
 }
 
