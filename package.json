@@ -1,7 +1,7 @@
 {
   "name": "uni",
   "description": "Simple Disk Usage Analyzer based on Electron",
-  "version": "0.0.11",
+  "version": "0.1.0",
   "author": {
     "name": "fiahfy",
     "email": "d.fiahfy@gmail.com",
