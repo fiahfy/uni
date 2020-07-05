@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-const clone = require('@fiahfy/simple-clone').default
+import { clone } from '@fiahfy/simple-clone'
 
 const progressInterval = 100
 
