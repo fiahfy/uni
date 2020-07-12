@@ -5,7 +5,7 @@
         <span v-if="item.system" class="primary--text" v-text="item.name" />
         <template v-else>
           <span class="color mr-1" :style="{ 'background-color': color }" />
-          <span class="ellipsis spacer" v-text="item.name" />
+          <span class="text-truncate" :title="item.name" v-text="item.name" />
         </template>
       </v-layout>
     </td>
