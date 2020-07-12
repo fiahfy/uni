@@ -7,66 +7,58 @@
     transition="dialog-bottom-transition"
     eager
   >
-    <v-card flat tile>
-      <div class="d-flex flex-column fill-height">
-        <title-bar :app="false" />
-        <v-main class="fill-height px-0">
-          <div class="d-flex flex-column fill-height">
-            <v-toolbar flat dense>
-              <v-btn title="Close" icon @click="handleClickClose">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-              <v-toolbar-title>Settings</v-toolbar-title>
-            </v-toolbar>
-            <v-container fill-height align-start overflow-y-auto>
-              <div class="d-flex flex-column flex-grow-1">
-                <v-subheader class="pl-0 text-uppercase">General</v-subheader>
-                <v-checkbox
-                  v-model="darkTheme"
-                  class="mt-0"
-                  label="Dark Theme"
-                />
+    <v-card flat tile class="d-flex flex-column fill-height">
+      <title-bar :app="false" />
+      <v-toolbar flat dense>
+        <v-btn title="Close" icon @click="handleClickClose">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-toolbar-title>Settings</v-toolbar-title>
+      </v-toolbar>
+      <div class="fill-height overflow-y-auto">
+        <v-container>
+          <div class="d-flex flex-column">
+            <v-subheader class="pl-0 text-uppercase">General</v-subheader>
+            <v-checkbox v-model="darkTheme" class="mt-0" label="Dark Theme" />
 
-                <v-subheader class="pl-0 text-uppercase">Scan</v-subheader>
-                <v-text-field
-                  v-model="refreshInterval"
-                  type="number"
-                  required
-                  label="Refresh Interval"
-                  min="1000"
-                  step="1000"
-                  suffix="ms"
-                />
+            <v-subheader class="pl-0 text-uppercase">Scan</v-subheader>
+            <v-text-field
+              v-model="refreshInterval"
+              type="number"
+              required
+              label="Refresh Interval"
+              min="1000"
+              step="1000"
+              suffix="ms"
+            />
 
-                <v-list subheader dense>
-                  <v-subheader class="pl-0">Ignored Folders</v-subheader>
-                  <template v-if="ignoredPaths.length">
-                    <v-list-item v-for="path of ignoredPaths" :key="path">
-                      <v-list-item-content>
-                        <v-list-item-title :title="path" v-text="path" />
-                      </v-list-item-content>
-                      <v-list-item-action class="my-0">
-                        <v-btn icon @click="() => handleClickListItem(path)">
-                          <v-icon>mdi-delete</v-icon>
-                        </v-btn>
-                      </v-list-item-action>
-                    </v-list-item>
-                  </template>
-                  <v-list-item v-else>
-                    <v-list-item-content>
-                      <v-list-item-title class="caption">
-                        No folders
-                      </v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-                <v-btn color="primary" depressed @click="handleClickAdd">
-                  Add Folder
-                </v-btn>
-              </div>
-            </v-container>
+            <v-list subheader dense>
+              <v-subheader class="pl-0">Ignored Folders</v-subheader>
+              <template v-if="ignoredPaths.length">
+                <v-list-item v-for="path of ignoredPaths" :key="path">
+                  <v-list-item-content>
+                    <v-list-item-title :title="path" v-text="path" />
+                  </v-list-item-content>
+                  <v-list-item-action class="my-0">
+                    <v-btn icon @click="() => handleClickListItem(path)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+              <v-list-item v-else>
+                <v-list-item-content>
+                  <v-list-item-title class="caption">
+                    No folders
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+            <v-btn color="primary" depressed @click="handleClickAdd">
+              Add Folder
+            </v-btn>
           </div>
-        </v-main>
+        </v-container>
       </div>
     </v-card>
   </v-dialog>
@@ -160,9 +152,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.v-card {
-  height: 100% !important;
-}
-</style>

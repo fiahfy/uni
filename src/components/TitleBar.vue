@@ -3,7 +3,6 @@
     v-if="titleBar"
     class="title-bar user-select-none px-0"
     :app="app"
-    :absolute="!app"
     height="22"
     @dblclick="handleDoubleClick"
   >
