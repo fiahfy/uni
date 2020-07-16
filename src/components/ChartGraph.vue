@@ -16,6 +16,16 @@
       {{ state.tooltip.text }}<br />
       <small>{{ state.targetSize | prettyBytes }} ({{ percentage }} %)</small>
     </v-tooltip>
+
+    <v-snackbar v-model="state.needsToRefresh" timeout="-1">
+      Need to Refresh
+
+      <template v-slot:action="{ attrs }">
+        <v-btn text v-bind="attrs" @click="handleRefresh">
+          Refresh
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -55,7 +65,7 @@ export default defineComponent({
   setup(props: Props, context: SetupContext) {
     const state = reactive<{
       loading: boolean
-      needsUpdate: boolean
+      needsToRefresh: boolean
       targetSize: number
       tooltip: {
         show: boolean
@@ -79,7 +89,7 @@ export default defineComponent({
       root?: d3.HierarchyNode<any>
     }>({
       loading: false,
-      needsUpdate: false,
+      needsToRefresh: false,
       targetSize: 0,
       tooltip: {
         show: false,
@@ -180,6 +190,7 @@ export default defineComponent({
       path
         .exit()
         .style('opacity', 1)
+        .interrupt()
         .transition(state.transition!)
         .style('opacity', 0)
         .remove()
@@ -201,13 +212,14 @@ export default defineComponent({
         .on('mouseleave', handleMouseLeave)
         .on('contextmenu', handleContextMenu)
         .on('click', handleClick)
+        .interrupt()
         .transition(state.transition!)
         .style('opacity', 1)
 
       handleClick(root)
 
       state.loading = false
-      state.needsUpdate = false
+      state.needsToRefresh = false
     }
     const getPaths = (item: any) => {
       let paths = [scannerStore.rootPathHasNoTrailingSlash]
@@ -265,7 +277,7 @@ export default defineComponent({
     }
 
     const handleVisibilityChange = () => {
-      if (!document.hidden && state.needsUpdate) {
+      if (state.needsToRefresh && !document.hidden && state.depth === 0) {
         update()
       }
     }
@@ -361,14 +373,17 @@ export default defineComponent({
         .selectAll('path')
         .attrTween('d', (d: any) => () => state.arc!(d) as any)
     }
+    const handleRefresh = () => {
+      update()
+    }
 
     watch(
       () => node.value,
       () => {
-        if (document.hidden) {
-          state.needsUpdate = true
-        } else {
+        if (!state.needsToRefresh && !document.hidden && state.depth === 0) {
           update()
+        } else {
+          state.needsToRefresh = true
         }
       }
     )
@@ -398,6 +413,7 @@ export default defineComponent({
       hover,
       unhover,
       changeDepth,
+      handleRefresh,
     }
   },
 })
