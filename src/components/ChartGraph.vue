@@ -159,16 +159,16 @@ export default defineComponent({
 
       state.partition = d3.partition()
 
-      state.transition = d3.transition().duration(300)
+      state.transition = d3.transition().duration(0)
 
       update()
     }
     const update = () => {
+      state.loading = true
+
       state.targetSize = 0
       context.emit('change:selected-paths', [])
       context.emit('change:hovered-paths', [])
-
-      state.loading = true
 
       if (!node.value) {
         Array.from(graph.value!.querySelectorAll('svg path')).forEach((el) =>
@@ -182,6 +182,10 @@ export default defineComponent({
       state.root = root
       state.depth = 0
       state.targetSize = root.value ?? 0
+
+      if (!state.svg) {
+        return
+      }
 
       const path = state
         .svg!.selectAll('path')
@@ -359,6 +363,7 @@ export default defineComponent({
       context.emit('change:selected-paths', selectedPaths)
       context.emit('change:hovered-paths', [])
 
+      d3.interrupt(graph.value!.querySelector('svg g'))
       state
         .svg!.transition(state.transition!)
         .tween('scale', () => {
