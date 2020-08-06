@@ -3,7 +3,7 @@ import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import { Node } from '~/models'
 import { settingsStore } from '~/store'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const Worker = require('~/workers/scanner.worker.ts')
+const Worker = require('~/workers/scanner.worker.ts').default
 
 const worker = new Worker()
 
