@@ -41,32 +41,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed } from '@vue/composition-api'
-import ChartCard from '~/components/ChartCard.vue'
+import { defineComponent, ref, reactive, computed } from 'nuxt-composition-api'
 import ChartGraph from '~/components/ChartGraph.vue'
-import ChartTable from '~/components/ChartTable.vue'
-import StatusBar from '~/components/StatusBar.vue'
-import Toolbar from '~/components/Toolbar.vue'
 import { Node } from '~/models'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
-  components: {
-    ChartCard,
-    ChartGraph,
-    ChartTable,
-    StatusBar,
-    Toolbar,
-  },
-  setup(_props: {}) {
+  setup() {
     const state = reactive<{
       selectedPaths: string[]
       hoveredPaths: string[]
-      colorCategory: Function
+      colorCategory?: d3.ScaleOrdinal<string, string>
     }>({
       selectedPaths: [],
       hoveredPaths: [],
-      colorCategory: () => {},
+      colorCategory: undefined,
     })
 
     const data = computed(() => scannerStore.data)
@@ -85,7 +74,9 @@ export default defineComponent({
     const handleChangeHoveredPaths = (paths: string[]) => {
       state.hoveredPaths = paths
     }
-    const handleChangeColorCategory = (colorCategory: Function) => {
+    const handleChangeColorCategory = (
+      colorCategory: d3.ScaleOrdinal<string, string>
+    ) => {
       state.colorCategory = colorCategory
     }
     const handleClickRow = (item: Node) => {
@@ -94,7 +85,7 @@ export default defineComponent({
     const handleMouseOverRow = (item: Node) => {
       graph.value && graph.value.hover(item)
     }
-    const handleMouseLeaveRow = (_item: Node) => {
+    const handleMouseLeaveRow = () => {
       graph.value && graph.value.unhover()
     }
 

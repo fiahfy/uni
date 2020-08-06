@@ -1,6 +1,4 @@
-import pkg from './package'
-
-module.exports = {
+export default {
   /*
    ** Build configuration
    */
@@ -21,9 +19,14 @@ module.exports = {
   },
 
   /*
-   ** Build modules
+   ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build'],
+  buildModules: ['@nuxt/typescript-build', 'nuxt-composition-api'],
+
+  /*
+   ** Auto import components
+   */
+  components: true,
 
   /*
    ** Global CSS
@@ -50,12 +53,12 @@ module.exports = {
    ** Headers of the page
    */
   head: {
-    title: pkg.productName,
+    title: process.env.npm_package_productName,
     meta: [{ hid: 'charset', charset: 'utf-8' }],
   },
 
   /*
-   ** SPA or Universal
+   ** Nuxt rendering mode
    */
   mode: 'spa',
 
@@ -95,7 +98,6 @@ module.exports = {
     '~/plugins/event-bus',
     '~/plugins/ipc',
     '~/plugins/pretty-bytes',
-    '~/plugins/vue-composition-api',
     '~/plugins/vuex-persistedstate',
   ],
 

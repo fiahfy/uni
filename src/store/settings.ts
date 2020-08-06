@@ -11,17 +11,17 @@ export default class SettingsModule extends VuexModule {
   ignoredPaths: string[] = []
 
   @Mutation
-  setDarkTheme({ darkTheme }: { darkTheme: boolean }) {
+  setDarkTheme({ darkTheme }: { darkTheme: boolean }): void {
     this.darkTheme = darkTheme
   }
 
   @Mutation
-  setRefreshInterval({ refreshInterval }: { refreshInterval: number }) {
+  setRefreshInterval({ refreshInterval }: { refreshInterval: number }): void {
     this.refreshInterval = refreshInterval
   }
 
   @Mutation
-  addIgnoredPaths({ ignoredPaths }: { ignoredPaths: string[] }) {
+  addIgnoredPaths({ ignoredPaths }: { ignoredPaths: string[] }): void {
     for (const ignoredPath of ignoredPaths) {
       if (!this.ignoredPaths.includes(ignoredPath)) {
         this.ignoredPaths = [...this.ignoredPaths, ignoredPath]
@@ -30,7 +30,7 @@ export default class SettingsModule extends VuexModule {
   }
 
   @Mutation
-  removeIgnoredPath({ ignoredPath }: { ignoredPath: string }) {
+  removeIgnoredPath({ ignoredPath }: { ignoredPath: string }): void {
     this.ignoredPaths = this.ignoredPaths.filter((path) => path !== ignoredPath)
   }
 }

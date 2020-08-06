@@ -30,6 +30,7 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import path from 'path'
 import { remote, clipboard } from 'electron'
 import { debounce } from 'debounce'
@@ -43,7 +44,7 @@ import {
   onMounted,
   onUnmounted,
   SetupContext,
-} from '@vue/composition-api'
+} from 'nuxt-composition-api'
 import { scannerStore } from '~/store'
 
 type Props = {

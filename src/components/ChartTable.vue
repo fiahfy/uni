@@ -32,8 +32,7 @@ import {
   ref,
   onMounted,
   SetupContext,
-} from '@vue/composition-api'
-import ChartTableRow from '~/components/ChartTableRow.vue'
+} from 'nuxt-composition-api'
 import { Node } from '~/models'
 import { scannerStore } from '~/store'
 
@@ -51,13 +50,10 @@ const headers = [
 
 type Props = {
   selectedPaths: string[]
-  colorCategory: Function
+  colorCategory: d3.ScaleOrdinal<string, string>
 }
 
 export default defineComponent({
-  components: {
-    ChartTableRow,
-  },
   props: {
     selectedPaths: {
       type: Array,
@@ -65,29 +61,32 @@ export default defineComponent({
     },
     colorCategory: {
       type: Function,
-      required: true,
     },
   },
   setup(props: Props, context: SetupContext) {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const items = computed(() => {
+      let nodes = []
+      if (scannerStore.data) {
+        nodes = props.selectedPaths
+          .reduce((carry, name) => {
+            if (!carry) {
+              return carry
+            }
+            return carry.children.find((c: Node) => c.name === name)
+          }, scannerStore.data as any)
+          .children.concat()
+          .sort((a: any, b: any) => {
+            return a.value > b.value ? -1 : 1
+          })
+      }
       return [
         { system: true, name: '<root>' },
         { system: true, name: '<parent>' },
-        ...(scannerStore.data
-          ? props.selectedPaths
-              .reduce((carry, name) => {
-                if (!carry) {
-                  return carry
-                }
-                return carry.children.find((c) => c.name === name)!
-              }, scannerStore.data)
-              .children.concat()
-              .sort((a, b) => {
-                return a.value > b.value ? -1 : 1
-              })
-          : []),
+        ...nodes,
       ]
     })
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     const table = ref<Vue>()
 

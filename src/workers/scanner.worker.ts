@@ -19,7 +19,7 @@ const isDir = (filePath: string) => {
   return fs.lstatSync(filePath).isDirectory()
 }
 
-const ctx: Worker = self as any
+const ctx: Worker = self as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
 ctx.onmessage = async ({ data: { id, data } }) => {
   switch (id) {
@@ -38,7 +38,7 @@ ctx.onmessage = async ({ data: { id, data } }) => {
 
       const interval = Math.max(minRefreshInterval, Number(refreshInterval))
       let refreshTime = Date.now() + interval
-      scanner.on('progress', (filePath: string) => {
+      scanner.on('progress', (filePath?: string) => {
         ctx.postMessage({ id: 'progress', data: filePath })
         const now = Date.now()
         if (now > refreshTime) {

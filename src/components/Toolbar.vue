@@ -46,11 +46,11 @@ import {
   onMounted,
   onUnmounted,
   SetupContext,
-} from '@vue/composition-api'
+} from 'nuxt-composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
-  setup(_props: {}, context: SetupContext) {
+  setup(_props: unknown, context: SetupContext) {
     const location = computed({
       get: () => {
         return scannerStore.location

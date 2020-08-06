@@ -19,11 +19,11 @@ import {
   reactive,
   computed,
   onMounted,
-} from '@vue/composition-api'
+} from 'nuxt-composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
-  setup(_props: {}) {
+  setup() {
     const state = reactive({
       scanTime: 0,
     })

@@ -2,6 +2,7 @@ import path from 'path'
 import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import { Node } from '~/models'
 import { settingsStore } from '~/store'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Worker = require('~/workers/scanner.worker.ts')
 
 const worker = new Worker()
@@ -29,22 +30,22 @@ export default class ScannerModule extends VuexModule {
   endTime = 0
   data: Node | null = null
 
-  get scanning() {
+  get scanning(): boolean {
     return ['running', 'cancelling'].includes(this.status)
   }
 
-  get totalTime() {
+  get totalTime(): number {
     if (!this.startTime || !this.endTime) {
       return 0
     }
     return this.endTime - this.startTime
   }
 
-  get totalSize() {
+  get totalSize(): number {
     return this.data?.value ?? 0
   }
 
-  get rootPathHasNoTrailingSlash() {
+  get rootPathHasNoTrailingSlash(): string {
     // Remove trailing seperator
     const rootPath = this.rootPath
     if (rootPath && rootPath.slice(-1) === path.sep) {
@@ -54,26 +55,26 @@ export default class ScannerModule extends VuexModule {
   }
 
   get getScanTime() {
-    return () => {
+    return (): number => {
       return this.scanning ? this.getElapsedTime() : this.totalTime
     }
   }
 
   get getElapsedTime() {
-    return () => {
+    return (): number => {
       return this.startTime ? new Date().getTime() - this.startTime : 0
     }
   }
 
   @Action
-  initialize() {
+  initialize(): void {
     if (this.scanning) {
       this.setStatus({ status: 'ready' })
     }
   }
 
   @Action
-  run() {
+  run(): void {
     if (this.scanning) {
       return
     }
@@ -86,7 +87,7 @@ export default class ScannerModule extends VuexModule {
     worker.onmessage = ({
       data: { id, data },
     }: {
-      data: { id: string; data: any }
+      data: { id: string; data: any } // eslint-disable-line @typescript-eslint/no-explicit-any
     }) => {
       switch (id) {
         case 'progress':
@@ -129,48 +130,48 @@ export default class ScannerModule extends VuexModule {
   }
 
   @Action
-  cancel() {
+  cancel(): void {
     this.setStatus({ status: 'cancelling' })
     worker.postMessage({ id: 'cancel' })
   }
 
   @Mutation
-  setStatus({ status }: { status: Status }) {
+  setStatus({ status }: { status: Status }): void {
     this.status = status
   }
 
   @Mutation
-  setMessage({ message }: { message: string }) {
+  setMessage({ message }: { message: string }): void {
     this.message = message
   }
 
   @Mutation
-  setLocation({ location }: { location: string }) {
+  setLocation({ location }: { location: string }): void {
     this.location = location
   }
 
   @Mutation
-  setRootPath({ rootPath }: { rootPath: string }) {
+  setRootPath({ rootPath }: { rootPath: string }): void {
     this.rootPath = rootPath
   }
 
   @Mutation
-  setProgressPath({ progressPath }: { progressPath: string }) {
+  setProgressPath({ progressPath }: { progressPath: string }): void {
     this.progressPath = progressPath
   }
 
   @Mutation
-  setStartTime({ startTime }: { startTime: number }) {
+  setStartTime({ startTime }: { startTime: number }): void {
     this.startTime = startTime
   }
 
   @Mutation
-  setEndTime({ endTime }: { endTime: number }) {
+  setEndTime({ endTime }: { endTime: number }): void {
     this.endTime = endTime
   }
 
   @Mutation
-  setData({ data }: { data: Node | null }) {
+  setData({ data }: { data: Node | null }): void {
     this.data = data
   }
 }

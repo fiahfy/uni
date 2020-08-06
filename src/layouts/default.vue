@@ -13,17 +13,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch, SetupContext } from '@vue/composition-api'
-import SettingsDialog from '~/components/SettingsDialog.vue'
-import TitleBar from '~/components/TitleBar.vue'
+import { defineComponent, watch, SetupContext } from 'nuxt-composition-api'
 import { settingsStore } from '~/store'
 
 export default defineComponent({
-  components: {
-    SettingsDialog,
-    TitleBar,
-  },
-  setup(_props: {}, context: SetupContext) {
+  setup(_props: unknown, context: SetupContext) {
     const handleContextMenu = () => {
       context.root.$contextMenu.open()
     }

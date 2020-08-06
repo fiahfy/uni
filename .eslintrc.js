@@ -1,8 +1,7 @@
 module.exports = {
   root: true,
-  extends: [
-    '@nuxtjs/eslint-config-typescript',
-    'plugin:prettier/recommended',
-    'prettier/vue',
-  ],
+  env: {
+    node: true,
+  },
+  extends: ['@fiahfy/nuxt'],
 }

@@ -73,15 +73,11 @@ import {
   onMounted,
   onUnmounted,
   SetupContext,
-} from '@vue/composition-api'
-import TitleBar from '~/components/TitleBar.vue'
+} from 'nuxt-composition-api'
 import { settingsStore } from '~/store'
 
 export default defineComponent({
-  components: {
-    TitleBar,
-  },
-  setup(_props: {}, context: SetupContext) {
+  setup(_props: unknown, context: SetupContext) {
     const state = reactive({
       active: false,
     })

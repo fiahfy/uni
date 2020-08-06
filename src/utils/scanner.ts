@@ -15,7 +15,7 @@ let cancelling = false
 let progressTime = 0
 let node = { name: '', value: 0, children: [] }
 let ignoredPaths: string[] = []
-const callbacks: { [event: string]: Function } = {}
+const callbacks: { [event: string]: (filePath?: string) => void } = {}
 
 const delay = (millis = 0) => {
   return new Promise((resolve) => {
@@ -25,10 +25,10 @@ const delay = (millis = 0) => {
   })
 }
 
-const call = (event: string, args?: any) => {
+const call = (event: string, filePath?: string) => {
   const callback = callbacks[event]
   if (callback) {
-    callback(args)
+    callback(filePath)
   }
 }
 
@@ -91,7 +91,7 @@ const reduce = (node: Node, limit: number, root: boolean) => {
   node.children.forEach((child) => reduce(child, limit, false))
 }
 
-const scan = async (filePath: string) => {
+const scan = async (filePath: string): Promise<void> => {
   if (scanning || cancelling) {
     return
   }
@@ -108,19 +108,20 @@ const scan = async (filePath: string) => {
   scanning = false
 }
 
-const cancel = () => {
+const cancel = (): void => {
   cancelling = true
 }
 
-const on = (event: string, callback: Function) => {
+const on = (event: string, callback: (filePath?: string) => void): void => {
   callbacks[event] = callback
 }
 
-const setConfig = (config: { ignoredPaths: string[] }) => {
+const setConfig = (config: { ignoredPaths: string[] }): void => {
   ignoredPaths = config.ignoredPaths
 }
 
-const getCalculatedNode = () => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getCalculatedNode = (): any => {
   const root = clone(node)
   sum(root)
   const limit = root.value * 0.001

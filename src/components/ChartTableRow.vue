@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from '@vue/composition-api'
+import { defineComponent, computed } from 'nuxt-composition-api'
 import { scannerStore } from '../store'
 
 type Item = {
@@ -31,7 +31,7 @@ type Item = {
 type Props = {
   item: Item
   selectedPaths: string[]
-  colorCategory: Function
+  colorCategory: d3.ScaleOrdinal<string, string>
 }
 
 export default defineComponent({
@@ -46,7 +46,6 @@ export default defineComponent({
     },
     colorCategory: {
       type: Function,
-      required: true,
     },
   },
   setup(props: Props) {
@@ -61,6 +60,9 @@ export default defineComponent({
       }
     })
     const color = computed(() => {
+      if (!props.colorCategory) {
+        return undefined
+      }
       // directory
       if (props.item.children && props.item.children.length) {
         return props.colorCategory(props.item.name)
