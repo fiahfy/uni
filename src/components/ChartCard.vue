@@ -20,7 +20,11 @@
 
 <script lang="ts">
 import path from 'path'
-import { defineComponent, computed, SetupContext } from 'nuxt-composition-api'
+import {
+  defineComponent,
+  computed,
+  SetupContext,
+} from '@nuxtjs/composition-api'
 import { scannerStore } from '~/store'
 
 type Props = {

@@ -46,7 +46,7 @@ import {
   onMounted,
   onUnmounted,
   SetupContext,
-} from 'nuxt-composition-api'
+} from '@nuxtjs/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({

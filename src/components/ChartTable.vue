@@ -32,7 +32,7 @@ import {
   ref,
   onMounted,
   SetupContext,
-} from 'nuxt-composition-api'
+} from '@nuxtjs/composition-api'
 import { Node } from '~/models'
 import { scannerStore } from '~/store'
 

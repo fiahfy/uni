@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch, SetupContext } from 'nuxt-composition-api'
+import { defineComponent, watch, SetupContext } from '@nuxtjs/composition-api'
 import { settingsStore } from '~/store'
 
 export default defineComponent({

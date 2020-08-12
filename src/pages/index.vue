@@ -41,7 +41,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed } from 'nuxt-composition-api'
+import {
+  defineComponent,
+  ref,
+  reactive,
+  computed,
+} from '@nuxtjs/composition-api'
 import ChartGraph from '~/components/ChartGraph.vue'
 import { Node } from '~/models'
 import { scannerStore } from '~/store'

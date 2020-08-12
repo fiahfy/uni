@@ -19,7 +19,7 @@ import {
   reactive,
   computed,
   onMounted,
-} from 'nuxt-composition-api'
+} from '@nuxtjs/composition-api'
 import { scannerStore } from '~/store'
 
 export default defineComponent({
